@@ -674,3 +674,27 @@ textarea{border:0;outline:0}
 .cpanel .btn{margin-top:0;padding:5px 11px;font-size:12px}
 .cpanel .btn .i{width:12px;height:12px}
 @media(max-width:1100px){.wgrid{grid-template-columns:minmax(0,1fr)}.cpanel{position:static;order:-1}}
+/* the output sits in the same cell: a thin line, an Out [n] label, plain text, no dark box */
+.cout{margin-top:12px;padding:12px 0 0;border-radius:0;background:none;border-top:1px dashed var(--s1)}
+.cout .ocl{color:var(--peach);margin-bottom:6px}
+.cout pre{margin:0;color:var(--sub1);font:12.5px/1.65 ui-monospace,SFMono-Regular,Consolas,"Courier New",monospace;white-space:pre-wrap}
+
+/* the explain card: icon and title on top, the words in plain type with code words set apart, then a line and the cell tools */
+.cpanel{padding:18px 20px 16px}
+.cpanel .chd{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.cpanel .chd .ni{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;flex:none;color:var(--yellow);background:color-mix(in srgb,var(--yellow) 13%,var(--base))}
+.cpanel .chd .ni .i{width:18px;height:18px}
+.cpanel .chd div{flex:1;min-width:0}
+.cpanel .chd b{display:block;margin:0;color:var(--text);font-size:13px}
+.cpanel .chd i{font-style:normal;color:var(--o0);font-size:11px}
+.cpanel .cnav{display:flex;gap:2px}
+.cpanel .cnav button{width:24px;height:24px;display:grid;place-items:center;border-radius:6px;color:var(--o1);cursor:pointer}
+.cpanel .cnav button:hover{color:var(--text);background:var(--s0)}
+.cpanel .cnav button:disabled{opacity:.3;cursor:default}
+.cpanel .cnav button:disabled:hover{color:var(--o1);background:none}
+.cpanel .cnav .i{width:13px;height:13px}
+.cpanel p{color:var(--sub1);font-size:13.5px;line-height:1.85;margin:0}
+.cpanel p code{font:12px ui-monospace,SFMono-Regular,Consolas,"Courier New",monospace;background:var(--s0);color:var(--text);padding:1px 6px;border-radius:5px}
+.cpanel .cft{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:18px;padding-top:12px;border-top:1px dashed var(--s1)}
+.cpanel .cft span{color:var(--o0);font-size:11px}
+.cpanel .cft .btn span{color:inherit;font-size:inherit}

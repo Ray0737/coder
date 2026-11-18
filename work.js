@@ -114,15 +114,27 @@ async function showWork() {
       <a class="btn ghost" href="chapter.html#${f.chapter}">${icon('file-text')}Read the chapter</a>
     </div>
     <div class="wgrid">
-      <div class="wcells">${cells.map((c, i) => `<section class="wcell" tabindex="0" data-i="${i}"><span class="cin">In [${i + 1}]<em>${esc(c.label)}</em></span><pre><code>${mdCode(c.code, 'python')}</code></pre>${f.outs[i] ? `<div class="cout">${esc(f.outs[i])}</div>` : ''}</section>`).join('')}</div>
-      <aside class="cpanel"><b>What this cell does</b><p id="cdoes"></p><button class="btn ghost" id="ccopy" type="button">${icon('notebook')}<span>Copy this cell</span></button></aside>
+      <div class="wcells">${cells.map((c, i) => `<section class="wcell" tabindex="0" data-i="${i}"><span class="cin">In [${i + 1}]<em>${esc(c.label)}</em></span><pre><code>${mdCode(c.code, 'python')}</code></pre>${f.outs[i] ? `<div class="cout"><span class="cin ocl">Out [${i + 1}]</span><pre>${esc(f.outs[i])}</pre></div>` : ''}</section>`).join('')}</div>
+      <aside class="cpanel">
+        <div class="chd"><span class="ni">${icon('lightbulb')}</span><div><b>What this cell does</b><i id="cwhich"></i></div>
+          <span class="cnav"><button type="button" id="cprev" data-tip="Previous cell">${icon('caret-left')}</button><button type="button" id="cnext" data-tip="Next cell">${icon('caret-right')}</button></span></div>
+        <p id="cdoes"></p>
+        <div class="cft"><button class="btn ghost" id="ccopy" type="button">${icon('notebook')}<span>Copy this cell</span></button><span id="cpos"></span></div>
+      </aside>
     </div>`;
 
   let cur = 0;
-  const pick = i => {
+  // code-looking words in a description (%d, print(), \\n, **) are set in code type so they stand out
+  const say = t => esc(t).replace(/(%\.?\d*[dsf]|\b[\w.]+\(\)|\\n|\*\*|\bmath\.pi\b|\bTrue\b|\bFalse\b)/g, '<code>$1</code>');
+  const pick = (i, scroll) => {
     cur = i;
     $$('.wcell').forEach(el => el.classList.toggle('on', +el.dataset.i === i));
-    $('#cdoes').textContent = f.does[i] || 'No description yet.';
+    $('#cdoes').innerHTML = f.does[i] ? say(f.does[i]) : 'No description yet.';
+    $('#cwhich').textContent = `In [${i + 1}] \u00b7 ${cells[i].label}`;
+    $('#cpos').textContent = `${i + 1} of ${cells.length}`;
+    $('#cprev').disabled = i === 0;
+    $('#cnext').disabled = i === cells.length - 1;
+    if (scroll) $$('.wcell')[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   };
   const flash = (btn, text) => { const s = btn.querySelector('span'), old = s.textContent; s.textContent = text; setTimeout(() => s.textContent = old, 1400); };
   const copy = (text, btn) => (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(() => flash(btn, 'Copied')).catch(() => {});
@@ -130,6 +142,8 @@ async function showWork() {
   $('.wcells').addEventListener('keydown', e => { const c = e.target.closest('.wcell'); if (c && e.target === c && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); pick(+c.dataset.i); } });
   $('#wcopy').onclick = () => copy(code, $('#wcopy'));
   $('#ccopy').onclick = () => copy(cells[cur].code, $('#ccopy'));
+  $('#cprev').onclick = () => pick(cur - 1, true);
+  $('#cnext').onclick = () => pick(cur + 1, true);
   pick(0);
   $('.view').scrollTop = 0;
 }
