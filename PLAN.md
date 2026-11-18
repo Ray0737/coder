@@ -43,7 +43,7 @@ Each **folder** in Main is one major class, grouped by year like the EAI curricu
 | Home | `index.html` | The VS Code Welcome tab: start links, recent, walkthroughs (learning half) · Our Major (About the major, Projects, Materials), your data |
 | Chapter | `notes/<folder>/<chapter>.html` | One chapter, read top to bottom. Opens as an editor tab |
 | Notes | `notes.html` | Your progress and notes: chapters done per folder, streak, last opened, all your own notes in one list |
-| Exercise | `exercise.html` | Practice problems per folder (code tasks, circuit questions, find the bug), marked done locally |
+| Work | `work.html` | The code version of each class. The sidebar keeps the year > class > section shape of Main, and chapters that have work list their real files instead. Files live in `work/<class-slug>/` and are registered in `work.js`. Only Basic Python / Printing and getting input (W01.py, W02.py) is in so far |
 | Roadmap | `roadmap.html` | All folders as one path, what to learn first and what each chapter needs (EASE-style graph) |
 | Tools | `tools.html` | Recommended tools (editors, boards, libraries, AI tools), each with why and a link |
 | About | `about.html` | What the site is, who made it, credits |
@@ -80,8 +80,8 @@ chapter.html + chapter.js   one page that draws any chapter: chapter.html#<class
 
 | Part | Content |
 |---|---|
-| Title bar (top) | Logo · text menu (Home, Notes, Exercise, Roadmap, Tools, About, Changelog) · back and forward · **command search** in the middle (finds chapters and pages, `Ctrl+P` / `Ctrl+K` / `Ctrl+Shift+F`) · sidebar toggle |
-| Activity bar (left icons) | Home (sidebar lists the sections of the current page) · Main (the notes tree) · Notes, Exercise, Roadmap, Tools (go to page) · bottom: major set (About the major, Projects, Materials) · divider · Settings (opens in the main panel as a tab over the page: theme, language EN / TH, sizing, other; view-only first), About Coder |
+| Title bar (top) | Logo · text menu (Home, Notes, Work, Roadmap, Tools, About, Changelog) · back and forward · **command search** in the middle (finds chapters and pages, `Ctrl+P` / `Ctrl+K` / `Ctrl+Shift+F`) · sidebar toggle |
+| Activity bar (left icons) | Home (sidebar lists the sections of the current page) · Main (the notes tree) · Notes, Work, Roadmap, Tools (go to page) · bottom: major set (About the major, Projects, Materials) · divider · Settings (opens in the main panel as a tab over the page: theme, language EN / TH, sizing, other; view-only first), About Coder |
 | Sidebar | The Main tree (class folders by year, section labels, chapters). On the About page it shows About's own outline instead, and the "Main" card there switches it to the tree. Search lives in the title bar |
 | Editor | Tabs, breadcrumb, page content |
 | Status bar (footer) | Left: brand bubble, branch, problems, notes count, chapters done · Right: language · Major, Projects, Materials · About, Changelog · **Developer** (popup on hover, stays open on click: name, GitHub, email, major GitHub org) · contact bubbles (email, GitHub), © |
@@ -105,7 +105,6 @@ Rules:
 | `coder:done` | `["python/tkinter-study-planner", ...]` chapters marked done |
 | `coder:notes:<chapter>` | the reader's own note for that chapter (plain text) |
 | `coder:recent` | the last 5 chapters opened (drives Home → Recent) |
-| `coder:exercise` | `["python/w01-1", ...]` exercises solved |
 | `coder:streak` | `{ last: "2026-11-18", days: 3 }` |
 
 Export / import as one JSON file on the Notes page, so data survives a browser wipe or moves to another device.
@@ -122,7 +121,7 @@ Chapter list: one `data.js` (folder, chapter, slug, tags), read by every page. A
 3. **Chapter template**: first real chapters (start with Python and Circuits), "Mark done" button, a "My note" box.
 4. **Notes page** (done): `notes.html` opens on All notes, a library of every note written in any chapter, grouped by class, drawn as formatted Markdown, with search and a Copy button on each. Then Progress (done count, streak, notes written, last opened, a bar per class) and Back up (export and import one file). Notes are written in the note panel beside each chapter and saved as `coder:notes:<class>/<chapter>`. `md.js` is the Markdown reader shared by the chapter page and this page.
 5. **Roadmap page**: the folder path and what each chapter needs first.
-6. **Exercise page**: first problem sets (Python, Circuits).
+6. **Work page** (page built, empty): add the code, tools and scripts class by class.
 7. **Tools, About, Changelog**.
 8. **Major set**: About the major, Projects, Materials.
 9. **AI track chapters**, with live diagrams where they help.

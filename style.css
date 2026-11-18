@@ -628,3 +628,49 @@ textarea{border:0;outline:0}
 .steps+.deco{margin-top:36px}
 @media(max-width:640px){.yrs{grid-template-columns:1fr}}
 .welcome .wh{margin:44px 0 14px}
+
+/* work page */
+.tree a i{margin-left:auto;padding-left:10px;font-style:normal;color:var(--o0);font-size:11px;white-space:nowrap}
+.tree .todo{margin:0 6px;padding:2px 8px 2px 18px;color:var(--o0);opacity:.55}
+.tree .todo span{display:flex;align-items:center;gap:6px}
+.tree .todo .i{width:12px;height:12px}
+.wlist{display:flex;flex-direction:column;margin-top:18px}
+.wlist a{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--s0);color:var(--sub0)}
+.wlist a .i{width:16px;height:16px;color:var(--mauve)}
+.wlist a span{flex:1}
+.wlist a b{display:block;color:var(--text);font-weight:700}
+.wlist a i{font-style:normal;color:var(--o0);font-size:11px}
+.wlist a:hover b{text-decoration:underline;text-underline-offset:2px}
+.wtop{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+.wtop .ni{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:var(--c);background:color-mix(in srgb,var(--c) 15%,var(--base));flex:none}
+.wtop .ni .i{width:22px;height:22px}
+.wtop h1{font-size:24px;font-weight:400}
+.wtop .sum{color:var(--o1);margin-top:2px;max-width:640px}
+.wact{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 6px}
+.wact .btn{margin-top:0;padding:6px 12px;font-size:12px}
+.wact .btn .i{width:12px;height:12px}
+.wact a.btn:hover{text-decoration:none;color:var(--text)}
+.wcode{margin:14px 0}
+.wcode pre{padding:12px 14px 16px}
+.wcode .cl{display:block;white-space:pre}
+.wcode .cl b{display:inline-block;width:3.2ch;margin-right:18px;text-align:right;color:var(--o0);font-weight:400;user-select:none}
+
+/* work file: code cells on the left, what the selected cell does on the right */
+.wgrid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;align-items:start;margin-top:14px}
+.wcells{display:flex;flex-direction:column;gap:10px}
+.wcell{padding:12px 16px 14px;border-radius:12px;background:var(--mantle);cursor:pointer}
+.wcell:hover{background:color-mix(in srgb,var(--s0) 45%,var(--mantle))}
+.wcell.on{background:var(--s0)}
+.wcell:focus-visible{outline:0;background:var(--s0)}
+.wcell .cin{display:block;color:var(--mauve);font-size:11px;font-weight:700;margin-bottom:8px}
+.wcell .cin em{font-style:normal;font-weight:400;color:var(--o0);margin-left:10px}
+.wcell pre{margin:0;overflow-x:auto}
+.wcell code{font:12.5px/1.65 ui-monospace,SFMono-Regular,Consolas,"Courier New",monospace;color:var(--text)}
+.wcell .k{color:var(--mauve)}.wcell .s{color:var(--green)}.wcell .n{color:var(--peach)}.wcell .b{color:var(--blue)}.wcell .c{color:var(--o0)}
+.cout{margin-top:10px;padding:8px 12px;border-radius:8px;background:var(--crust);color:var(--sub1);font:12px/1.6 ui-monospace,SFMono-Regular,Consolas,"Courier New",monospace;white-space:pre-wrap}
+.cpanel{position:sticky;top:0;padding:16px 18px 18px;border-radius:14px;background:var(--mantle)}
+.cpanel b{display:block;color:var(--mauve);font-size:12px;margin-bottom:8px}
+.cpanel p{color:var(--sub1);font-size:13px;line-height:1.75;margin:0 0 14px}
+.cpanel .btn{margin-top:0;padding:5px 11px;font-size:12px}
+.cpanel .btn .i{width:12px;height:12px}
+@media(max-width:1100px){.wgrid{grid-template-columns:minmax(0,1fr)}.cpanel{position:static;order:-1}}

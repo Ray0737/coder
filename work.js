@@ -1,0 +1,138 @@
+// Work page: the real code files for each class, in a sidebar tree that keeps the same year > class > section shape as Main.
+// A file opens as cells on the left (code, and its real output when it has one) with "What this cell does" on the right.
+// A chapter that has work lists its files; a chapter without any shows dimmed.
+// To add work: copy the file into work/<class-slug>/ and add it here. See work/README.md.
+// The file is read with fetch, so the site has to be served (see content/README.md).
+
+// A file is cut into cells at lines like "#Q1" or "# Exercise 3-4" (cutAt). The text before the first one is the header cell.
+// does[i] describes cell i (header first). outs[i] is the output of cell i, when it has one that never changes.
+const WORK = {
+  'basic-python/printing-and-getting-input': [
+    {
+      file: 'W01.py', title: 'Print', cutAt: /^#\s*Q\d+/i,
+      note: 'Week 01: strings, variables and the print command.',
+      does: [
+        'The label at the top of the file. Text in triple quotes is a docstring: Python ignores it when running, and it just says what the file is for.',
+        'Two variables, then one print with five %d blanks. The values in the brackets fill the blanks in order: a, b, b, a and a+b. The output reads 2 + 3 = 3 + 2 = 5, so the same pair added in either order gives the same sum.',
+        'Three variables fill seven %d blanks. One variable can fill more than one blank, so a is used three times and b and c twice. The print shows the distributive law as written text, 2*(3+5) = 2*3+2*5. It prints the pieces, not the answer.',
+        '%.2f fills the blank with a decimal rounded to two places. The values are b, a and b-a, so it prints 2.50 - 2.40 = 0.10. Plain %f would show six decimal places.',
+        'Strings can hold Thai text. %d drops the whole number 25 into the sentence.',
+        'A lone % starts a code, so a plain percent sign is awkward to type inside the text. Here the % is saved in a variable and filled in with %s, which fills a blank with text.',
+        'All three codes in one line: %d for the whole number 2, %.2f for the decimal 3.5 (shown as 3.50), and %s for the percent sign, used twice.',
+      ],
+      outs: [null, '2 + 3 = 3 + 2 = 5', '2*(3+5) = 2*3+2*5', '2.50 - 2.40 = 0.10', 'ฉันเกิดวันที่ 25 ธันวาคม', 'ฉันได้กำไร 5%', 'เมื่อวานฉันขาดทุน 2% วันนี้ฉันได้กำไร 3.50%'],
+    },
+    {
+      file: 'W02.py', title: 'Input', cutAt: /^#\s*Exercise\s*[\d-]+/i,
+      note: 'Week 02: the input command.',
+      does: [
+        'The label for week 2. The whole file is about input(), which asks the user to type something.',
+        'input() shows the question and waits for you to type. Whatever you type comes back as text, so type(a) says str even if you typed a number. The f-string prints the value and its type.',
+        'Asks for a name and prints it with the type of what you entered. The \\n inside the text starts a new line.',
+        'Two numbers read with float(), so the maths works. It adds, subtracts, multiplies and divides, and prints each answer with its type. Every answer is a float, because dividing with / always gives a float.',
+        'A decimal and a whole number together. The answer is a float, because Python turns the whole number into a decimal before it adds or subtracts.',
+        'A physics formula as a program: work = force x distance, and power = work / time. It asks for the force in newtons, the distance in metres and the time, and prints the answers in joules and watts.',
+        'Several inputs used in one sentence. The two ages are read with int() so they can be subtracted to give the age gap. The first name and surname stay as text.',
+        'Comparing two numbers with > gives True or False. That value is a bool, and type() confirms it.',
+        'The first import of the course. import math gives you math.pi, and the cone\'s volume is one third times pi times the radius squared times the height. ** means to the power of.',
+      ],
+      outs: [],
+    },
+  ],
+};
+
+const wmain = $('#wmain');
+const wItems = Object.entries(WORK).flatMap(([chapter, files]) => files.map(f => ({ ...f, chapter, cs: chapter.split('/')[0] })));
+const wId = f => f.cs + '/' + f.file;
+
+// ---- the sidebar: same hierarchy as Main, but the chapters that have work are replaced by their real files
+$('#p-main h2').textContent = 'Work';
+let wYr = '';
+$('#tree').innerHTML = notes.map(([g, ic, c, ns, yr]) => {
+  const head = yr !== wYr ? `<p class="yr">${yr}</p>` : '';
+  wYr = yr;
+  const cs = slug(g);
+  const items = ns.map(n => {
+    if (n.startsWith('# ')) return `<li class="sub">${esc(n.slice(2))}</li>`;
+    if (n === 'Coming soon') return '<li class="todo"><span>Coming soon</span></li>';
+    const files = WORK[cs + '/' + slug(n)];
+    if (!files) return `<li class="todo" style="--c:var(--${c})"><span>${icon('file-text')}${esc(n)}</span></li>`;
+    return files.map(f => `<li style="--c:var(--${c})"><a href="work.html#${cs}/${f.file}">${icon('code')}${esc(f.file)}<i>${esc(f.title)}</i></a></li>`).join('');
+  }).join('');
+  return head + `<button class="grp" style="--c:var(--${c})" aria-expanded="false" data-g="${esc(g)}">${icon('caret-right')}<svg class="i f"><use href="#i-${ic}"/></svg><span>${esc(g)}</span></button><ul class="tree">${items}</ul>`;
+}).join('');
+(load('coder:open') || []).forEach(g => { const b = [...$$('.grp')].find(x => x.dataset.g === g); if (b) paintGroup(b, true); });
+
+// ---- the main panel
+function setHead(title, crumb) {
+  document.title = title + ' · Coder';
+  $('#wtab span').textContent = title;
+  $('#wcrumb').textContent = crumb;
+}
+
+// cut a file into cells; the text before the first marker is the header cell
+function cutCells(code, cutAt) {
+  const cells = [];
+  let cur = { label: 'Header', lines: [] };
+  code.split('\n').forEach(line => {
+    if (cutAt.test(line)) { cells.push(cur); cur = { label: line.replace(/^#\s*/, '').trim(), lines: [] }; }
+    cur.lines.push(line);
+  });
+  cells.push(cur);
+  return cells.map(c => ({ label: c.label, code: c.lines.join('\n').replace(/\s+$/, '').replace(/^\n+/, '') }));
+}
+
+async function showWork() {
+  const id = decodeURIComponent(location.hash.slice(1));
+  $$('#tree a.on').forEach(a => a.classList.remove('on'));
+  const f = wItems.find(x => wId(x) === id);
+  if (!f) {
+    setHead('Work', 'Coder › Work');
+    wmain.innerHTML = `<h1>Work</h1><p class="lead">The code version of each class: the full programs, tools and scripts</p>
+      <p class="note wide">Chapters explain the ideas. Work is where the finished thing lives, so you can open the whole program, tool or script for a class instead of rebuilding it from the lesson. Pick a file from the list on the left.</p>
+      <div class="wlist">${wItems.map(x => `<a href="work.html#${wId(x)}">${icon('code')}<span><b>${esc(x.file)}</b>${esc(x.title)}</span><i>${esc(notes.find(n => slug(n[0]) === x.cs)[0])}</i></a>`).join('')}</div>`;
+    return;
+  }
+  const folder = notes.find(n => slug(n[0]) === f.cs);
+  setHead(f.file, `Coder › Work › ${folder[0]} › ${f.file}`);
+  const a = $(`#tree a[href="work.html#${id}"]`);
+  if (a) { a.classList.add('on'); const grp = a.closest('ul').previousElementSibling; if (grp && grp.classList.contains('grp')) setGroup(grp, true); }
+
+  const path = `work/${f.cs}/${f.file}`;
+  let code = null;
+  try { const r = await fetch(path); if (r.ok) code = await r.text(); } catch {}
+  if (code === null) {
+    wmain.innerHTML = `<h1>${esc(f.file)}</h1><p class="sum">${location.protocol === 'file:' ? 'This page reads the file from disk, so it needs to be opened through a local server such as VS Code Live Server.' : 'This file could not be loaded.'}</p>`;
+    return;
+  }
+  code = code.replace(/\r\n?/g, '\n');
+  const cells = cutCells(code, f.cutAt);
+  wmain.innerHTML = `<div class="wtop"><span class="ni" style="--c:var(--${folder[2]})">${icon('code')}</span><div><h1>${esc(f.file)}</h1><p class="sum">${esc(f.note)}</p></div></div>
+    <div class="wact">
+      <button class="btn ghost" id="wcopy" type="button">${icon('notebook')}<span>Copy file</span></button>
+      <a class="btn ghost" href="${path}" download="${esc(f.file)}">${icon('arrow-up-right')}Download</a>
+      <a class="btn ghost" href="chapter.html#${f.chapter}">${icon('file-text')}Read the chapter</a>
+    </div>
+    <div class="wgrid">
+      <div class="wcells">${cells.map((c, i) => `<section class="wcell" tabindex="0" data-i="${i}"><span class="cin">In [${i + 1}]<em>${esc(c.label)}</em></span><pre><code>${mdCode(c.code, 'python')}</code></pre>${f.outs[i] ? `<div class="cout">${esc(f.outs[i])}</div>` : ''}</section>`).join('')}</div>
+      <aside class="cpanel"><b>What this cell does</b><p id="cdoes"></p><button class="btn ghost" id="ccopy" type="button">${icon('notebook')}<span>Copy this cell</span></button></aside>
+    </div>`;
+
+  let cur = 0;
+  const pick = i => {
+    cur = i;
+    $$('.wcell').forEach(el => el.classList.toggle('on', +el.dataset.i === i));
+    $('#cdoes').textContent = f.does[i] || 'No description yet.';
+  };
+  const flash = (btn, text) => { const s = btn.querySelector('span'), old = s.textContent; s.textContent = text; setTimeout(() => s.textContent = old, 1400); };
+  const copy = (text, btn) => (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(() => flash(btn, 'Copied')).catch(() => {});
+  $('.wcells').addEventListener('click', e => { const c = e.target.closest('.wcell'); if (c) pick(+c.dataset.i); });
+  $('.wcells').addEventListener('keydown', e => { const c = e.target.closest('.wcell'); if (c && e.target === c && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); pick(+c.dataset.i); } });
+  $('#wcopy').onclick = () => copy(code, $('#wcopy'));
+  $('#ccopy').onclick = () => copy(cells[cur].code, $('#ccopy'));
+  pick(0);
+  $('.view').scrollTop = 0;
+}
+
+addEventListener('hashchange', showWork);
+showWork();

@@ -53,6 +53,7 @@ const SPRITE = `
 <symbol id="i-desktop" viewBox="0 0 256 256"><path d="M208,40H48A24,24,0,0,0,24,64V176a24,24,0,0,0,24,24h72v16H96a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16H136V200h72a24,24,0,0,0,24-24V64A24,24,0,0,0,208,40ZM48,56H208a8,8,0,0,1,8,8v80H40V64A8,8,0,0,1,48,56ZM208,184H48a8,8,0,0,1-8-8V160H216v16A8,8,0,0,1,208,184Z"/></symbol>
 <symbol id="i-globe" viewBox="0 0 256 256"><path d="M128,24h0A104,104,0,1,0,232,128,104.12,104.12,0,0,0,128,24Zm88,104a87.61,87.61,0,0,1-3.33,24H174.16a157.44,157.44,0,0,0,0-48h38.51A87.61,87.61,0,0,1,216,128ZM102,168H154a115.11,115.11,0,0,1-26,45A115.27,115.27,0,0,1,102,168Zm-3.9-16a140.84,140.84,0,0,1,0-48h59.88a140.84,140.84,0,0,1,0,48ZM40,128a87.61,87.61,0,0,1,3.33-24H81.84a157.44,157.44,0,0,0,0,48H43.33A87.61,87.61,0,0,1,40,128ZM154,88H102a115.11,115.11,0,0,1,26-45A115.27,115.27,0,0,1,154,88Zm52.33,0H170.71a135.28,135.28,0,0,0-22.3-45.6A88.29,88.29,0,0,1,206.37,88ZM107.59,42.4A135.28,135.28,0,0,0,85.29,88H49.63A88.29,88.29,0,0,1,107.59,42.4ZM49.63,168H85.29a135.28,135.28,0,0,0,22.3,45.6A88.29,88.29,0,0,1,49.63,168Zm98.78,45.6a135.28,135.28,0,0,0,22.3-45.6h35.66A88.29,88.29,0,0,1,148.41,213.6Z"/></symbol>
 <symbol id="i-puzzle-piece" viewBox="0 0 256 256"><path d="M220.27,158.54a8,8,0,0,0-7.7-.46,20,20,0,1,1,0-36.16A8,8,0,0,0,224,114.69V72a16,16,0,0,0-16-16H171.78a35.36,35.36,0,0,0,.22-4,36.11,36.11,0,0,0-11.36-26.24,36,36,0,0,0-60.55,23.62,36.56,36.56,0,0,0,.14,6.62H64A16,16,0,0,0,48,72v32.22a35.36,35.36,0,0,0-4-.22,36.12,36.12,0,0,0-26.24,11.36,35.7,35.7,0,0,0-9.69,27,36.08,36.08,0,0,0,33.31,33.6,35.68,35.68,0,0,0,6.62-.14V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V165.31A8,8,0,0,0,220.27,158.54ZM208,208H64V165.31a8,8,0,0,0-11.43-7.23,20,20,0,1,1,0-36.16A8,8,0,0,0,64,114.69V72h46.69a8,8,0,0,0,7.23-11.43,20,20,0,1,1,36.16,0A8,8,0,0,0,161.31,72H208v32.23a35.68,35.68,0,0,0-6.62-.14A36,36,0,0,0,204,176a35.36,35.36,0,0,0,4-.22Z"/></symbol>
+<symbol id="i-toolbox" viewBox="0 0 256 256"><path d="M224,64H176V56a24,24,0,0,0-24-24H104A24,24,0,0,0,80,56v8H32A16,16,0,0,0,16,80V192a16,16,0,0,0,16,16H224a16,16,0,0,0,16-16V80A16,16,0,0,0,224,64ZM96,56a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96ZM224,80v32H192v-8a8,8,0,0,0-16,0v8H80v-8a8,8,0,0,0-16,0v8H32V80Zm0,112H32V128H64v8a8,8,0,0,0,16,0v-8h96v8a8,8,0,0,0,16,0v-8h32v64Z"/></symbol>
 <symbol id="i-text-aa" viewBox="0 0 256 256"><path d="M87.24,52.59a8,8,0,0,0-14.48,0l-64,136a8,8,0,1,0,14.48,6.81L39.9,160h80.2l16.66,35.4a8,8,0,1,0,14.48-6.81ZM47.43,144,80,74.79,112.57,144ZM200,96c-12.76,0-22.73,3.47-29.63,10.32a8,8,0,0,0,11.26,11.36c3.8-3.77,10-5.68,18.37-5.68,13.23,0,24,9,24,20v3.22A42.76,42.76,0,0,0,200,128c-22.06,0-40,16.15-40,36s17.94,36,40,36a42.73,42.73,0,0,0,24-7.25,8,8,0,0,0,16-.75V132C240,112.15,222.06,96,200,96Zm0,88c-13.23,0-24-9-24-20s10.77-20,24-20,24,9,24,20S213.23,184,200,184Z"/></symbol>
 `;
 const HEADER = `
@@ -61,7 +62,7 @@ const HEADER = `
     <nav class="menu" aria-label="Main">
       <a href="index.html">Home</a>
       <a href="notes.html">Notes</a>
-      <a href="exercise.html">Exercise</a>
+      <a href="work.html">Work</a>
       <a href="roadmap.html">Roadmap</a>
       <a href="tools.html">Tools</a>
       <a href="about.html">About</a>
@@ -83,7 +84,7 @@ const HEADER = `
 `;
 const ACT_REST = `
     <a href="notes.html" title="Notes" aria-label="Notes"><svg class="i"><use href="#i-notebook"/></svg></a>
-    <a href="exercise.html" title="Exercise" aria-label="Exercise"><svg class="i"><use href="#i-exam"/></svg></a>
+    <a href="work.html" title="Work" aria-label="Work"><svg class="i"><use href="#i-toolbox"/></svg></a>
     <a href="roadmap.html" title="Roadmap" aria-label="Roadmap"><svg class="i"><use href="#i-map-trifold"/></svg></a>
     <a href="tools.html" title="Tools" aria-label="Tools"><svg class="i"><use href="#i-wrench"/></svg></a>
     <span class="gap"></span>
@@ -175,7 +176,7 @@ const notes = [
   ['Research','lightbulb','sapphire',['Coming soon'],'M.6 Capstone'],
   ['Final Project','sparkle','flamingo',['Coming soon'],'M.6 Capstone'],
 ];
-const pages = [['Home','index.html','house'],['Tools','tools.html','wrench'],['Notes','notes.html','notebook'],['Exercise','exercise.html','exam'],['Roadmap','roadmap.html','map-trifold'],['About Coder','about.html','info'],['About the major','major.html','graduation-cap'],['Projects','projects.html','cube'],['Materials','materials.html','books'],['Changelog','about.html#changelog','clock']];
+const pages = [['Home','index.html','house'],['Tools','tools.html','wrench'],['Notes','notes.html','notebook'],['Work','work.html','toolbox'],['Roadmap','roadmap.html','map-trifold'],['About Coder','about.html','info'],['About the major','major.html','graduation-cap'],['Projects','projects.html','cube'],['Materials','materials.html','books'],['Changelog','about.html#changelog','clock']];
 const $ = s => document.querySelector(s), $$ = s => document.querySelectorAll(s);
 const esc = s => s.replace(/&/g,'&amp;');
 const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
