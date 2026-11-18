@@ -607,3 +607,24 @@ textarea{border:0;outline:0}
 .ntitle b{display:block;font-weight:700}
 .ntitle i{font-style:normal;color:var(--o0);font-size:11px}
 .nsolo .notepane{height:calc(100vh - 260px);min-height:420px}
+
+/* about: the two reasons */
+.row .meta .ni{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;margin-bottom:10px;color:var(--mauve);background:color-mix(in srgb,var(--mauve) 15%,var(--base))}
+.row .meta .ni .i{width:17px;height:17px}
+.row .why{padding:18px 22px;display:flex;align-items:center}
+.row .why p{color:var(--sub1);font-size:13px;line-height:1.75;max-width:620px}
+.wh{font-size:14px;font-weight:700;margin:36px 0 12px}
+.why-rows+.deco{margin-top:36px}
+.why-list p{color:var(--sub1);font-size:13px;line-height:1.75;margin:6px 0}
+.why-list b{color:var(--text)}
+.why-list+.deco{margin-top:36px}
+.yrs{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+.yrs .y{display:block;color:var(--mauve);font-size:11px;margin-bottom:6px}
+.yrs ul{list-style:none}
+.yrs li{display:flex;justify-content:space-between;gap:12px;padding:5px 0;color:var(--sub1)}
+.yrs li i{font-style:normal;color:var(--o0);font-size:11px}
+.steps{margin:6px 0 0 20px;color:var(--sub1);font-size:13px;line-height:1.75}
+.steps li{padding:2px 0}
+.steps+.deco{margin-top:36px}
+@media(max-width:640px){.yrs{grid-template-columns:1fr}}
+.welcome .wh{margin:44px 0 14px}

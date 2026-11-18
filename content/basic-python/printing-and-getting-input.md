@@ -50,11 +50,37 @@ Change the blanks and watch the sentence change:
 fstring
 ```
 
-You will also see an older style that uses `%`. It does the same job and appears in older code. Use f-strings when you write new code, because they are shorter and easier to read.
+### The older ways you will still see
+
+Before f-strings, Python had two other ways to fill the blanks. You will meet them in older code and in many tutorials, so it helps to recognise them. Use f-strings when you write new code, because they are shorter and easier to read.
+
+**The `%` way.** Put a code where each blank goes, then give the values after a `%`, in the same order. The code says what kind of value belongs in that blank.
+
+| Code | Fills the blank with | Example |
+|---|---|---|
+| `%s` | text (a string) | `"%s" % "Mint"` gives Mint |
+| `%d` | a whole number | `"%d" % 95` gives 95 |
+| `%f` | a decimal number | `"%f" % 3.5` gives 3.500000 |
+| `%.2f` | a decimal rounded to 2 places | `"%.2f" % 3.14159` gives 3.14 |
 
 ```python
+name = "Mint"
+score = 95
 print("%s scored %d points" % (name, score))
+print("Average: %.2f" % 87.456)      # Average: 87.46
 ```
+
+With more than one value, put them in brackets. If the code does not match the value, for example `%d` with text, Python stops with an error.
+
+**The `.format()` way.** The blanks are `{ }` again, but the values come afterwards inside `.format()`.
+
+```python
+print("{} scored {} points".format(name, score))
+print("{0} scored {1} points".format(name, score))
+print("Average: {:.2f}".format(87.456))
+```
+
+All three print the same sentence. The only difference is where the values sit: inside the text for f-strings, after a `%` for the old style, and inside `.format()` for the third.
 
 ## input(): Python listens
 
@@ -135,6 +161,7 @@ print(f"Square root of 49 = {math.sqrt(49)}")
 | Tool | Real-life picture | What it does |
 |---|---|---|
 | `print()` | a shop display board | shows something |
+| `%s` `%d` `%.2f` and `.format()` | older form letters | fill the blanks the old way |
 | `input()` | a cashier asking and waiting | asks, and returns text |
 | `int()` / `float()` | reading ink as a number | text to number |
 | `type()` | the label on a parcel | tells you what you have |
