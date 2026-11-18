@@ -1,0 +1,371 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>About Coder · Coder</title>
+<meta name="description" content="What Coder is, what is inside it, the shortcuts, where your data lives and what it is built with.">
+<meta name="theme-color" content="#11111b">
+<link rel="preload" href="assets/fonts/lineseedsansth_rg.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="about">
+<template id="outline" data-title="Outline" data-icon="list-checks">
+  <li><a href="#overview"><svg class="i"><use href="#i-info"/></svg>Overview</a></li>
+  <li><a href="#here"><svg class="i"><use href="#i-folder-open"/></svg>What's here</a></li>
+  <li><a href="#keys"><svg class="i"><use href="#i-lightning"/></svg>Shortcuts</a></li>
+  <li><a href="#data"><svg class="i"><use href="#i-hard-drives"/></svg>Your data</a></li>
+  <li><a href="#built"><svg class="i"><use href="#i-code"/></svg>Built with</a></li>
+  <li><a href="#direction"><svg class="i"><use href="#i-signpost"/></svg>Direction</a></li>
+  <li><a href="#changelog"><svg class="i"><use href="#i-clock"/></svg>Changelog</a></li>
+  <li><a href="#developer"><svg class="i"><use href="#i-user-circle"/></svg>Developer</a></li>
+</template>
+
+  <main class="ed">
+    <div class="tabs" role="tablist"></div>
+    <div class="crumb">Coder › About</div>
+    <div class="view">
+      <div class="welcome wide fill">
+
+        <div class="pane" id="overview" data-tab="Overview" data-icon="info">
+          <h1>About Coder</h1>
+          <p class="lead">A notebook for code, circuits, robots and AI, laid out like an editor</p>
+          <p class="note wide">Coder keeps everything learned in one place: short chapters you read top to bottom, exercises to try, a roadmap of what comes next and the tools worth using. It looks like a code editor on purpose, so finding things feels like moving between files. This is an early version, so most chapters are still placeholders.</p>
+          <div class="deco">
+            <div>
+              <h4>Chapters, in order.</h4>
+              <p>Each folder is a short path of chapters. Read them top to bottom, one file at a time.</p>
+              <svg class="art" viewBox="0 0 240 120" aria-hidden="true">
+                <rect x="8" y="4" width="224" height="4" fill="url(#dots)"/>
+                <circle cx="16" cy="28" r="4" fill="url(#dots2)"/><rect x="30" y="24" width="96" height="8" fill="url(#dots2)"/><rect x="126" y="24" width="98" height="8" fill="url(#dots)"/>
+                <circle cx="16" cy="50" r="5" fill="url(#dots2)"/><rect x="30" y="46" width="62" height="8" fill="url(#dots2)"/><rect x="92" y="46" width="132" height="8" fill="url(#dots)"/>
+                <circle cx="16" cy="72" r="6" fill="url(#dots2)"/><rect x="30" y="68" width="150" height="8" fill="url(#dots2)"/><rect x="180" y="68" width="44" height="8" fill="url(#dots)"/>
+                <circle cx="16" cy="94" r="7" fill="url(#dots2)"/><rect x="30" y="90" width="124" height="8" fill="url(#dots2)"/><rect x="154" y="90" width="70" height="8" fill="url(#dots)"/>
+                <rect x="8" y="110" width="224" height="4" fill="url(#dots)"/>
+              </svg>
+            </div>
+            <div>
+              <h4>Practice, then a path.</h4>
+              <p>Exercises for every folder, and a roadmap that shows what to learn next.</p>
+              <svg class="art" viewBox="0 0 240 120" aria-hidden="true">
+                <rect x="14" y="36" width="50" height="34" fill="url(#dots2)"/><rect x="6" y="76" width="66" height="4" fill="url(#dots)"/>
+                <rect x="78" y="52" width="24" height="4" fill="url(#dots)"/><polygon points="102,47 110,54 102,61" fill="url(#dots2)"/>
+                <rect x="118" y="26" width="40" height="14" fill="url(#dots2)"/><rect x="118" y="46" width="40" height="14" fill="url(#dots2)"/><rect x="118" y="66" width="40" height="14" fill="url(#dots2)"/>
+                <path class="ln march" d="M162 54 C184 54 190 28 208 28 M162 54 H208 M162 54 C184 54 190 82 208 82"/>
+                <circle cx="216" cy="28" r="5" fill="url(#dots2)"/><circle cx="216" cy="54" r="5" fill="url(#dots2)"/><circle cx="216" cy="82" r="5" fill="url(#dots2)"/>
+                <rect x="14" y="102" width="212" height="4" fill="url(#dots)"/>
+              </svg>
+            </div>
+            <div>
+              <h4>Yours, stored here.</h4>
+              <p>Progress and notes stay in your browser. No account, and nothing is sent anywhere.</p>
+              <svg class="art" viewBox="0 0 240 120" aria-hidden="true">
+                <circle cx="16" cy="30" r="6" fill="url(#dots2)"/><circle cx="16" cy="58" r="8" fill="url(#dots2)"/><circle cx="16" cy="88" r="7" fill="url(#dots2)"/>
+                <rect class="ln" x="40" y="6" width="190" height="108" rx="2"/>
+                <rect x="52" y="22" width="60" height="4" fill="url(#dots)"/><rect x="52" y="36" width="130" height="4" fill="url(#dots)"/><rect x="64" y="50" width="84" height="4" fill="url(#dots)"/>
+                <rect x="64" y="64" width="110" height="4" fill="url(#dots)"/><rect x="52" y="78" width="70" height="4" fill="url(#dots)"/><rect x="52" y="92" width="120" height="4" fill="url(#dots)"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="pane" id="here" data-tab="What's here" data-icon="folder-open" hidden>
+          <h2 class="ph">What's here</h2>
+          <p class="lead">Everything in the left bar</p>
+          <div class="deco gal">
+            <a href="#" data-open="main">
+              <svg class="art" viewBox="0 0 240 120" aria-hidden="true">
+                <path class="ds" d="M30 22h50l10 12h120v76H30z"/>
+                <rect class="bob" style="--i:0" x="46" y="52" width="58" height="42" rx="3" fill="url(#dots2)"/>
+                <rect class="bob" style="--i:1" x="90" y="46" width="58" height="42" rx="3" fill="url(#dots2)"/>
+                <rect class="bob" style="--i:2" x="134" y="52" width="58" height="42" rx="3" fill="url(#dots2)"/>
+              </svg>
+              <h4><svg class="i"><use href="#i-folder-open"/></svg>Main<svg class="i go"><use href="#i-arrow-up-right"/></svg></h4>
+              <p>Every folder and chapter in one tree</p>
+            </a>
+            <a href="notes.html">
+              <svg class="art" viewBox="0 0 240 120" aria-hidden="true">
+                <rect class="ds" x="64" y="8" width="112" height="106" rx="4"/>
+                <rect class="type" style="--i:0" x="80" y="26" width="72" height="4" fill="url(#dots2)"/>
+                <rect class="type" style="--i:1" x="80" y="42" width="80" height="4" fill="url(#dots)"/>
+                <rect class="type" style="--i:2" x="80" y="58" width="56" height="4" fill="url(#dots)"/>
+                <rect class="type" style="--i:3" x="80" y="74" width="70" height="4" fill="url(#dots)"/>
+                <rect class="type" style="--i:4" x="80" y="90" width="44" height="4" fill="url(#dots)"/>
+              </svg>
+              <h4><svg class="i"><use href="#i-notebook"/></svg>Notes<svg class="i go"><use href="#i-arrow-up-right"/></svg></h4>
+              <p>What you finished and what you wrote</p>
+            </a>
+            <a href="exercise.html">
+              <svg class="art" viewBox="0 0 240 120" aria-hidden="true">
+                <rect x="44" y="18" width="14" height="14" rx="2" fill="url(#dots2)"/><rect x="70" y="23" width="110" height="4" fill="url(#dots)"/>
+                <rect x="44" y="42" width="14" height="14" rx="2" fill="url(#dots2)"/><rect x="70" y="47" width="84" height="4" fill="url(#dots)"/>
+                <rect class="ds" x="44" y="66" width="14" height="14" rx="2"/><rect class="pulse" x="47" y="69" width="8" height="8" fill="url(#dots2)"/><rect x="70" y="71" width="120" height="4" fill="url(#dots)"/>
+                <rect class="ds" x="44" y="90" width="14" height="14" rx="2"/><rect x="70" y="95" width="70" height="4" fill="url(#dots)"/>
+              </svg>
+              <h4><svg class="i"><use href="#i-exam"/></svg>Exercise<svg class="i go"><use href="#i-arrow-up-right"/></svg></h4>
+              <p>Practice problems for each folder</p>
+            </a>
+            <a href="roadmap.html">
+              <svg class="art" viewBox="0 0 240 120" aria-hidden="true">
+                <path class="ds march" d="M30 94 C70 94 70 36 118 36 S168 94 208 52"/>
+                <circle cx="30" cy="94" r="7" fill="url(#dots2)"/><circle cx="118" cy="36" r="7" fill="url(#dots2)"/><circle class="pulse" cx="208" cy="52" r="9" fill="url(#dots2)"/>
+              </svg>
+              <h4><svg class="i"><use href="#i-map-trifold"/></svg>Roadmap<svg class="i go"><use href="#i-arrow-up-right"/></svg></h4>
+              <p>What to learn first and what comes next</p>
+            </a>
+            <a href="tools.html">
+              <svg class="art" viewBox="0 0 240 120" aria-hidden="true">
+                <rect class="ds" x="34" y="10" width="172" height="100" rx="6"/>
+                <circle cx="48" cy="24" r="2.5" fill="url(#dots2)"/><circle cx="58" cy="24" r="2.5" fill="url(#dots2)"/><circle cx="68" cy="24" r="2.5" fill="url(#dots2)"/>
+                <rect x="46" y="38" width="34" height="62" fill="url(#dots2)"/>
+                <rect x="92" y="42" width="70" height="4" fill="url(#dots)"/><rect x="104" y="56" width="84" height="4" fill="url(#dots)"/><rect x="104" y="70" width="52" height="4" fill="url(#dots)"/>
+                <rect class="blink" x="92" y="84" width="7" height="12" fill="url(#dots2)"/>
+              </svg>
+              <h4><svg class="i"><use href="#i-wrench"/></svg>Tools<svg class="i go"><use href="#i-arrow-up-right"/></svg></h4>
+              <p>Editors, boards and libraries worth using</p>
+            </a>
+            <a href="#" data-cmd>
+              <svg class="art" viewBox="0 0 240 120" aria-hidden="true">
+                <circle class="ds" cx="84" cy="54" r="32"/><circle class="pulse" cx="84" cy="54" r="20" fill="url(#dots2)"/>
+                <path class="ds" d="M108 78 L138 106"/>
+                <rect x="150" y="32" width="60" height="4" fill="url(#dots)"/><rect x="150" y="52" width="46" height="4" fill="url(#dots)"/><rect x="150" y="72" width="56" height="4" fill="url(#dots)"/>
+              </svg>
+              <h4><svg class="i"><use href="#i-magnifying-glass"/></svg>Search<svg class="i go"><use href="#i-arrow-up-right"/></svg></h4>
+              <p>Jump to any chapter or page</p>
+            </a>
+          </div>
+        </div>
+
+        <div class="pane" id="keys" data-tab="Shortcuts" data-icon="lightning" hidden>
+          <h2 class="ph">Shortcuts</h2>
+          <p class="lead">Keys that work on every page</p>
+          <div class="deco">
+            <div>
+              <h4>Go anywhere.</h4>
+              <p>Search every chapter and page from the title bar.</p>
+              <ul class="links keys">
+                <li><span class="k"><span class="kbd">Ctrl</span><span class="kbd">P</span></span></li>
+                <li><span class="k"><span class="kbd">Ctrl</span><span class="kbd">K</span></span><span class="dim">Same thing</span></li>
+              </ul>
+              <svg class="art" viewBox="0 0 240 120" aria-hidden="true">
+                <rect class="ln" x="14" y="12" width="212" height="26" rx="6"/>
+                <circle cx="30" cy="25" r="5" fill="url(#dots2)"/><rect x="44" y="23" width="70" height="4" fill="url(#dots)"/>
+                <rect x="14" y="52" width="150" height="4" fill="url(#dots)"/><rect x="14" y="68" width="190" height="4" fill="url(#dots)"/>
+                <rect x="14" y="84" width="120" height="4" fill="url(#dots)"/><rect x="14" y="100" width="170" height="4" fill="url(#dots)"/>
+              </svg>
+            </div>
+            <div>
+              <h4>Move around.</h4>
+              <p>Open the notes tree, or tuck the sidebar away.</p>
+              <ul class="links keys">
+                <li><span class="k"><span class="kbd">Ctrl</span><span class="kbd">Shift</span><span class="kbd">E</span></span><span class="dim">Open Main</span></li>
+                <li><span class="k"><span class="kbd">Ctrl</span><span class="kbd">B</span></span><span class="dim">Show or hide the sidebar</span></li>
+              </ul>
+              <svg class="art" viewBox="0 0 240 120" aria-hidden="true">
+                <rect class="ln" x="14" y="8" width="212" height="104" rx="6"/>
+                <rect x="24" y="18" width="52" height="84" fill="url(#dots2)"/>
+                <rect x="92" y="22" width="110" height="4" fill="url(#dots)"/><rect x="92" y="38" width="80" height="4" fill="url(#dots)"/>
+                <rect x="92" y="54" width="120" height="4" fill="url(#dots)"/><rect x="92" y="70" width="64" height="4" fill="url(#dots)"/><rect x="92" y="86" width="100" height="4" fill="url(#dots)"/>
+              </svg>
+            </div>
+            <div>
+              <h4>Pick and close.</h4>
+              <p>Choose a search result, or back out of anything open.</p>
+              <ul class="links keys">
+                <li><span class="k"><span class="kbd">↑</span><span class="kbd">↓</span><span class="kbd">Enter</span></span><span class="dim">Pick a result</span></li>
+                <li><span class="k"><span class="kbd">Esc</span></span><span class="dim">Close search or the developer card</span></li>
+              </ul>
+              <svg class="art" viewBox="0 0 240 120" aria-hidden="true">
+                <rect x="14" y="14" width="212" height="22" rx="4" fill="url(#dots2)"/>
+                <rect x="14" y="46" width="212" height="22" rx="4" fill="url(#dots)"/>
+                <rect x="14" y="78" width="212" height="22" rx="4" fill="url(#dots)"/>
+                <path class="ln" d="M196 20 L210 30 M210 20 L196 30"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="pane" id="data" data-tab="Your data" data-icon="hard-drives" hidden>
+          <h2 class="ph">Your data</h2>
+          <p class="lead">Saved in this browser only</p>
+          <p class="note wide">There is no account and nothing is sent anywhere. Clearing the site's data erases it all, so back it up from <a href="notes.html">Notes</a>.</p>
+          <div class="deco">
+            <div>
+              <h4>Chapters you finished.</h4>
+              <p>Which chapters you marked done. The count shows in the footer.</p>
+              <svg class="art" viewBox="0 0 240 120" aria-hidden="true">
+                <rect x="14" y="12" width="12" height="12" fill="url(#dots2)"/><rect x="38" y="16" width="120" height="4" fill="url(#dots)"/>
+                <rect x="14" y="38" width="12" height="12" fill="url(#dots2)"/><rect x="38" y="42" width="160" height="4" fill="url(#dots)"/>
+                <rect x="14" y="64" width="12" height="12" fill="url(#dots2)"/><rect x="38" y="68" width="100" height="4" fill="url(#dots)"/>
+                <rect class="ln" x="14" y="90" width="12" height="12"/><rect x="38" y="94" width="140" height="4" fill="url(#dots)"/>
+              </svg>
+            </div>
+            <div>
+              <h4>Notes you wrote.</h4>
+              <p>Your own note for each chapter, kept next to it.</p>
+              <svg class="art" viewBox="0 0 240 120" aria-hidden="true">
+                <rect class="ln" x="50" y="6" width="140" height="108" rx="4"/>
+                <rect x="64" y="22" width="70" height="4" fill="url(#dots2)"/>
+                <rect x="64" y="38" width="108" height="4" fill="url(#dots)"/><rect x="64" y="52" width="90" height="4" fill="url(#dots)"/>
+                <rect x="64" y="66" width="104" height="4" fill="url(#dots)"/><rect x="64" y="80" width="60" height="4" fill="url(#dots)"/>
+              </svg>
+            </div>
+            <div>
+              <h4>Exercise answers.</h4>
+              <p>What you solved, so you can pick up where you left off.</p>
+              <svg class="art" viewBox="0 0 240 120" aria-hidden="true">
+                <circle cx="22" cy="24" r="6" fill="url(#dots2)"/><rect x="40" y="20" width="150" height="8" fill="url(#dots2)"/><rect x="190" y="20" width="36" height="8" fill="url(#dots)"/>
+                <circle cx="22" cy="52" r="6" fill="url(#dots2)"/><rect x="40" y="48" width="110" height="8" fill="url(#dots2)"/><rect x="150" y="48" width="76" height="8" fill="url(#dots)"/>
+                <circle cx="22" cy="80" r="6" fill="url(#dots)"/><rect x="40" y="76" width="186" height="8" fill="url(#dots)"/>
+                <circle cx="22" cy="108" r="6" fill="url(#dots)"/><rect x="40" y="104" width="186" height="8" fill="url(#dots)"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="pane" id="built" data-tab="Built with" data-icon="code" hidden>
+          <h2 class="ph">Built with</h2>
+          <p class="lead">Small and plain on purpose</p>
+          <div class="deco four">
+            <div>
+              <h4>Catppuccin Mocha</h4>
+              <p>The colours, taken from the Catppuccin VS Code theme.</p>
+              <div class="demo swatches"><i style="background:var(--mauve)"></i><i style="background:var(--blue)"></i><i style="background:var(--green)"></i><i style="background:var(--peach)"></i><i style="background:var(--red)"></i><i style="background:var(--teal)"></i><i style="background:var(--yellow)"></i><i style="background:var(--pink)"></i></div>
+              <a class="out" href="https://catppuccin.com" target="_blank" rel="noopener">catppuccin.com<svg class="i"><use href="#i-arrow-up-right"/></svg></a>
+            </div>
+            <div>
+              <h4>Phosphor Icons</h4>
+              <p>Every icon on the site.</p>
+              <div class="demo icons"><svg class="i"><use href="#i-code"/></svg><svg class="i"><use href="#i-folder-open"/></svg><svg class="i"><use href="#i-wrench"/></svg><svg class="i"><use href="#i-brain"/></svg><svg class="i"><use href="#i-cpu"/></svg><svg class="i"><use href="#i-robot"/></svg></div>
+              <a class="out" href="https://phosphoricons.com" target="_blank" rel="noopener">phosphoricons.com<svg class="i"><use href="#i-arrow-up-right"/></svg></a>
+            </div>
+            <div>
+              <h4>LINE Seed</h4>
+              <p>The font, in one weight, kept small.</p>
+              <div class="demo type">Aa</div>
+              <a class="out" href="https://seed.line.me" target="_blank" rel="noopener">seed.line.me<svg class="i"><use href="#i-arrow-up-right"/></svg></a>
+            </div>
+            <div>
+              <h4>Plain web</h4>
+              <p>HTML, CSS and JavaScript. No framework and no build step.</p>
+              <div class="demo type">&lt;/&gt;</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pane" id="direction" data-tab="Direction" data-icon="signpost" hidden>
+          <h2 class="ph">Direction</h2>
+          <p class="lead">Where Coder is heading, in three phases</p>
+          <div class="deco phases">
+            <div>
+              <span class="dim">Phase 1</span>
+              <h4>The major, all tech.</h4>
+              <p>Finish every subject in the major, starting with the technical ones: Python, circuits and Arduino, robotics, Raspberry Pi and computer vision, the LINE chatbot and the AI track.</p>
+              <svg class="art" viewBox="0 0 300 150" aria-hidden="true">
+                <rect class="ds" x="40" y="12" width="220" height="126" rx="6"/>
+                <path class="ds" d="M40 36 H260"/>
+                <circle cx="56" cy="24" r="3" fill="url(#dots2)"/><circle cx="68" cy="24" r="3" fill="url(#dots2)"/><circle cx="80" cy="24" r="3" fill="url(#dots2)"/>
+                <path class="ds" d="M58 52 L67 59 L58 66"/><rect x="78" y="57" width="96" height="4" fill="url(#dots2)"/>
+                <rect x="58" y="76" width="140" height="4" fill="url(#dots)"/><rect x="58" y="88" width="104" height="4" fill="url(#dots)"/><rect x="58" y="100" width="124" height="4" fill="url(#dots)"/>
+                <path class="ds" d="M58 116 L67 123 L58 130"/><rect class="blink" x="78" y="117" width="8" height="14" fill="url(#dots2)"/>
+              </svg>
+            </div>
+            <div>
+              <span class="dim">Phase 2</span>
+              <h4>General subjects.</h4>
+              <p>Grow out to the general classes, starting with the ones engineering leans on: math and physics for engineering, then the other general classes after.</p>
+              <svg class="art" viewBox="0 0 300 150" aria-hidden="true">
+                <path class="ds" d="M150 42 C120 30 78 30 40 40 V114 C78 104 120 104 150 116 Z"/>
+                <path class="ds" d="M150 42 C180 30 222 30 260 40 V114 C222 104 180 104 150 116 Z"/>
+                <rect x="58" y="54" width="76" height="4" fill="url(#dots2)"/><rect x="58" y="68" width="68" height="4" fill="url(#dots)"/><rect x="58" y="80" width="76" height="4" fill="url(#dots)"/><rect x="58" y="92" width="52" height="4" fill="url(#dots)"/>
+                <rect x="166" y="54" width="76" height="4" fill="url(#dots2)"/><rect x="166" y="68" width="68" height="4" fill="url(#dots)"/><rect x="166" y="80" width="76" height="4" fill="url(#dots)"/><rect x="166" y="92" width="52" height="4" fill="url(#dots)"/>
+                <path class="ds flip" d="M150 42 C180 34 214 34 244 42 V112 C214 106 180 106 150 114 Z"/>
+              </svg>
+            </div>
+            <div>
+              <span class="dim">Phase 3</span>
+              <h4>Other fields.</h4>
+              <p>Open the doors to subjects outside engineering, like history, Thai, biology and medicine, and whatever else comes along. The list isn't decided yet.</p>
+              <svg class="art" viewBox="0 0 300 150" aria-hidden="true">
+                <defs><linearGradient id="dr3" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#000"/></linearGradient><mask id="dm3"><rect width="300" height="150" fill="url(#dr3)"/></mask></defs>
+                <path d="M170 142 L270 142 L270 142 L170 112 Z" fill="url(#dots2)" mask="url(#dm3)"/>
+                <path d="M170 24 L270 6 L270 144 L170 124 Z" fill="url(#dots)" mask="url(#dm3)"/>
+                <path class="ds" d="M92 12 H170 V138 H92 Z"/>
+                <path class="ds flip" d="M92 12 H146 V138 H92 Z"/>
+                <circle cx="136" cy="76" r="3" fill="url(#dots2)"/>
+                <path class="ds" d="M30 140 H270"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="pane" id="changelog" data-tab="Changelog" data-icon="clock" hidden>
+          <h2 class="ph">Changelog</h2>
+          <p class="lead">What was added, newest first</p>
+          <div class="rows">
+            <article class="row">
+              <div class="meta">
+                <h4>0.1.0</h4>
+                <span class="dim">2026-11-18</span>
+                <p>The first version.</p>
+              </div>
+              <div class="groups">
+                <div>
+                  <h5>Pages</h5>
+                  <ul class="links log">
+                    <li><span class="plain"><svg class="i"><use href="#i-house"/></svg>Welcome page with start links, recent chapters and walkthroughs</span></li>
+                    <li><span class="plain"><svg class="i"><use href="#i-folder-open"/></svg>Main tree: 16 folders, 67 chapters (placeholders)</span></li>
+                    <li><span class="plain"><svg class="i"><use href="#i-info"/></svg>About, split into closable tabs</span></li>
+                  </ul>
+                </div>
+                <div>
+                  <h5>Shell</h5>
+                  <ul class="links log">
+                    <li><span class="plain"><svg class="i"><use href="#i-magnifying-glass"/></svg>Search in the title bar</span></li>
+                    <li><span class="plain"><svg class="i"><use href="#i-user-circle"/></svg>Developer card in the footer</span></li>
+                    <li><span class="plain"><svg class="i"><use href="#i-code"/></svg>One shared shell for every page</span></li>
+                  </ul>
+                </div>
+                <div>
+                  <h5>Look</h5>
+                  <ul class="links log">
+                    <li><span class="plain"><svg class="i"><use href="#i-sparkle"/></svg>Catppuccin Mocha theme</span></li>
+                    <li><span class="plain"><svg class="i"><use href="#i-eye"/></svg>Custom tooltips</span></li>
+                    <li><span class="plain"><svg class="i"><use href="#i-list"/></svg>Thin scrollbars that blend in</span></li>
+                  </ul>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <div class="pane" id="developer" data-tab="Developer" data-icon="user-circle" hidden>
+          <h2 class="ph">Developer</h2>
+          <p class="lead">Mr. Raphee Rattanamanoonporn</p>
+          <p class="note wide">Coder is made and kept by one person. Reach out through any of these, or <a href="#" data-dev>open the developer card</a>.</p>
+          <div class="rows">
+            <a class="row link" href="https://github.com/Ray0737" target="_blank" rel="noopener">
+              <svg class="i big"><use href="#i-github-logo"/></svg>
+              <div class="txt"><h4>GitHub</h4><p>Ray0737</p></div>
+              <span class="out">Open<svg class="i"><use href="#i-arrow-up-right"/></svg></span>
+            </a>
+            <a class="row link" href="mailto:raphee.rattanamanoonporn@gmail.com">
+              <svg class="i big"><use href="#i-envelope-simple"/></svg>
+              <div class="txt"><h4>Email</h4><p>raphee.rattanamanoonporn@gmail.com</p></div>
+              <span class="out">Write<svg class="i"><use href="#i-arrow-up-right"/></svg></span>
+            </a>
+            <a class="row link" href="https://github.com/eai-spsm" target="_blank" rel="noopener">
+              <svg class="i big"><use href="#i-buildings"/></svg>
+              <div class="txt"><h4>Major GitHub</h4><p>eai-spsm</p></div>
+              <span class="out">Open<svg class="i"><use href="#i-arrow-up-right"/></svg></span>
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+<script src="shell.js"></script>
+</body>
+</html>

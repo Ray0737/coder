@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Welcome · Coder</title>
+<meta name="description" content="Notes on Python, microcontrollers, robots, AI and more, laid out like a code editor.">
+<meta name="theme-color" content="#11111b">
+<link rel="preload" href="assets/fonts/lineseedsansth_rg.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="home">
+<template id="outline" data-title="Home" data-icon="house">
+        <li><a href="#welcome"><svg class="i"><use href="#i-sparkle"/></svg>Welcome</a></li>
+        <li><a href="about.html#overview"><svg class="i"><use href="#i-info"/></svg>Overview</a></li>
+        <li><a href="about.html#here"><svg class="i"><use href="#i-folder-open"/></svg>What's here</a></li>
+        <li><a href="about.html#keys"><svg class="i"><use href="#i-lightning"/></svg>Shortcuts</a></li>
+        <li><a href="about.html#data"><svg class="i"><use href="#i-hard-drives"/></svg>Your data</a></li>
+        <li><a href="about.html#built"><svg class="i"><use href="#i-code"/></svg>Built with</a></li>
+        <li><a href="about.html#direction"><svg class="i"><use href="#i-signpost"/></svg>Direction</a></li>
+        <li><a href="about.html#changelog"><svg class="i"><use href="#i-clock"/></svg>Changelog</a></li>
+        <li><a href="about.html#developer"><svg class="i"><use href="#i-user-circle"/></svg>Developer</a></li>
+</template>
+
+  <main class="ed">
+    <div class="tabs" role="tablist">
+      <div class="tab on" role="tab" aria-selected="true"><svg class="i"><use href="#i-sparkle"/></svg>Welcome</div>
+    </div>
+    <div class="crumb">Coder › Welcome</div>
+    <div class="view">
+      <div class="welcome">
+        <h1 id="welcome">Coder</h1>
+        <p class="lead">Code, circuits, robots and AI, one chapter at a time</p>
+        <div class="cols">
+          <div>
+            <section>
+              <h3 id="start">Start</h3>
+              <ul class="links">
+                <li><a href="#" data-open="main"><svg class="i"><use href="#i-folder-open"/></svg>Browse notes</a></li>
+                <li><a href="#" data-cmd><svg class="i"><use href="#i-magnifying-glass"/></svg>Go to a chapter</a></li>
+                <li><a href="#" data-group="Python"><svg class="i"><use href="#i-terminal-window"/></svg>Open Python</a></li>
+                <li><a href="#" data-group="Math for AI"><svg class="i"><use href="#i-brain"/></svg>Open the AI track</a></li>
+                <li><a href="tools.html"><svg class="i"><use href="#i-wrench"/></svg>Recommended tools</a></li>
+              </ul>
+            </section>
+            <section>
+              <h3 id="recent-h">Recent</h3>
+              <ul class="links" id="recent"></ul>
+            </section>
+          </div>
+          <div>
+            <section class="walk">
+              <h3 id="walk">Walkthroughs</h3>
+              <a href="#" data-group="Python"><svg class="i"><use href="#i-terminal-window"/></svg><span><b>Start with Python</b>Weekly exercises up to a Tkinter app</span></a>
+              <a href="#" data-group="Circuits &amp; Arduino"><svg class="i"><use href="#i-cpu"/></svg><span><b>Circuits to robots</b>Ohm's law, Arduino, ESP32, Raspberry Pi</span></a>
+              <a href="#" data-group="Math for AI"><svg class="i"><use href="#i-brain"/></svg><span><b>The AI track</b>Math, machine learning, up to LLMs</span></a>
+              <a href="#" data-open="main"><svg class="i"><use href="#i-lightbulb"/></svg><span><b>How notes work</b>Each chapter is one file, read top to bottom</span></a>
+            </section>
+          </div>
+        </div>
+        <div class="cols more">
+          <section>
+            <h3 id="major">Our Major</h3>
+            <ul class="links">
+              <li><a href="major.html"><svg class="i"><use href="#i-graduation-cap"/></svg>About the major</a><span class="dim">What it is and its classes</span></li>
+              <li><a href="projects.html"><svg class="i"><use href="#i-cube"/></svg>Projects</a><span class="dim">What we built in class</span></li>
+              <li><a href="materials.html"><svg class="i"><use href="#i-books"/></svg>Materials</a><span class="dim">Class files and code</span></li>
+            </ul>
+          </section>
+          <section>
+            <h3 id="data">Your data</h3>
+            <p class="note">Chapters done, your notes and exercise answers stay in this browser. Nothing is sent anywhere. Back them up from <a href="notes.html">Notes</a>.</p>
+          </section>
+        </div>
+        <p class="startup"><svg class="i"><use href="#i-list-checks"/></svg>Pick a file in Main to begin</p>
+      </div>
+    </div>
+  </main>
+
+<script src="shell.js"></script>
+</body>
+</html>
