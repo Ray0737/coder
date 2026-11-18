@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Notes · Coder</title>
+<meta name="description" content="Every note you have written in any chapter, in one place, plus your progress and a backup. Everything stays in this browser.">
+<meta name="theme-color" content="#11111b">
+<link rel="preload" href="assets/fonts/lineseedsansth_rg.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="notes">
+
+  <main class="ed">
+    <div class="tabs" role="tablist"></div>
+    <div class="crumb">Coder › Notes</div>
+    <div class="view">
+      <div class="welcome wide">
+
+        <div class="pane" id="mine" data-tab="All notes" data-icon="notebook">
+          <div id="nlib">
+          <h1>Notes</h1>
+          <div class="nhead">
+            <p class="lead" id="nsub">Everything you wrote, in one place</p>
+            <input id="nq" class="nsearch" type="search" placeholder="Search your notes" aria-label="Search your notes" autocomplete="off">
+          </div>
+          <div id="nlist"></div>
+          </div>
+          <div id="nread" hidden></div>
+        </div>
+
+        <div class="pane" id="progress" data-tab="Progress" data-icon="chart-line-up" hidden>
+          <h2 class="ph">Progress</h2>
+          <p class="lead">Where you are in the course</p>
+          <div class="stats">
+            <div><b id="n-done" style="color:var(--green)">0/0</b><span>Chapters done</span></div>
+            <div><b id="n-streak" style="color:var(--peach)">0</b><span>Day streak</span></div>
+            <div><b id="n-notes" style="color:var(--blue)">0</b><span>Notes written</span></div>
+            <div><a id="n-last" class="lastlink" href="#">None yet</a><span>Last opened</span></div>
+          </div>
+          <div class="plist" id="plist"></div>
+        </div>
+
+        <div class="pane" id="backup" data-tab="Back up" data-icon="hard-drives" hidden>
+          <h2 class="ph">Back up</h2>
+          <p class="lead">Your progress and notes live in this browser only, so keep a copy</p>
+          <div class="setlist">
+            <div class="set">
+              <span class="si"><svg class="i"><use href="#i-arrow-up-right"/></svg></span>
+              <div class="st"><b>Export</b><p>Download everything as one file: chapters done, notes, streak and recent chapters.</p></div>
+              <button class="btn ghost" id="exp" type="button">Download backup</button>
+            </div>
+            <div class="set">
+              <span class="si"><svg class="i"><use href="#i-folder-open"/></svg></span>
+              <div class="st"><b>Import</b><p>Load a backup file. Chapters you finished are added to the ones you already have, and notes in the file replace notes for the same chapter.</p></div>
+              <label class="btn ghost" for="imp">Choose a file</label>
+              <input id="imp" type="file" accept="application/json,.json" hidden>
+            </div>
+          </div>
+          <p class="note wide" id="bmsg" style="margin-top:14px"></p>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+<script src="shell.js"></script>
+<script src="md.js"></script>
+<script src="noteeditor.js"></script>
+<script>
+const days = d => d.toISOString().slice(0, 10);
+const doneList = load('coder:done') || [];
+const fromId = id => all.find(x => slug(x.g) + '/' + slug(x.n) === id);
+const colourOf = g => notes.find(n => n[0] === g);
+
+// ---- every note written in any chapter, in course order
+const mine = [];
+for (let i = 0; i < localStorage.length; i++) {
+  const k = localStorage.key(i);
+  if (!k.startsWith('coder:notes:')) continue;
+  const id = k.slice('coder:notes:'.length), e = fromId(id), text = load(k);
+  if (e && typeof text === 'string' && text.trim()) mine.push({ id, e, text, order: all.indexOf(e) });
+}
+mine.sort((a, b) => a.order - b.order);
+
+function drawNotes() {
+  const q = $('#nq').value.trim().toLowerCase();
+  const shown = mine.filter(m => !q || (m.text + ' ' + m.e.n + ' ' + m.e.g).toLowerCase().includes(q));
+  $('#nsub').textContent = mine.length
+    ? (q ? `${shown.length} of ${mine.length} notes match` : `${mine.length} ${mine.length === 1 ? 'note' : 'notes'} across ${new Set(mine.map(m => m.e.g)).size} ${new Set(mine.map(m => m.e.g)).size === 1 ? 'class' : 'classes'}`)
+    : 'Everything you wrote, in one place';
+  if (!mine.length) {
+    $('#nlist').innerHTML = `<div class="nempty">${icon('notebook')}<b>No notes yet</b><p>Open any chapter and write in the note panel beside it. Whatever you write there shows up here, grouped by class.</p><a class="btn" href="chapter.html#basic-python/printing-and-getting-input">Open the first chapter</a></div>`;
+    return;
+  }
+  if (!shown.length) { $('#nlist').innerHTML = '<p class="note wide">No note matches that search.</p>'; return; }
+  $('#nlist').innerHTML = '<div class="ngrid">' + shown.map(m => {
+    const f = colourOf(m.e.g);
+    return `<article class="ncard" tabindex="0" data-open="${esc(m.id)}" style="--c:var(--${f[2]})"><span class="ni">${icon(f[1])}</span><b class="nt">${esc(m.e.n)}</b><span class="ng">${esc(m.e.g)}</span><div class="nbody pv lesson">${mdParse(m.text).html}</div><footer><a href="chapter.html#${esc(m.id)}">Open chapter</a><button type="button" data-copy="${esc(m.id)}">Copy</button></footer></article>`;
+  }).join('') + '</div>';
+}
+$('#nq').oninput = drawNotes;
+
+const copyText = (m, b) => (navigator.clipboard ? navigator.clipboard.writeText(m.text) : Promise.reject())
+  .then(() => { const t = b.textContent; b.textContent = 'Copied'; setTimeout(() => b.textContent = t, 1400); }).catch(() => {});
+
+// open one note in the full editor; Back or Esc returns to the cards
+let openId = null;
+function readNote(id) {
+  const m = mine.find(x => x.id === id), f = colourOf(m.e.g);
+  openId = id;
+  $('#nread').innerHTML = `<div class="nsolo" style="--c:var(--${f[2]})">
+    <div class="nbar">
+      <button type="button" class="nback" data-back>${icon('caret-left')}All notes</button>
+      <span class="ntitle"><span class="ni">${icon(f[1])}</span><span><b>${esc(m.e.n)}</b><i>${esc(m.e.g)}</i></span></span>
+      <a class="btn ghost" href="chapter.html#${esc(m.id)}">Open chapter</a>
+    </div>
+    <div class="notepane" id="nedit"></div>
+  </div>`;
+  mountNote($('#nedit'), id, { onSave: text => { m.text = text; } });
+  $('#nlib').hidden = true; $('#nread').hidden = false;
+  $('.view').scrollTop = 0;
+}
+function closeNote() {
+  if (openId) {
+    const m = mine.find(x => x.id === openId), t = load('coder:notes:' + openId);
+    if (typeof t === 'string' && t.trim()) m.text = t; else mine.splice(mine.indexOf(m), 1);   // an emptied note is gone
+    openId = null;
+  }
+  $('#nread').hidden = true; $('#nlib').hidden = false;
+  drawNotes();
+}
+$('#nread').addEventListener('click', e => { if (e.target.closest('[data-back]')) closeNote(); });
+$('#nlist').addEventListener('click', e => {
+  const b = e.target.closest('[data-copy]');
+  if (b) return copyText(mine.find(x => x.id === b.dataset.copy), b);
+  if (e.target.closest('a')) return;
+  const card = e.target.closest('.ncard');
+  if (card) readNote(card.dataset.open);
+});
+$('#nlist').addEventListener('keydown', e => {
+  const card = e.target.closest && e.target.closest('.ncard');
+  if (card && e.target === card && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); readNote(card.dataset.open); }
+});
+addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#nread').hidden) closeNote(); });
+drawNotes();
+
+// ---- progress
+$('#n-done').textContent = doneList.filter(fromId).length + '/' + all.length;
+const st = load('coder:streak');
+const alive = st && (st.last === days(new Date()) || st.last === days(new Date(Date.now() - 864e5)));
+$('#n-streak').textContent = alive ? st.days : 0;
+$('#n-notes').textContent = mine.length;
+const lastId = (load('coder:recent') || [])[0], last = lastId && fromId(lastId);
+if (last) { $('#n-last').textContent = last.n; $('#n-last').href = 'chapter.html#' + lastId; }
+$('#plist').innerHTML = notes.filter(n => n[3].some(c => c !== 'Coming soon' && !c.startsWith('# '))).map(([g, ic, c, ns, yr]) => {
+  const real = ns.filter(n => n !== 'Coming soon' && !n.startsWith('# '));
+  const got = real.filter(n => doneList.includes(slug(g) + '/' + slug(n))).length;
+  return `<div class="prow" style="--c:var(--${c})"><span class="pl">${icon(ic)}<b>${esc(g)}</b><i>${yr.split(' ')[0]}</i></span><span class="pc">${got}/${real.length}</span><span class="bar2"><i style="width:${Math.round(got / real.length * 100)}%"></i></span></div>`;
+}).join('');
+
+// ---- back up
+$('#exp').onclick = () => {
+  const out = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k.startsWith('coder:')) out[k] = localStorage.getItem(k);
+  }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' }));
+  a.download = 'coder-backup-' + days(new Date()) + '.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  $('#bmsg').textContent = 'Backup downloaded (' + Object.keys(out).length + ' items).';
+};
+$('#imp').onchange = e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  f.text().then(t => {
+    const data = JSON.parse(t);
+    let n = 0;
+    Object.entries(data).forEach(([k, v]) => {
+      if (!k.startsWith('coder:') || typeof v !== 'string') return;
+      if (k === 'coder:done') {
+        const merged = [...new Set([...(load('coder:done') || []), ...JSON.parse(v)])];
+        localStorage.setItem(k, JSON.stringify(merged));
+      } else localStorage.setItem(k, v);
+      n++;
+    });
+    $('#bmsg').textContent = 'Imported ' + n + ' items. Reloading...';
+    setTimeout(() => location.reload(), 600);
+  }).catch(() => { $('#bmsg').textContent = 'That file could not be read as a Coder backup.'; });
+};
+</script>
+</body>
+</html>

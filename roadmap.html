@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Roadmap · Coder</title>
+<meta name="description" content="Every class in order, from M.4 to M.6, with the chapters inside each one.">
+<meta name="theme-color" content="#11111b">
+<link rel="preload" href="assets/fonts/lineseedsansth_rg.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="roadmap">
+
+  <main class="ed">
+    <div class="tabs" role="tablist"><div class="tab on" role="tab" aria-selected="true"><svg class="i"><use href="#i-map-trifold"/></svg>Roadmap</div></div>
+    <div class="crumb">Coder › Roadmap</div>
+    <div class="view">
+      <div class="welcome wide road">
+        <div class="rh">
+          <div>
+            <h1>Roadmap</h1>
+            <p class="lead">Follow the classes from M.4 to M.6, one chapter at a time</p>
+          </div>
+          <a class="btn" id="start" href="#"><svg class="i"><use href="#i-rocket-launch"/></svg><span>Start your journey</span></a>
+        </div>
+
+        <div class="stats">
+          <div><b id="s-done" style="color:var(--green)">0</b><span>Completed</span></div>
+          <div><b id="s-prog" style="color:var(--peach)">0</b><span>In progress</span></div>
+          <div><b id="s-avail" style="color:var(--blue)">0</b><span>Available</span></div>
+          <div><b id="s-ch">0/0</b><span>Chapters done</span></div>
+        </div>
+
+        <div class="pathwrap"><div class="path" id="path"></div></div>
+        <p class="note wide" style="margin-top:14px">Your progress saves in this browser. You will be able to tick chapters off once the chapter pages are in.</p>
+      </div>
+    </div>
+  </main>
+
+<script src="shell.js"></script>
+<script>
+// the class list and the chapter slugs come from shell.js, so the roadmap and the Main tree always agree
+const doneSet = new Set(load('coder:done') || []);
+let nDone = 0, nTotal = 0, cDone = 0, cProg = 0, cAvail = 0;
+$('#path').innerHTML = notes.map(([g, ic, c, ns, yr]) => {
+  const real = ns.filter(n => !n.startsWith('# ') && n !== 'Coming soon');
+  const soon = !real.length;
+  const got = real.filter(n => doneSet.has(slug(g) + '/' + slug(n))).length;
+  nTotal += real.length; nDone += got;
+  const state = soon ? 'soon' : got === real.length ? 'done' : got ? 'prog' : 'avail';
+  if (state === 'done') cDone++; else if (state === 'prog') cProg++; else if (state === 'avail') cAvail++;
+  const items = ns.map(n => n.startsWith('# ') ? `<li class="sec">${esc(n.slice(2))}</li>`
+    : n === 'Coming soon' ? '<li class="soonli">Coming soon</li>'
+    : `<li><a class="ch${doneSet.has(slug(g) + '/' + slug(n)) ? ' on' : ''}" href="${href(g, n)}" title="${esc(n)}"><i></i><span>${esc(n)}</span></a></li>`).join('');
+  return `<div class="mod ${state}" data-g="${esc(g)}" style="--c:var(--${c})"><div class="mh"><b>${esc(g)}</b><span>${yr.split(' ')[0]}${soon ? '' : ' · ' + got + '/' + real.length}</span></div><div class="ring">${icon(ic)}${state === 'done' ? icon('check-circle').replace('class="i"', 'class="i ck"') : ''}</div><ul class="chs">${items}</ul></div>`;
+}).join('');
+$('#s-done').textContent = cDone; $('#s-prog').textContent = cProg; $('#s-avail').textContent = cAvail;
+$('#s-ch').textContent = nDone + '/' + nTotal;
+
+// the button jumps to the first chapter you have not done yet
+const next = all.find(x => !doneSet.has(slug(x.g) + '/' + slug(x.n)));
+const startBtn = $('#start');
+if (!next) startBtn.hidden = true;
+else {
+  if (nDone) startBtn.querySelector('span').textContent = 'Continue learning';
+  startBtn.href = href(next.g, next.n);
+}
+</script>
+</body>
+</html>

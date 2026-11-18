@@ -52,6 +52,7 @@ const SPRITE = `
 <symbol id="i-ruler" viewBox="0 0 256 256"><path d="M235.32,73.37,182.63,20.69a16,16,0,0,0-22.63,0L20.68,160a16,16,0,0,0,0,22.63l52.69,52.68a16,16,0,0,0,22.63,0L235.32,96A16,16,0,0,0,235.32,73.37ZM84.68,224,32,171.31l32-32,26.34,26.35a8,8,0,0,0,11.32-11.32L75.31,128,96,107.31l26.34,26.35a8,8,0,0,0,11.32-11.32L107.31,96,128,75.31l26.34,26.35a8,8,0,0,0,11.32-11.32L139.31,64l32-32L224,84.69Z"/></symbol>
 <symbol id="i-desktop" viewBox="0 0 256 256"><path d="M208,40H48A24,24,0,0,0,24,64V176a24,24,0,0,0,24,24h72v16H96a8,8,0,0,0,0,16h64a8,8,0,0,0,0-16H136V200h72a24,24,0,0,0,24-24V64A24,24,0,0,0,208,40ZM48,56H208a8,8,0,0,1,8,8v80H40V64A8,8,0,0,1,48,56ZM208,184H48a8,8,0,0,1-8-8V160H216v16A8,8,0,0,1,208,184Z"/></symbol>
 <symbol id="i-globe" viewBox="0 0 256 256"><path d="M128,24h0A104,104,0,1,0,232,128,104.12,104.12,0,0,0,128,24Zm88,104a87.61,87.61,0,0,1-3.33,24H174.16a157.44,157.44,0,0,0,0-48h38.51A87.61,87.61,0,0,1,216,128ZM102,168H154a115.11,115.11,0,0,1-26,45A115.27,115.27,0,0,1,102,168Zm-3.9-16a140.84,140.84,0,0,1,0-48h59.88a140.84,140.84,0,0,1,0,48ZM40,128a87.61,87.61,0,0,1,3.33-24H81.84a157.44,157.44,0,0,0,0,48H43.33A87.61,87.61,0,0,1,40,128ZM154,88H102a115.11,115.11,0,0,1,26-45A115.27,115.27,0,0,1,154,88Zm52.33,0H170.71a135.28,135.28,0,0,0-22.3-45.6A88.29,88.29,0,0,1,206.37,88ZM107.59,42.4A135.28,135.28,0,0,0,85.29,88H49.63A88.29,88.29,0,0,1,107.59,42.4ZM49.63,168H85.29a135.28,135.28,0,0,0,22.3,45.6A88.29,88.29,0,0,1,49.63,168Zm98.78,45.6a135.28,135.28,0,0,0,22.3-45.6h35.66A88.29,88.29,0,0,1,148.41,213.6Z"/></symbol>
+<symbol id="i-puzzle-piece" viewBox="0 0 256 256"><path d="M220.27,158.54a8,8,0,0,0-7.7-.46,20,20,0,1,1,0-36.16A8,8,0,0,0,224,114.69V72a16,16,0,0,0-16-16H171.78a35.36,35.36,0,0,0,.22-4,36.11,36.11,0,0,0-11.36-26.24,36,36,0,0,0-60.55,23.62,36.56,36.56,0,0,0,.14,6.62H64A16,16,0,0,0,48,72v32.22a35.36,35.36,0,0,0-4-.22,36.12,36.12,0,0,0-26.24,11.36,35.7,35.7,0,0,0-9.69,27,36.08,36.08,0,0,0,33.31,33.6,35.68,35.68,0,0,0,6.62-.14V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V165.31A8,8,0,0,0,220.27,158.54ZM208,208H64V165.31a8,8,0,0,0-11.43-7.23,20,20,0,1,1,0-36.16A8,8,0,0,0,64,114.69V72h46.69a8,8,0,0,0,7.23-11.43,20,20,0,1,1,36.16,0A8,8,0,0,0,161.31,72H208v32.23a35.68,35.68,0,0,0-6.62-.14A36,36,0,0,0,204,176a35.36,35.36,0,0,0,4-.22Z"/></symbol>
 <symbol id="i-text-aa" viewBox="0 0 256 256"><path d="M87.24,52.59a8,8,0,0,0-14.48,0l-64,136a8,8,0,1,0,14.48,6.81L39.9,160h80.2l16.66,35.4a8,8,0,1,0,14.48-6.81ZM47.43,144,80,74.79,112.57,144ZM200,96c-12.76,0-22.73,3.47-29.63,10.32a8,8,0,0,0,11.26,11.36c3.8-3.77,10-5.68,18.37-5.68,13.23,0,24,9,24,20v3.22A42.76,42.76,0,0,0,200,128c-22.06,0-40,16.15-40,36s17.94,36,40,36a42.73,42.73,0,0,0,24-7.25,8,8,0,0,0,16-.75V132C240,112.15,222.06,96,200,96Zm0,88c-13.23,0-24-9-24-20s10.77-20,24-20,24,9,24,20S213.23,184,200,184Z"/></symbol>
 `;
 const HEADER = `
@@ -81,7 +82,6 @@ const HEADER = `
   </header>
 `;
 const ACT_REST = `
-    <button data-panel="main" title="Main (Ctrl+Shift+E)" aria-label="Main"><svg class="i"><use href="#i-folder-open"/></svg></button>
     <a href="notes.html" title="Notes" aria-label="Notes"><svg class="i"><use href="#i-notebook"/></svg></a>
     <a href="exercise.html" title="Exercise" aria-label="Exercise"><svg class="i"><use href="#i-exam"/></svg></a>
     <a href="roadmap.html" title="Roadmap" aria-label="Roadmap"><svg class="i"><use href="#i-map-trifold"/></svg></a>
@@ -163,48 +163,44 @@ const SETTINGS = `
 `;
 // ponytail: chapter list lives here until a data.js exists; chapter hrefs are placeholders.
 const notes = [
-  ['Python','terminal-window','yellow',['Weekly exercises','ATM terminal exam','Tkinter study planner']],
-  ['Circuits & Arduino','cpu','peach',['Ohm\'s law','Series and parallel','Breadboard basics','PWM','Servo','Ultrasonic','I2C LCD']],
-  ['Robotics','robot','green',['ESP32 differential drive','Onshape CAD','Dynamixel protocol']],
-  ['LINE Chatbot','chat-text','teal',['Dialogflow intents','Apps Script webhook','Sheets database','Flex Message']],
-  ['Raspberry Pi','circuitry','red',['Hand tracking','Servo control','YOLOv8 detection']],
-  ['Computer Vision','eye','sky',['Image processing','Face and hand detection','YOLO detection']],
-  ['Math for AI','calculator','lavender',['Linear algebra','Calculus','Gradient descent','Probability']],
-  ['Machine Learning','chart-line-up','sapphire',['Regression','SVM','Decision tree','K-means','PCA']],
-  ['Neural Networks','brain','mauve',['Perceptron','Backprop','Dropout','BatchNorm','Optimizers']],
-  ['CNN','camera','pink',['Convolution','Pooling','Feature maps','ResNet']],
-  ['RNN / LSTM','path','maroon',['Sequences','Gates','Vanishing gradient']],
-  ['Transformer','sparkle','flamingo',['Self-attention','Multi-head','Positional encoding']],
-  ['Generative','lightbulb','yellow',['VAE','GAN','Diffusion','Latent space']],
-  ['LLM & RL','robot','peach',['Language models','RLHF','Q-learning','Policy']],
-  ['Math','calculator','blue',['Sets and logic','Real numbers','Functions','Analytic geometry','Conic sections']],
-  ['Physics','atom','peach',['Kinematics','Newton\'s laws','Projectile and circular','Equilibrium','Incline','Energy','Momentum']],
+  ['Basic Python','terminal-window','yellow',['# Core Python','Printing and getting input','Lists','Conditionals','Loops','Functions','Tuples and dictionaries','Object-oriented programming','Tkinter GUI','Capstone: Tkinter study planner','# Prep for AI Development','os: files and folders','sys: arguments and the interpreter','NumPy: arrays','Matplotlib: plots','Pandas: tables'],'M.4 Foundations'],
+  ['Circuits, Arduino & GPIO','cpu','peach',['# Circuit basics','Voltage, current and resistance','Series, parallel and mixed circuits','Circuit diagrams and measuring','# Get to know the hardware','The Arduino board','Pins deep dive: digital, PWM and I2C','Breadboard basics','# Software','Arduino IDE and the sketch','# Wire it up','Resistors and the voltage divider','LED: blink, and active-high vs active-low','Button: digital input, pull-up and pull-down','LCD: wiring I2C','Ultrasonic sensor (HC-SR04)','Servo motor with PWM'],'M.4 Foundations'],
+  ['Physics in Robotics','robot','green',['# Physics principles','Linear motion','Circular motion','Differential drive: distance and angle to motor speed','# Robot setup','Hardware: ESP32 and motors','# Code setup','Project setup','Motor protocol: Dynamixel 2.0','# CAD','Chassis design in Onshape','# Final mission','The final mission'],'M.4 Foundations'],
+  ['LINE Chatbot','chat-text','teal',['# Chatbot basics','What a chatbot is and how it is built','Rule-based NLP: matching what people say','# Dialogflow','Dialogflow intents','# LINE','LINE Official Account and Messaging API','# Backend','Webhook and database: Apps Script and Google Sheets','# Replies and wrap-up','Rich replies: Flex Messages','End to end: check stock'],'M.4 Foundations'],
+  ['Raspberry Pi Vision','circuitry','red',['Equipment','Getting the Pi running','Direct HDMI connection','SSH from the VS Code terminal','Editing on the Pi: vim and nano','Terminal command cheatsheet','Picking the right Python interpreter','GPIO basics: LED and button','Servo control with PWM','Hand tracking with MediaPipe','YOLOv8 object detection','Running lightweight','Problems we faced'],'M.5 Applied AI'],
+  ['Computer Vision','eye','sky',['Reading and displaying','Mouse events','Crop, flip, rotate and resize','Color spaces','Thresholding and edge detection','Contours','Bitwise operations and masking','Face detection','Face recognition','Feature matching (ORB)','Trained object detection (YOLO)','Beyond the repo: hand tracking and servo'],'M.5 Applied AI'],
+  ['AI Development','brain','mauve',['AI vs machine learning vs deep learning','Neural networks: weights, bias and layers','Activation functions','How training works','Epoch, batch size and iterations','Data cleaning and the train/test split','Overfitting and underfitting','Model evaluation: TP, FP, TN, FN','Accuracy, precision, recall and F1','Architectures: MLP, CNN, RNN, Transformer and LLM','Not everything is a neural network: decision trees'],'M.5 Applied AI'],
+  ['Mecanum Drive Robot','path','pink',['Hardware','Wiring (BCM pin numbers)','Software setup and running','Keyboard controls','Calibrating the drive','Code layout','Dead-reckoning guidance','Ball detection with YOLO','Viewing the camera without a monitor','Autonomous match logic'],'M.5 Applied AI'],
+  ['AI Research','lightbulb','lavender',['Coming soon'],'M.5 Applied AI'],
+  ['Research','lightbulb','sapphire',['Coming soon'],'M.6 Capstone'],
+  ['Final Project','sparkle','flamingo',['Coming soon'],'M.6 Capstone'],
 ];
 const pages = [['Home','index.html','house'],['Tools','tools.html','wrench'],['Notes','notes.html','notebook'],['Exercise','exercise.html','exam'],['Roadmap','roadmap.html','map-trifold'],['About Coder','about.html','info'],['About the major','major.html','graduation-cap'],['Projects','projects.html','cube'],['Materials','materials.html','books'],['Changelog','about.html#changelog','clock']];
 const $ = s => document.querySelector(s), $$ = s => document.querySelectorAll(s);
 const esc = s => s.replace(/&/g,'&amp;');
 const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const icon = n => `<svg class="i"><use href="#i-${n}"/></svg>`;
-const href = (g,n) => `#${slug(g)}/${slug(n)}`;
-const all = notes.flatMap(([g,ic,c,ns]) => ns.map(n => ({g,c,n})));
+const href = (g,n) => `chapter.html#${slug(g)}/${slug(n)}`;
+const all = notes.flatMap(([g,ic,c,ns]) => ns.filter(n => n !== 'Coming soon' && !n.startsWith('# ')).map(n => ({g,c,n})));
 const item = ({g,c,n}) => `<li style="--c:var(--${c})"><a href="${href(g,n)}">${icon('file-text')}${esc(n)}</a></li>`;
 const load = k => { try { return JSON.parse(localStorage.getItem(k)) } catch { return null } };
 
-// build the page chrome around this page's <main class="ed">; each page supplies <template id="outline" data-title data-icon> for its sidebar outline
+// build the page chrome around this page's <main class="ed">; the sidebar is the Main tree, unless the page supplies <template id="outline"> (About does) and then it shows that outline
 const page = document.body.dataset.page || 'home';
 const file = page === 'home' ? 'index.html' : page + '.html';
-const tpl = $('#outline'), main = $('main.ed');
+const main = $('main.ed'), tpl = $('#outline');
 document.body.insertAdjacentHTML('afterbegin', '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><pattern id="dots" width="4" height="4" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r=".9" style="fill:var(--o1)"/></pattern><pattern id="dots2" width="3" height="3" patternUnits="userSpaceOnUse"><circle cx="1.5" cy="1.5" r=".8" style="fill:var(--sub1)"/></pattern></defs>' + SPRITE + '</svg>');
 const app = document.createElement('div');
 app.className = 'app';
 app.innerHTML = HEADER
-  + `<nav class="act" aria-label="Activity bar">\n    ${page === 'home' ? '' : `<a href="index.html" title="Home" aria-label="Home">${icon('house')}</a>\n    `}<button class="on" data-panel="page" title="${tpl.dataset.title}" aria-label="${tpl.dataset.title}">${icon(tpl.dataset.icon)}</button>` + ACT_REST + '</nav>'
-  + `<aside class="side" id="side"><div class="panel" id="p-page"><h2>${tpl.dataset.title}</h2><ul class="tree outline">${tpl.innerHTML}</ul></div><div class="panel" id="p-main" hidden><h2>Main</h2><div id="tree"></div></div></aside>`;
+  + `<nav class="act" aria-label="Activity bar">\n    <a href="index.html" id="homebtn" title="Home" aria-label="Home">${icon('house')}</a>` + ACT_REST + '</nav>'
+  + '<aside class="side" id="side">'
+  + (tpl ? `<div class="panel" id="p-page"><h2>Outline</h2><ul class="tree outline">${tpl.innerHTML}</ul></div>` : '')
+  + `<div class="panel" id="p-main"${tpl ? ' hidden' : ''}><h2>Main</h2><div id="tree"></div></div></aside>`;
 app.append(main);
 app.insertAdjacentHTML('beforeend', FOOTER);
 document.body.prepend(app);
 $$('.menu a, .act a').forEach(a => a.getAttribute('href') === file && a.classList.add('on'));
-if (page === 'home') $('.outline a').classList.add('on');
 // like VS Code, the Welcome tab stays open next to the page you are on
 if (page !== 'home') $('.tabs').insertAdjacentHTML('afterbegin', `<a class="tab" href="index.html">${icon('sparkle')}Welcome</a>`);
 
@@ -231,17 +227,17 @@ function closeSettings(){
 gear.onclick = () => sview.hidden ? openSettings() : closeSettings();
 stab.querySelector('.x').onclick = closeSettings;
 $('.tabs').addEventListener('click', e => { if (e.target.closest('.tab') && !e.target.closest('#stab')) closeSettings(); });
-$$('.outline a').forEach(a => a.addEventListener('click', closeSettings));
 
 // a page can split into <div class="pane" id data-tab data-icon>; each pane opens as its own closable tab, one shown at a time
 const panes = [...$$('.pane')];
 if (panes.length) {
   const tabs = $('.tabs'), crumb = $('.crumb'), base = crumb.textContent;
-  let opened = [];
+  let opened = panes.map(p => p.id);
   const show1 = cur => {
     tabs.querySelectorAll('.ptab').forEach(t => t.remove());
-    tabs.insertAdjacentHTML('beforeend', opened.map(id => { const p = $('#' + id); return `<span class="tab ptab${id === cur ? ' on' : ''}" role="tab">${icon(p.dataset.icon)}<a href="#${id}">${p.dataset.tab}</a>${opened.length > 1 ? `<button class="x" type="button" data-close="${id}" aria-label="Close ${p.dataset.tab}">×</button>` : ''}</span>`; }).join(''));
+    tabs.insertAdjacentHTML('beforeend', opened.map(id => { const p = $('#' + id); return `<span class="tab ptab${id === cur ? ' on' : ''}" role="tab">${icon(p.dataset.icon)}<a href="#${id}">${p.dataset.tab}</a></span>`; }).join(''));
     panes.forEach(p => p.hidden = p.id !== cur);
+    if ($('#p-page')) showPanel('page');
     $$('.outline a').forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + cur));
     crumb.textContent = base + ' › ' + $('#' + cur).dataset.tab;
     $('.view').scrollTop = 0;
@@ -256,35 +252,41 @@ if (panes.length) {
   openTab(location.hash.slice(1));
 }
 
-$('#tree').innerHTML = notes.map(([g,ic,c,ns]) =>
-  `<button class="grp" style="--c:var(--${c})" aria-expanded="false" data-g="${esc(g)}">${icon('caret-right')}<svg class="i f"><use href="#i-${ic}"/></svg>${esc(g)}</button><ul class="tree">${ns.map(n=>item({g,c,n})).join('')}</ul>`).join('');
+let lastYr = '';
+$('#tree').innerHTML = notes.map(([g,ic,c,ns,yr]) => {
+  const head = yr !== lastYr ? `<p class="yr">${yr}</p>` : '';
+  lastYr = yr;
+  return head + `<button class="grp" style="--c:var(--${c})" aria-expanded="false" data-g="${esc(g)}">${icon('caret-right')}<svg class="i f"><use href="#i-${ic}"/></svg><span>${esc(g)}</span></button><ul class="tree">${ns.map(n=>n.startsWith('# ')?`<li class="sub">${esc(n.slice(2))}</li>`:item({g,c,n})).join('')}</ul>`;
+}).join('');
 const recent = $('#recent');
-if (recent) recent.innerHTML = (load('coder:recent') || ['python/tkinter-study-planner','circuits-arduino/pwm','neural-networks/backprop'])
+if (recent) recent.innerHTML = (load('coder:recent') || ['basic-python/capstone-tkinter-study-planner','circuits-arduino-gpio/servo-motor-with-pwm','ai-development/how-training-works'])
   .map(s => all.find(x => slug(x.g)+'/'+slug(x.n) === s)).filter(Boolean)
   .map(x => `<li><a href="${href(x.g,x.n)}">${esc(x.n)}</a><span class="dim">${esc(x.g)}</span></li>`).join('');
 $('#count').insertAdjacentText('beforeend', all.length + ' notes');
 $('#done').insertAdjacentText('beforeend', (load('coder:done') || []).length + '/' + all.length + ' done');
 
-// sidebar panels
+// the sidebar is the Main tree: one Home icon on the left bar, the title-bar button and Ctrl+B hide or show it
 const side = $('#side');
-function show(p){
-  const btn = $(`[data-panel=${p}]`), same = btn.classList.contains('on') && !side.hidden;
-  $$('.act button[data-panel]').forEach(b => b.classList.toggle('on', b === btn && !same));
-  side.hidden = same;
-  $$('.panel').forEach(el => el.hidden = el.id !== 'p-'+p);
-}
-const open = p => { side.hidden = true; show(p); };
-const toggle = () => show($('.panel:not([hidden])').id.slice(2));
-function setGroup(btn, on){
+function showPanel(id){ $$('.panel').forEach(el => el.hidden = el.id !== 'p-' + id); }
+const open = () => { side.hidden = false; showPanel('main'); };
+const toggle = () => { side.hidden = !side.hidden; };
+// on the Welcome page the Home icon also hides and shows the tree; on other pages it goes home
+$('#homebtn').addEventListener('click', e => { if (page === 'home') { e.preventDefault(); toggle(); } });
+function paintGroup(btn, on){
   btn.setAttribute('aria-expanded', on);
   btn.querySelector('use').setAttribute('href', on ? '#i-caret-down' : '#i-caret-right');
 }
-$$('.act button[data-panel]').forEach(b => b.onclick = () => show(b.dataset.panel));
+// open or close a folder in the sidebar, and remember which ones are open (coder:open) for every page and visit
+function setGroup(btn, on){
+  paintGroup(btn, on);
+  try { localStorage.setItem('coder:open', JSON.stringify([...$$('.grp')].filter(b => b.getAttribute('aria-expanded') === 'true').map(b => b.dataset.g))); } catch {}
+}
+(load('coder:open') || []).forEach(g => { const b = [...$$('.grp')].find(x => x.dataset.g === g); if (b) paintGroup(b, true); });
 $('#toggle').onclick = toggle;
 $('#tree').onclick = e => { const b = e.target.closest('.grp'); if (b) setGroup(b, b.getAttribute('aria-expanded') !== 'true'); };
-$$('[data-open]').forEach(a => a.onclick = e => { e.preventDefault(); open(a.dataset.open); });
+$$('[data-open]').forEach(a => a.onclick = e => { e.preventDefault(); open(); });
 $$('[data-group]').forEach(a => a.onclick = e => {
-  e.preventDefault(); open('main');
+  e.preventDefault(); open();
   $$('.grp').forEach(b => setGroup(b, b.dataset.g === a.dataset.group));
 });
 const find = q => all.filter(x => q && (x.n + ' ' + x.g).toLowerCase().includes(q));
@@ -317,7 +319,7 @@ $$('[data-cmd]').forEach(a => a.onclick = e => { e.preventDefault(); cmd.focus()
 addEventListener('keydown', e => {
   if (!e.ctrlKey) return;
   const k = e.key.toLowerCase();
-  if (e.shiftKey && k === 'e') { e.preventDefault(); open('main'); }
+  if (e.shiftKey && k === 'e') { e.preventDefault(); open(); }
   else if (e.shiftKey && k === 'f') { e.preventDefault(); cmd.focus(); }
   else if (!e.shiftKey && k === 'b') { e.preventDefault(); toggle(); }
   else if (!e.shiftKey && (k === 'p' || k === 'k')) { e.preventDefault(); cmd.focus(); }
@@ -359,4 +361,4 @@ addEventListener('focusin', e => { const el = e.target.closest('[data-tip]'); hi
 addEventListener('focusout', hideTip);
 addEventListener('pointerdown', hideTip);
 
-if (innerWidth <= 640) { side.hidden = true; $('.act .on').classList.remove('on'); }
+if (innerWidth <= 640) side.hidden = true;
