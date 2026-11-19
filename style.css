@@ -1015,9 +1015,13 @@ textarea{border:0;outline:0}
 .qlkey i.t{color:var(--red)}
 .qlkey i.w{width:10px;height:10px;border-radius:2px;background:var(--s1)}
 *{-webkit-tap-highlight-color:transparent}
-.lost{display:flex;flex-direction:column;align-items:flex-start;gap:12px;padding-top:30px}
-.lost .art{width:280px;max-width:100%;height:auto;margin-bottom:6px}
-.lost h1{margin:0}
-.lost .lead{margin:0}
-.lost code{background:var(--s0);color:var(--text);padding:1px 7px;border-radius:5px;font:12px ui-monospace,Consolas,monospace}
-.lostact{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0 4px}
+.view:has(.lost){display:flex}
+.lost{margin:auto;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;padding:30px 24px;max-width:560px}
+.lostic{display:grid;place-items:center;width:88px;height:88px;border-radius:24px;background:color-mix(in srgb,var(--mauve) 14%,var(--base));color:var(--mauve)}
+.lostic .i{width:44px;height:44px}
+.lost h1{margin:6px 0 0}
+.lost .lead{margin:0;max-width:46ch}
+.lost code{background:var(--s0);color:var(--text);padding:1px 7px;border-radius:5px;font:12px ui-monospace,Consolas,monospace;word-break:break-all}
+.lost .note{margin:0}
+.lostact{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:8px 0 2px}
+.lostact .btn{margin:0;padding:9px 16px;font-size:13px}
