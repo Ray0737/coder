@@ -21,6 +21,12 @@ Run it in "Plain RNN" mode and step through all six inputs. The hidden state kee
 
 Switch to "LSTM gates" and run it again. The hidden state now survives much longer, because a **gate** decides, at every step, whether to keep the old memory or make room for something new. Try "GRU gates" too: it survives the fade almost as well, but by *blending* the old state with a fresh candidate every step instead of fully overwriting it, the LSTM's keep-or-replace switch.
 
+Drag the two sliders and press Play to watch the gradient fade as it travels back through 20 steps. A plain RNN multiplies by the same number every step, so anything below 1 shrinks exponentially. The LSTM's cell state is multiplied by a forget gate that can stay close to 1.
+
+```widget
+gradcompare
+```
+
 ## LSTM and GRU: adding a memory gate
 
 An **LSTM** (Long Short-Term Memory) adds a separate memory line plus three gates: a forget gate (how much old memory to keep), an input gate (how much new information to add), and an output gate (how much of the memory to reveal as the hidden state). A **GRU** (Gated Recurrent Unit) is a simplified version with two gates instead of three, usually about as good and a little cheaper to run.
@@ -31,6 +37,14 @@ An **LSTM** (Long Short-Term Memory) adds a separate memory line plus three gate
 | Vanishing gradient | A whisper passed down a long line of people | Old information fades the further it travels through the steps |
 | Forget gate | Deciding what to cross off your notes | Controls how much of the old memory survives this step |
 | Input gate | Deciding what is worth writing down | Controls how much of the new information gets added |
+
+### One LSTM cell, step by step
+
+Pick a word or press Play. Watch the three gates decide how much old memory to keep, how much new information to write and how much to show the rest of the network. The chart shows how each dimension of the hidden state moves over time.
+
+```widget
+lstmaction
+```
 
 ## Seq2seq: when the output is also a sequence
 

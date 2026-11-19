@@ -1,6 +1,6 @@
 ---
-title: Evaluation: overfitting, underfitting and the numbers that catch them
-summary: Checking whether a model actually learned, or just memorised.
+title: Evaluation: fitting, the numbers that catch it, and cross validation
+summary: Checking whether a model actually learned, or just memorised, and trusting the score.
 ---
 
 > [!aha] A model that is too simple can't learn the pattern. A model that is too complex learns the pattern *and* every random wobble in the training data, then fails on anything new. Evaluation is how you tell which one happened, with real numbers instead of a guess.
@@ -16,6 +16,14 @@ summary: Checking whether a model actually learned, or just memorised.
 **Overfitting** is a model that does *great* on the training data and badly on new data. It has not learned the general pattern, it has memorised the training examples, noise and all.
 
 > [!compare] Think of it like memorising the answers to last year's exam instead of learning the subject. Score 100% on that exact paper, and fail the real one.
+
+## The three fits, side by side
+
+Here are the same 12 points fitted three ways. Press the buttons, or drag the degree slider (how bendy the curve is), and compare the train error with the test error on 40 points the curve never saw.
+
+```widget
+fitcompare
+```
 
 ## Watching it happen: train vs. validation error
 
@@ -53,6 +61,18 @@ confusionmatrix
 
 **F1** is the balance point between precision and recall: `2 · precision · recall / (precision + recall)`. It drops sharply if either one is weak, so a model can't hide a terrible recall behind a great precision.
 
+## One test set can get lucky: cross validation
+
+A single train/test split tells you how the model did on one particular slice of held-out data, which might happen to be an easy slice or a hard one. **K-fold cross validation** tests on every slice in turn. Split the data into **K** equal folds. For each fold in turn, hold it out as the test set and train on the rest. That gives K scores, which get averaged into one more trustworthy number.
+
+```widget
+crossvalfolds
+```
+
+> [!compare] Think of a teacher grading a student with five different pop quizzes instead of one big exam, then averaging the five scores. One unlucky quiz no longer decides the whole grade.
+
+Every example is in the test set exactly once, so the final score reflects the whole dataset, not one lucky or unlucky slice. The cost: the model is trained K times, once per fold. That is why cross validation is mostly used to **compare** models or settings fairly, not as the final production training run.
+
 ## Try it
 
 1. Drag complexity all the way to 1. Is this underfitting or overfitting? How do you know from the two numbers shown?
@@ -60,6 +80,8 @@ confusionmatrix
 3. In the confusion matrix widget, set FN to 0 and FP to 50. What happens to recall? What happens to precision? Which one is more honest about this model?
 4. A cancer-screening model should almost never miss a real case. Should it be tuned for higher precision or higher recall? Why?
 5. A classmate says "just train for more epochs, the error will always get better." What's wrong with that, using what you just saw on the validation curve?
+6. With K=5, what fraction of the data trains the model on any one fold? Why does K=10 cost twice as much training as K=5?
+7. A model scores 92%, 61%, 90%, 88% and 89% across five folds. What does the one low fold suggest, compared to a model that scores about 90% on every fold?
 
 ## Quick recap
 
@@ -73,3 +95,6 @@ confusionmatrix
 | Precision | How often "spam!" was right | TP / (TP + FP) |
 | Recall | How much real spam got caught | TP / (TP + FN) |
 | F1 | The balance point | Punishes a model that is great at one and bad at the other |
+| Fold | One of five pop quizzes | One equal slice of the data |
+| K-fold cross validation | Averaging five quiz scores instead of trusting one | Tests on every fold in turn, then averages the scores |
+| Its cost | Grading five quizzes instead of one | Trains the model K times instead of once |

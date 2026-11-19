@@ -5,6 +5,14 @@ summary: Every word looks at every other word, all at once, instead of one at a 
 
 > [!aha] An RNN reads a sentence one word at a time, so word 10 only learns about word 1 after passing through 9 steps of memory. A Transformer lets every word look directly at every other word in one step. That one change is most of why modern language models got so much better.
 
+## The big picture
+
+The original Transformer has an **encoder** that understands the input and a **decoder** that writes the output. Both are stacks of the same few building blocks. Pick a block type to see where it appears.
+
+```widget
+tfarch
+```
+
 ## Self-attention: every word asks "who matters to me?"
 
 For each word, self-attention produces a weight for every other word in the sentence: how much should this word's meaning be influenced by that one? Pick a query word below, and a head, and see where its attention lands.
@@ -17,9 +25,23 @@ Notice "sat" paying attention to "cat" (its subject) and to "on" (what follows i
 
 > [!compare] Think of it like a group project meeting. Before you can contribute, you quickly check in with everyone else in the room, weighing some opinions more than others, before deciding what to say. Every word in a Transformer does that, with every other word, at the same time.
 
+### The same thing with real numbers
+
+Step through attention for the 3-word sentence "the cat sat", with 4-number vectors, exactly as a computer does it.
+
+```widget
+qkvmath
+```
+
 ## Multi-head attention: asking the question several ways
 
 One attention pattern can only capture one kind of relationship at a time. **Multi-head attention** runs several attention patterns in parallel (each a "head"), so one head might track grammatical subject/verb pairs while another tracks nearby words, and the results are combined. Flip between "Head 1" and "Head 2" in the widget above: Head 1 links related words however far apart they sit, Head 2 mostly just looks at its immediate neighbours. A real Transformer has many more heads than two, running at once, not one after another.
+
+Here are twelve heads side by side. Click one to see its full table.
+
+```widget
+headsgrid
+```
 
 ## Positional encoding: attention has no sense of order
 

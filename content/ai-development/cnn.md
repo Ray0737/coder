@@ -16,6 +16,14 @@ summary: Teaching a network to see, one small sliding window at a time.
 
 Each stage hands a more abstract answer to the next one. Edges become shapes, shapes become parts, parts become a whole object, and the last stage turns that into a probability for every class. Each stage also sees a larger patch of the image than the one before it.
 
+### Watch a real one learn
+
+Below is a tiny CNN (4 filters, nothing else) that really trained on 8×8 handwritten digits. Drag the epoch from 0 to 30 and watch the filters turn from noise into stroke detectors, the feature maps start to light up on the right parts of the digit, and the loss fall while accuracy climbs.
+
+```widget
+cnnpipeline
+```
+
 ## Convolution: a small window, slid everywhere
 
 A **kernel** (or filter) is a tiny grid of learnable numbers, often 3×3. At every position, it multiplies its numbers against the pixels underneath it and adds up the result into one number. Slide it one step over, repeat. The grid of all those sums is a **feature map**: a picture of "how strongly did this one pattern show up, everywhere".
@@ -41,6 +49,12 @@ The input here is deliberately simple: dark on the left, light on the right, a v
 ## Pooling: shrinking on purpose
 
 After a convolution, **pooling** (usually "max pooling") looks at small 2×2 patches of the feature map and keeps only the biggest number in each. This shrinks the map and makes the result a little less fussy about the pattern being in the *exact* same pixel: a cat's eye one pixel to the left is still "an eye was detected here".
+
+Try it on a small map: the window hops two cells at a time and keeps one number per patch.
+
+```widget
+maxpoolanim
+```
 
 ## Feature maps stack, and features get more abstract
 

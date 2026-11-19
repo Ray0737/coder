@@ -5,15 +5,42 @@ summary: Predicting the next word, and learning from reward instead of labels.
 
 > [!aha] Underneath everything, a large language model does one simple job on repeat: given the text so far, guess a probability for every possible next word, then pick one. Reinforcement learning answers a completely different question: no labelled "right answer" exists, so an agent instead learns from a reward signal, by trial and error.
 
+## How an LLM reads: tokens, vectors, layers
+
+A language model does not read letters or words. It reads **tokens**: numbered pieces of text. Type anything below.
+
+```widget
+tokenizer
+```
+
+Each token ID is then turned into a vector. Similar meanings end up as nearby vectors, and directions in that space can carry relationships.
+
+```widget
+embedding
+```
+
+Put together, here is what happens for every single token the model produces:
+
+```widget
+llmforward
+```
+
 ## Language modeling: predicting the next token
 
 ```widget
-tokensample
+tokenplay
 ```
 
-Every candidate next word gets a score (a **logit**), and those scores get turned into probabilities. The **temperature** slider controls how sharply the model commits to its favourite: low temperature almost always picks the top word, high temperature flattens the odds so less likely words get a real chance. Press "Sample next word" a few times at different temperatures and watch the kind of sentence that builds up.
+Every candidate next word gets a score (a **logit**), and those scores get turned into probabilities. The **temperature** slider controls how sharply the model commits to its favourite: low temperature almost always picks the top word, high temperature flattens the odds so less likely words get a real chance. Press "Generate" a few times at different temperatures and watch the kind of sentence that builds up.
 
 ## Fine-tuning and RLHF
+
+GPT becomes ChatGPT through a four-stage pipeline. Click through the stages.
+
+```widget
+rlhfpipe
+```
+
 
 A **base model** is trained purely to predict the next token over huge amounts of text, which makes it good at continuing text, not necessarily at being a helpful assistant. **Fine-tuning** keeps training it, but on a smaller, curated set of examples of the behaviour you actually want.
 
