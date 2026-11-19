@@ -18,6 +18,12 @@ function nnSVG(counts, opts = {}) {
 }
 // a simple seeded random generator, so a diagram looks the same every time it draws for the same epoch
 const seeded = seed => { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; };
+// the label (icon + text) inside a widget's Play/Pause button, shared so every animated widget looks the same
+const playLabel = playing => playing ? '<span class="ply">&#10074;&#10074;</span> Pause' : '<span class="ply">&#9654;</span> Play';
+
+// animated widgets (Play/Step buttons) register their setInterval here, so leaving the chapter before it finishes can't leave an orphaned timer still poking a widget of the same name on a later visit
+let activeTimers = [];
+const trackTimer = id => { activeTimers.push(id); return id; };
 
 // a labelled line-plot: series is [{pts:[[x,y],...], color, dash}], opts sets the axis domain and optional markers
 function curveSVG(series, opts = {}) {
@@ -334,11 +340,12 @@ const widgets = {
   },
   // an editable 2x2 confusion matrix with live accuracy / precision / recall / F1
   confusionmatrix(el) {
+    const cell = (cls, label, sub, id, val) => `<div class="cmcell ${cls}"><i>${label}</i><input id="${id}" type="number" value="${val}" min="0"><span>${sub}</span></div>`;
     el.innerHTML = `<p class="wgt">Try it: change the counts</p>
       <div class="cmgrid">
         <div></div><b>Predicted +</b><b>Predicted −</b>
-        <b>Actual +</b><input id="w-tp" type="number" value="42" min="0"><input id="w-fn" type="number" value="8" min="0">
-        <b>Actual −</b><input id="w-fp" type="number" value="5" min="0"><input id="w-tn" type="number" value="45" min="0">
+        <b>Actual +</b>${cell('ok', 'TP', 'Correctly caught', 'w-tp', 42)}${cell('bad', 'FN', 'Missed', 'w-fn', 8)}
+        <b>Actual −</b>${cell('bad', 'FP', 'False alarm', 'w-fp', 5)}${cell('ok', 'TN', 'Correctly ignored', 'w-tn', 45)}
       </div>
       <div class="wgtable" id="w-cmrows"></div>`;
     const run = () => {
@@ -408,14 +415,14 @@ const widgets = {
   decisiontree(el) {
     const node = (x, y, w, h, label, leaf) => `<rect x="${x - w / 2}" y="${y - h / 2}" width="${w}" height="${h}" rx="8" fill="${leaf ? 'color-mix(in srgb, var(--mauve) 18%, var(--base))' : 'var(--base)'}" stroke="${leaf ? 'var(--mauve)' : 'var(--sub0)'}" stroke-width="1.5"/><text x="${x}" y="${y + 4}" text-anchor="middle" font-size="10.5" fill="var(--text)">${label}</text>`;
     const edge = (x1, y1, x2, y2, label) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--s1)"/>${label ? `<text x="${(x1 + x2) / 2 + 10}" y="${(y1 + y2) / 2}" text-anchor="middle" font-size="9" fill="var(--o0)">${label}</text>` : ''}`;
-    const svg = `<svg viewBox="0 0 360 230" width="100%" height="230">
-      ${edge(180, 38, 95, 88, 'yes')}${edge(180, 38, 265, 88, 'no')}
-      ${edge(95, 106, 55, 160, 'yes')}${edge(95, 106, 135, 160, 'no')}
-      ${node(180, 20, 150, 36, 'Age &lt; 30?')}
-      ${node(95, 95, 140, 36, 'Income &lt; 50k?')}
-      ${node(265, 95, 110, 36, 'Buys SUV', true)}
-      ${node(55, 170, 100, 36, 'Buys hatchback', true)}
-      ${node(135, 170, 100, 36, 'Buys sedan', true)}
+    const svg = `<svg viewBox="0 0 380 230" width="100%" height="230">
+      ${edge(190, 38, 110, 88, 'yes')}${edge(190, 38, 300, 88, 'no')}
+      ${edge(110, 106, 60, 160, 'yes')}${edge(110, 106, 165, 160, 'no')}
+      ${node(190, 20, 140, 36, 'Age &lt; 30?')}
+      ${node(110, 95, 130, 36, 'Income &lt; 50k?')}
+      ${node(300, 95, 80, 36, 'SUV', true)}
+      ${node(60, 170, 90, 36, 'Hatchback', true)}
+      ${node(165, 170, 90, 36, 'Sedan', true)}
     </svg>`;
     el.innerHTML = `<p class="wgt">A decision tree, one split at a time</p><div class="nndiag">${svg}</div><p class="wgcap">Every box is a yes/no question about one feature. Follow the arrows from the root to a leaf, and the leaf is the prediction.</p>`;
   },
@@ -468,17 +475,12 @@ const widgets = {
   // a strip of K folds: pick which one is held out for testing
   crossvalfolds(el) {
     const K = 5;
-    el.innerHTML = `<p class="wgt">Try it: pick the held-out fold</p>
-      <div class="wgrow"><label>Fold <input id="w-cv" type="range" min="0" max="${K - 1}" value="0"></label><b id="w-cvv">1</b></div>
-      <div class="foldbar" id="w-cvbar"></div>
-      <p class="wgo" id="w-cvsay"></p>`;
-    const run = () => {
-      const held = +$('#w-cv').value; $('#w-cvv').textContent = held + 1;
-      $('#w-cvbar').innerHTML = Array.from({ length: K }, (_, i) => `<i style="background:${i === held ? 'var(--peach)' : 'var(--blue)'}">${i + 1}</i>`).join('');
-      const trainFolds = Array.from({ length: K }, (_, i) => i + 1).filter(n => n !== held + 1).join(', ');
-      $('#w-cvsay').innerHTML = `Train on folds ${trainFolds}, test on fold <b>${held + 1}</b>. Repeat once per fold, then average the ${K} scores.`;
-    };
-    el.addEventListener('input', run); run();
+    const rows = Array.from({ length: K }, (_, r) => `<div class="cvfoldrow">${Array.from({ length: K }, (_, c) => c === r ? '<i class="test">Test</i>' : '<i class="train">Train</i>').join('')}</div>`).join('');
+    const labels = Array.from({ length: K }, (_, i) => `<span>Fold ${i + 1}</span>`).join('');
+    el.innerHTML = `<p class="wgt">Cross validation: K splits, averaged</p>
+      <div class="cvfold">${rows}</div>
+      <div class="cvfoldlabels">${labels}</div>
+      <p class="wgcap">Each fold takes a turn being the test set. Final score = average of all ${K} folds. K=5 is the most common choice.</p>`;
   },
   // a small network diagram plus a button that steps through what each layer does
   forwardpass(el) {
@@ -493,6 +495,426 @@ const widgets = {
       <div class="wgrow"><button class="btn ghost" id="w-fp" type="button">Step forward →</button></div>
       <p class="wgo" id="w-fpsay">${steps[0]}</p>`;
     $('#w-fp').onclick = () => { i = (i + 1) % steps.length; $('#w-fpsay').textContent = steps[i]; };
+  },
+  // the centerpiece: an animated sliding-kernel convolution over a fixed 9x9 input, with presets, stride and padding
+  convanim(el) {
+    const N = 9, k = 3;
+    const presets = {
+      'Vertical edge': { k: [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], norm: 1 },
+      'Horizontal edge': { k: [[-1, -2, -1], [0, 0, 0], [1, 2, 1]], norm: 1 },
+      Blur: { k: [[1, 1, 1], [1, 1, 1], [1, 1, 1]], norm: 1 / 9 },
+      Sharpen: { k: [[0, -1, 0], [-1, 5, -1], [0, -1, 0]], norm: 1 },
+    };
+    const rnd = seeded(5);
+    const input = Array.from({ length: N }, () => Array(N).fill(0));
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) input[y][x] = Math.max(0, Math.min(1, (x < 4 ? 0.22 : 0.82) + (rnd() * 2 - 1) * 0.06));
+    let presetName = 'Vertical edge', stride = 1, pad = 0, pos = 0, timer = null, output = {};
+    const positions = () => {
+      const M = N + 2 * pad, out = Math.floor((M - k) / stride) + 1, list = [];
+      for (let ty = 0; ty < out; ty++) for (let tx = 0; tx < out; tx++) list.push({ tx: tx * stride, ty: ty * stride, ox: tx, oy: ty });
+      return list;
+    };
+    const padVal = (x, y) => (x < pad || y < pad || x >= pad + N || y >= pad + N) ? 0 : input[y - pad][x - pad];
+    const computeAt = (tx, ty) => { const { k: kern, norm } = presets[presetName]; let sum = 0; for (let ky = 0; ky < k; ky++) for (let kx = 0; kx < k; kx++) sum += kern[ky][kx] * norm * padVal(tx + kx, ty + ky); return sum; };
+    const cellBg = v => `color-mix(in srgb, var(--text) ${Math.round(Math.max(0, Math.min(1, v)) * 100)}%, var(--crust))`;
+    const signBg = v => v === 0 ? 'var(--base)' : v > 0 ? `color-mix(in srgb, var(--red) ${Math.min(100, Math.round(Math.abs(v) * 40))}%, var(--base))` : `color-mix(in srgb, var(--blue) ${Math.min(100, Math.round(Math.abs(v) * 40))}%, var(--base))`;
+    const render = () => {
+      const list = positions(), cur = list[Math.min(pos, list.length - 1)], M = N + 2 * pad;
+      let inputHTML = `<div class="cvgrid" style="grid-template-columns:repeat(${M},26px)">`;
+      for (let y = 0; y < M; y++) for (let x = 0; x < M; x++) { const v = padVal(x, y), hit = cur && x >= cur.tx && x < cur.tx + k && y >= cur.ty && y < cur.ty + k; inputHTML += `<div class="cvcell${hit ? ' hit' : ''}" style="background:${cellBg(v)}">${v.toFixed(1)}</div>`; }
+      inputHTML += '</div>';
+      const { k: kern, norm } = presets[presetName];
+      let kernelHTML = `<div class="cvgrid" style="grid-template-columns:repeat(${k},26px)">`;
+      for (let ky = 0; ky < k; ky++) for (let kx = 0; kx < k; kx++) kernelHTML += `<div class="cvcell" style="background:${signBg(kern[ky][kx] * norm * 6)}">${norm !== 1 ? kern[ky][kx] + '/9' : kern[ky][kx]}</div>`;
+      kernelHTML += '</div>';
+      const outSize = Math.floor((M - k) / stride) + 1;
+      let outputHTML = `<div class="cvgrid" style="grid-template-columns:repeat(${outSize},26px)">`;
+      for (let oy = 0; oy < outSize; oy++) for (let ox = 0; ox < outSize; ox++) { const v = output[ox + ',' + oy]; outputHTML += `<div class="cvcell" style="background:${v === undefined ? 'var(--base)' : signBg(v)}">${v === undefined ? '' : v.toFixed(1)}</div>`; }
+      outputHTML += '</div>';
+      $('#cv-input').innerHTML = inputHTML; $('#cv-kernel').innerHTML = kernelHTML; $('#cv-output').innerHTML = outputHTML;
+      $('#cv-formula').innerHTML = `Output size = (9 + 2×${pad} − 3) / ${stride} + 1 = <b>${outSize}×${outSize}</b>`;
+      $('#cv-say').textContent = positions().length && pos >= positions().length ? 'Done: every position computed.' : `Position ${Math.min(pos + 1, positions().length)} of ${positions().length}.`;
+    };
+    const stepOnce = () => { const list = positions(); if (pos >= list.length) { if (timer) { clearInterval(timer); timer = null; } $('#cv-play').innerHTML = playLabel(false); return; } const cur = list[pos]; output[cur.ox + ',' + cur.oy] = computeAt(cur.tx, cur.ty); pos++; render(); };
+    const reset = () => { pos = 0; output = {}; if (timer) { clearInterval(timer); timer = null; } $('#cv-play').innerHTML = playLabel(false); render(); };
+    el.innerHTML = `<p class="wgt">Try it: slide the kernel</p>
+      <div class="wgrow"><span class="wgsub">Kernel</span><span id="cv-presets"></span><i class="wgdiv"></i><span class="wgsub">Stride</span><span id="cv-stride"></span><span class="wgsub">Padding</span><span id="cv-pad"></span></div>
+      <p class="wgo" id="cv-formula"></p>
+      <div class="wgplayrow"><div class="wgsec"><button class="btn ghost" id="cv-step" type="button">Step</button><button class="btn ghost danger" id="cv-reset" type="button">Reset</button></div><button class="btn play" id="cv-play" type="button">${playLabel(false)}</button></div>
+      <div class="convgrids">
+        <div><p class="wgt2">Input (9×9)</p><div id="cv-input"></div></div>
+        <div><p class="wgt2">Kernel (3×3)</p><div id="cv-kernel"></div></div>
+        <div><p class="wgt2">Output</p><div id="cv-output"></div></div>
+      </div>
+      <p class="wgcap" id="cv-say"></p>`;
+    $('#cv-presets').innerHTML = Object.keys(presets).map((n, i) => `<button type="button" class="seg2${i === 0 ? ' on' : ''}" data-p="${n}">${n}</button>`).join('');
+    $('#cv-stride').innerHTML = [1, 2].map(s => `<button type="button" class="seg2${s === 1 ? ' on' : ''}" data-s="${s}">${s}</button>`).join('');
+    $('#cv-pad').innerHTML = [0, 1].map(p => `<button type="button" class="seg2${p === 0 ? ' on' : ''}" data-pad="${p}">${p}</button>`).join('');
+    $('#cv-presets').onclick = e => { const b = e.target.closest('button'); if (!b) return; presetName = b.dataset.p; $$('#cv-presets button').forEach(x => x.classList.toggle('on', x === b)); reset(); };
+    $('#cv-stride').onclick = e => { const b = e.target.closest('button'); if (!b) return; stride = +b.dataset.s; $$('#cv-stride button').forEach(x => x.classList.toggle('on', x === b)); reset(); };
+    $('#cv-pad').onclick = e => { const b = e.target.closest('button'); if (!b) return; pad = +b.dataset.pad; $$('#cv-pad button').forEach(x => x.classList.toggle('on', x === b)); reset(); };
+    $('#cv-step').onclick = () => { if (timer) { clearInterval(timer); timer = null; $('#cv-play').innerHTML = playLabel(false); } stepOnce(); };
+    $('#cv-play').onclick = () => {
+      if (timer) { clearInterval(timer); timer = null; $('#cv-play').innerHTML = playLabel(false); return; }
+      if (pos >= positions().length) reset();
+      $('#cv-play').innerHTML = playLabel(true);
+      timer = trackTimer(setInterval(stepOnce, 350));
+    };
+    $('#cv-reset').onclick = reset;
+    render();
+  },
+  // an unrolled hidden state, stepping through time; toy formulas contrast plain-RNN decay, LSTM-style gating and GRU-style interpolation
+  // ponytail: simplified teaching formulas, not real LSTM/GRU gate equations, swap in the real gate maths if this ever needs to be numerically exact
+  rnnunroll(el) {
+    const xs = [3, -1, 2, 5, -4, 1];
+    const gates = [1, 1, 0, 1, 0, 1];
+    let mode = 'Plain RNN', t = 0, timer = null;
+    const step = (h, x) => Math.tanh(0.5 * h + x * 0.3) * 0.55;
+    const stepLSTM = (h, x, gate) => gate ? Math.max(-3, Math.min(3, 0.9 * h + x * 0.15)) : x * 0.3;
+    // toy GRU: an update gate blends the old state with a fresh candidate, instead of the LSTM's hard keep/replace switch
+    const stepGRU = (h, x, gate) => { const z = gate ? 0.15 : 0.8; const cand = Math.tanh(x * 0.4); return (1 - z) * h + z * cand; };
+    const fns = { 'Plain RNN': (h, x, g) => step(h, x), 'LSTM gates': stepLSTM, 'GRU gates': stepGRU };
+    const compute = () => { let h = 0; const hs = [0]; const f = fns[mode]; for (let i = 0; i < xs.length; i++) { h = f(h, xs[i], gates[i]); hs.push(h); } return hs; };
+    const render = () => {
+      const hs = compute();
+      $('#rn-row').innerHTML = xs.map((x, i) => {
+        const h = hs[i + 1], seen = i <= t, pct = Math.min(100, Math.abs(h) / 3 * 100);
+        return `<div class="rnncell${i === t ? ' on' : ''}${!seen ? ' dim' : ''}"><i>x=${x}</i><div class="rnnbar"><em style="height:${seen ? pct : 0}%"></em></div><b>${seen ? h.toFixed(2) : '·'}</b></div>`;
+      }).join('<span class="rnnarrow">→</span>');
+      $('#rn-say').textContent = t >= xs.length - 1
+        ? (mode === 'Plain RNN' ? 'By the last step, the hidden state has shrunk close to zero: the early input is forgotten. That is the vanishing gradient problem.'
+          : mode === 'LSTM gates' ? 'With gates open most steps, the hidden state stays large much longer: the network can still "remember" the early input.'
+            : 'GRU blends old and new every step instead of fully overwriting, so it also keeps more of the early signal than a plain RNN.')
+        : `Step ${t + 1} of ${xs.length}.`;
+    };
+    el.innerHTML = `<p class="wgt">Try it: step through time</p>
+      <div class="wgrow"><span class="wgsub">Cell</span><span id="rn-mode"></span></div>
+      <div class="rnnrow" id="rn-row"></div>
+      <div class="wgplayrow"><div class="wgsec"><button class="btn ghost" id="rn-step" type="button">Step</button><button class="btn ghost danger" id="rn-reset" type="button">Reset</button></div><button class="btn play" id="rn-play" type="button">${playLabel(false)}</button></div>
+      <p class="wgcap" id="rn-say"></p>`;
+    $('#rn-mode').innerHTML = Object.keys(fns).map((n, i) => `<button type="button" class="seg2${i === 0 ? ' on' : ''}" data-m="${n}">${n}</button>`).join('');
+    const resetAll = () => { t = 0; if (timer) { clearInterval(timer); timer = null; } $('#rn-play').innerHTML = playLabel(false); render(); };
+    $('#rn-mode').onclick = e => { const b = e.target.closest('button'); if (!b) return; mode = b.dataset.m; $$('#rn-mode button').forEach(x => x.classList.toggle('on', x === b)); resetAll(); };
+    $('#rn-step').onclick = () => { if (timer) { clearInterval(timer); timer = null; $('#rn-play').innerHTML = playLabel(false); } t = Math.min(t + 1, xs.length - 1); render(); };
+    $('#rn-play').onclick = () => {
+      if (timer) { clearInterval(timer); timer = null; $('#rn-play').innerHTML = playLabel(false); return; }
+      if (t >= xs.length - 1) resetAll();
+      $('#rn-play').innerHTML = playLabel(true);
+      timer = trackTimer(setInterval(() => { t++; if (t >= xs.length - 1) { t = xs.length - 1; render(); clearInterval(timer); timer = null; $('#rn-play').innerHTML = playLabel(false); return; } render(); }, 650));
+    };
+    $('#rn-reset').onclick = resetAll;
+    render();
+  },
+  // seq2seq: an encoder reads the whole input one token at a time, then a decoder emits the (differently-sized) output one token at a time
+  seq2seqdemo(el) {
+    const inp = ['I', 'am', 'happy'], out = ['Estoy', 'feliz'];
+    const decStart = inp.length + 1, maxT = inp.length + out.length;
+    let t = 0, timer = null;
+    const render = () => {
+      const encHTML = inp.map((w, i) => `<div class="rnncell${i === t ? ' on' : ''}${i < t ? ' dim' : ''}"><i>in</i><b>${w}</b></div>`).join('<span class="rnnarrow">→</span>');
+      const ctxDone = t >= inp.length;
+      const ctxHTML = `<div class="rnncell ctx${ctxDone ? ' on' : ''}"><i>ctx</i><b>${ctxDone ? '●' : '·'}</b></div>`;
+      const outHTML = out.map((w, i) => { const at = decStart + i, emitted = t >= at; return `<div class="rnncell${t === at ? ' on' : ''}${!emitted ? ' dim' : ''}"><i>out</i><b>${emitted ? w : '·'}</b></div>`; }).join('<span class="rnnarrow">→</span>');
+      $('#s2-row').innerHTML = `${encHTML}<span class="rnnarrow">→</span>${ctxHTML}<span class="rnnarrow">→</span>${outHTML}`;
+      $('#s2-say').textContent = t < inp.length ? `Encoder reading input word ${t + 1} of ${inp.length}: "${inp[t]}".`
+        : t === inp.length ? 'Encoder done: the whole input is compressed into one context vector, the only thing the decoder gets to see.'
+          : `Decoder emitting output word ${t - decStart + 1} of ${out.length}, three in and two out: the lengths don't have to match.`;
+    };
+    el.innerHTML = `<p class="wgt">Try it: step the encoder, then the decoder</p>
+      <div class="rnnrow" id="s2-row"></div>
+      <div class="wgplayrow"><div class="wgsec"><button class="btn ghost" id="s2-step" type="button">Step</button><button class="btn ghost danger" id="s2-reset" type="button">Reset</button></div><button class="btn play" id="s2-play" type="button">${playLabel(false)}</button></div>
+      <p class="wgcap" id="s2-say"></p>`;
+    const resetAll = () => { t = 0; if (timer) { clearInterval(timer); timer = null; } $('#s2-play').innerHTML = playLabel(false); render(); };
+    $('#s2-step').onclick = () => { if (timer) { clearInterval(timer); timer = null; $('#s2-play').innerHTML = playLabel(false); } t = Math.min(t + 1, maxT); render(); };
+    $('#s2-play').onclick = () => {
+      if (timer) { clearInterval(timer); timer = null; $('#s2-play').innerHTML = playLabel(false); return; }
+      if (t >= maxT) resetAll();
+      $('#s2-play').innerHTML = playLabel(true);
+      timer = trackTimer(setInterval(() => { t++; if (t >= maxT) { t = maxT; render(); clearInterval(timer); timer = null; $('#s2-play').innerHTML = playLabel(false); return; } render(); }, 700));
+    };
+    $('#s2-reset').onclick = resetAll;
+    render();
+  },
+  // click (or auto-step) a token to see its attention weights over the whole sentence; two heads, two different patterns
+  attentionmap(el) {
+    const tokens = ['The', 'cat', 'sat', 'on', 'the', 'mat'];
+    // hand-authored raw attention scores per query row, illustrative, not a trained model's real weights
+    // Head 1: roughly semantic (subject/object style long-range links)
+    const raw1 = [
+      [3, 1, 0.5, 0.2, 2, 0.2],
+      [1, 3, 1.5, 0.3, 0.5, 0.4],
+      [0.3, 2.5, 2, 1, 0.3, 0.6],
+      [0.2, 0.4, 1.5, 2.5, 0.5, 1.8],
+      [2.5, 0.5, 0.3, 0.4, 2.5, 0.4],
+      [0.2, 0.5, 0.8, 2.2, 0.5, 2.8],
+    ];
+    // Head 2: local/positional (mostly attends to its immediate neighbours), a genuinely different pattern
+    const raw2 = [
+      [2, 2, 0.3, 0.2, 0.2, 0.2],
+      [2, 1.5, 2, 0.3, 0.2, 0.2],
+      [0.3, 2, 1.5, 2, 0.3, 0.2],
+      [0.2, 0.3, 2, 1.5, 2, 0.3],
+      [0.2, 0.2, 0.3, 2, 1.5, 2],
+      [0.2, 0.2, 0.2, 0.3, 2, 2],
+    ];
+    const soft = row => { const m = Math.max(...row), ex = row.map(v => Math.exp(v - m)), s = ex.reduce((a, b) => a + b, 0); return ex.map(v => v / s); };
+    const heads = { 'Head 1': raw1.map(soft), 'Head 2': raw2.map(soft) };
+    let head = 'Head 1', q = 0, timer = null;
+    const render = () => {
+      const w = heads[head][q], n = tokens.length, W = 420, H = 150, xAt = i => 30 + i * ((W - 60) / (n - 1));
+      $$('#am-tokens button').forEach((b, i) => b.classList.toggle('on', i === q));
+      let svg = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}">`;
+      tokens.forEach((t, i) => svg += `<path d="M${xAt(q)},${H - 30} Q${(xAt(q) + xAt(i)) / 2},20 ${xAt(i)},${H - 30}" fill="none" stroke="var(--mauve)" stroke-width="${0.5 + w[i] * 5}" opacity="${0.15 + w[i] * 0.8}"/>`);
+      tokens.forEach((t, i) => svg += `<circle cx="${xAt(i)}" cy="${H - 30}" r="${i === q ? 7 : 5}" fill="${i === q ? 'var(--mauve)' : 'var(--base)'}" stroke="var(--sub0)"/><text x="${xAt(i)}" y="${H - 10}" text-anchor="middle" font-size="10" fill="var(--text)">${t}</text>`);
+      svg += '</svg>';
+      $('#am-svg').innerHTML = svg;
+      $('#am-rows').innerHTML = tokens.map((t, i) => `<div><code>${t}</code><span class="ok">${(w[i] * 100).toFixed(0)}%</span></div>`).join('');
+      $('#am-say').textContent = `${head}, query "${tokens[q]}": most attention on "${tokens[w.indexOf(Math.max(...w))]}". ${head === 'Head 1' ? 'This head tends to link meaning-related words however far apart they are.' : 'This head mostly just looks at its immediate neighbours.'}`;
+    };
+    el.innerHTML = `<p class="wgt">Try it: pick the query word and the head</p>
+      <div class="wgrow"><span class="wgsub">Head</span><span id="am-heads"></span><i class="wgdiv"></i><span class="wgsub">Query</span><span id="am-tokens"></span></div>
+      <div class="nndiag" id="am-svg"></div>
+      <div class="wgtable" id="am-rows"></div>
+      <div class="wgplayrow"><div class="wgsec"><button class="btn ghost" id="am-step" type="button">Step</button><button class="btn ghost danger" id="am-reset" type="button">Reset</button></div><button class="btn play" id="am-play" type="button">${playLabel(false)}</button></div>
+      <p class="wgcap" id="am-say"></p>`;
+    $('#am-heads').innerHTML = Object.keys(heads).map((n, i) => `<button type="button" class="seg2${i === 0 ? ' on' : ''}" data-h="${n}">${n}</button>`).join('');
+    $('#am-tokens').innerHTML = tokens.map((t, i) => `<button type="button" class="seg2${i === 0 ? ' on' : ''}">${t}</button>`).join('');
+    $('#am-heads').onclick = e => { const b = e.target.closest('button'); if (!b) return; head = b.dataset.h; $$('#am-heads button').forEach(x => x.classList.toggle('on', x === b)); render(); };
+    $('#am-tokens').onclick = e => { const b = e.target.closest('button'); if (!b) return; q = [...$$('#am-tokens button')].indexOf(b); render(); };
+    $('#am-step').onclick = () => { if (timer) { clearInterval(timer); timer = null; $('#am-play').innerHTML = playLabel(false); } q = (q + 1) % tokens.length; render(); };
+    $('#am-reset').onclick = () => { if (timer) { clearInterval(timer); timer = null; } $('#am-play').innerHTML = playLabel(false); q = 0; render(); };
+    $('#am-play').onclick = () => {
+      if (timer) { clearInterval(timer); timer = null; $('#am-play').innerHTML = playLabel(false); return; }
+      $('#am-play').innerHTML = playLabel(true);
+      timer = trackTimer(setInterval(() => { q = (q + 1) % tokens.length; render(); }, 900));
+    };
+    render();
+  },
+  // a different sine wave per dimension: the fixed pattern positional encoding adds to every token
+  posenc(el) {
+    const dims = [0, 1, 2, 3], colors = ['var(--mauve)', 'var(--blue)', 'var(--green)', 'var(--peach)'];
+    const series = dims.map(d => ({ pts: Array.from({ length: 41 }, (_, i) => [i, Math.sin(i / Math.pow(10000, d / 4))]), color: colors[d] }));
+    el.innerHTML = `<p class="wgt">Positional encoding: a different wave per dimension</p>
+      <div class="nndiag">${curveSVG(series, { xMin: 0, xMax: 40, yMin: -1, yMax: 1, xLabel: 'position in the sentence', yLabel: 'encoding value' })}</div>
+      <p class="wgcap">Every position gets its own fixed pattern of wave values, one per dimension, so the network can tell word order apart without attention alone noticing it.</p>`;
+  },
+  // decoder-only, autoregressive generation: one hand-picked next word per step, always re-reading everything generated so far
+  autogen(el) {
+    const prompt = ['The', 'weather', 'today', 'is'];
+    const nextWords = ['sunny', 'and', 'warm', '.'];
+    let t = 0, timer = null;
+    const render = () => {
+      $('#ag-sent').innerHTML = [...prompt.map(w => `<span>${w}</span>`), ...nextWords.slice(0, t).map(w => `<span class="on">${w}</span>`)].join(' ');
+      $('#ag-say').textContent = t === 0 ? 'Nothing generated yet. A decoder-only model like GPT only ever looks backward, at the prompt and whatever it has written so far.'
+        : t >= nextWords.length ? 'Done. The model keeps re-reading the whole sentence so far before every single new word, prompt included.'
+          : `Generated ${t} of ${nextWords.length} words. Word ${t + 1} will be chosen by re-reading everything to its left, nothing to its right.`;
+    };
+    el.innerHTML = `<p class="wgt">Try it: generate one word at a time</p>
+      <p class="wgo" id="ag-sent"></p>
+      <div class="wgplayrow"><div class="wgsec"><button class="btn ghost" id="ag-step" type="button">Step</button><button class="btn ghost danger" id="ag-reset" type="button">Reset</button></div><button class="btn play" id="ag-play" type="button">${playLabel(false)}</button></div>
+      <p class="wgcap" id="ag-say"></p>`;
+    const resetAll = () => { t = 0; if (timer) { clearInterval(timer); timer = null; } $('#ag-play').innerHTML = playLabel(false); render(); };
+    $('#ag-step').onclick = () => { if (timer) { clearInterval(timer); timer = null; $('#ag-play').innerHTML = playLabel(false); } t = Math.min(t + 1, nextWords.length); render(); };
+    $('#ag-reset').onclick = resetAll;
+    $('#ag-play').onclick = () => {
+      if (timer) { clearInterval(timer); timer = null; $('#ag-play').innerHTML = playLabel(false); return; }
+      if (t >= nextWords.length) resetAll();
+      $('#ag-play').innerHTML = playLabel(true);
+      timer = trackTimer(setInterval(() => { t++; if (t >= nextWords.length) { t = nextWords.length; render(); clearInterval(timer); timer = null; $('#ag-play').innerHTML = playLabel(false); return; } render(); }, 550));
+    };
+    render();
+  },
+  // noise slowly denoised into a target pattern, step by step, with scrub + play; pick which target shape it denoises toward
+  diffusionsteps(el) {
+    const n = 8, total = 20;
+    const shapes = {
+      Diamond: (x, y) => { const d = Math.abs(x - 3.5) + Math.abs(y - 3.5); return d > 2 && d < 4.5 ? 1 : 0; },
+      Circle: (x, y) => Math.hypot(x - 3.5, y - 3.5) < 3 ? 1 : 0,
+      Cross: (x, y) => (Math.abs(x - 3.5) < 1.2 || Math.abs(y - 3.5) < 1.2) ? 1 : 0,
+    };
+    const targetFor = name => { const t = []; const f = shapes[name]; for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) t.push(f(x, y)); return t; };
+    const rnd = seeded(9);
+    const noise = Array.from({ length: n * n }, () => rnd());
+    const jitter = Array.from({ length: n * n }, () => rnd() - 0.5);
+    let shapeName = 'Diamond', target = targetFor(shapeName), step = 0, timer = null;
+    const cellsAt = s => { const mix = s / total; return target.map((tgt, i) => noise[i] * (1 - mix) + tgt * mix + jitter[i] * 0.15 * (1 - mix)); };
+    const render = () => {
+      const vals = cellsAt(step);
+      $('#df-grid').innerHTML = `<div class="cvgrid" style="grid-template-columns:repeat(${n},26px)">${vals.map(v => `<div class="cvcell" style="background:color-mix(in srgb, var(--mauve) ${Math.round(Math.max(0, Math.min(1, v)) * 100)}%, var(--crust))"></div>`).join('')}</div>`;
+      $('#df-sv').textContent = step;
+      $('#df-say').textContent = step === 0 ? 'Pure noise: step 0.' : step >= total ? `Fully denoised: the model has turned noise into a recognisable ${shapeName.toLowerCase()}.` : `Step ${step} of ${total}: still denoising toward the ${shapeName.toLowerCase()}.`;
+    };
+    el.innerHTML = `<p class="wgt">Try it: scrub the denoising steps</p>
+      <div class="wgrow"><span class="wgsub">Target</span><span id="df-shapes"></span></div>
+      <div class="wgrow"><label>Step <input id="df-step" type="range" min="0" max="${total}" value="0"></label><b id="df-sv">0</b></div>
+      <div class="wgplayrow"><div class="wgsec"><button class="btn ghost danger" id="df-reset" type="button">Reset</button></div><button class="btn play" id="df-play" type="button">${playLabel(false)}</button></div>
+      <div class="nndiag" id="df-grid"></div>
+      <p class="wgcap" id="df-say"></p>`;
+    $('#df-shapes').innerHTML = Object.keys(shapes).map((n, i) => `<button type="button" class="seg2${i === 0 ? ' on' : ''}" data-s="${n}">${n}</button>`).join('');
+    $('#df-shapes').onclick = e => { const b = e.target.closest('button'); if (!b) return; shapeName = b.dataset.s; target = targetFor(shapeName); $$('#df-shapes button').forEach(x => x.classList.toggle('on', x === b)); step = 0; $('#df-step').value = 0; render(); };
+    $('#df-step').addEventListener('input', () => { step = +$('#df-step').value; render(); });
+    $('#df-reset').onclick = () => { if (timer) { clearInterval(timer); timer = null; $('#df-play').innerHTML = playLabel(false); } step = 0; $('#df-step').value = 0; render(); };
+    $('#df-play').onclick = () => {
+      if (timer) { clearInterval(timer); timer = null; $('#df-play').innerHTML = playLabel(false); return; }
+      if (step >= total) { step = 0; $('#df-step').value = 0; }
+      $('#df-play').innerHTML = playLabel(true);
+      timer = trackTimer(setInterval(() => { step++; $('#df-step').value = step; render(); if (step >= total) { clearInterval(timer); timer = null; $('#df-play').innerHTML = playLabel(false); } }, 220));
+    };
+    render();
+  },
+  // a static 2D latent space: three clusters, the autoencoder/VAE picture
+  latentscatter(el) {
+    const rnd = seeded(13);
+    const cluster = (cx, cy, color) => Array.from({ length: 10 }, () => ({ x: cx + (rnd() - 0.5) * 2.4, y: cy + (rnd() - 0.5) * 2.4, color }));
+    const pts = [...cluster(2, 2, 'var(--sky)'), ...cluster(8, 3, 'var(--peach)'), ...cluster(5, 8, 'var(--green)')];
+    el.innerHTML = `<p class="wgt">A 2D latent space</p>
+      <div class="nndiag">${scatterSVG(pts, { xMin: -1, xMax: 11, yMin: -1, yMax: 11, xLabel: 'latent dim 1', yLabel: 'latent dim 2' })}</div>
+      <p class="wgcap">An autoencoder squeezes each input down to just a couple of numbers. Similar inputs land near each other, which is why you can walk between two points and get a smooth blend of the two.</p>`;
+  },
+  // GAN as a tug of war: a generator-quality number slowly climbs while a discriminator-confidence number settles, over seeded "training steps"
+  gantugofwar(el) {
+    const total = 20;
+    const rnd = seeded(31);
+    const noiseAt = s => (rnd() - 0.5) * Math.max(0, 1 - s / total) * 18;
+    let step = 0, timer = null;
+    const genQuality = s => Math.min(96, 8 + 88 * (1 - Math.exp(-s / 8)));
+    const discConf = s => Math.max(52, 96 - 44 * (1 - Math.exp(-s / 10)));
+    const render = () => {
+      const g = Math.max(2, Math.min(98, genQuality(step) + noiseAt(step)));
+      const d = Math.max(50, Math.min(99, discConf(step) + noiseAt(step) * 0.4));
+      $('#gn-bars').innerHTML = `<div class="wgbars">
+        <div class="wgbar"><i style="height:${g}%;background:var(--green)"></i><b>${g.toFixed(0)}%</b><span>Generator: fake looks real</span></div>
+        <div class="wgbar"><i style="height:${d}%;background:var(--red)"></i><b>${d.toFixed(0)}%</b><span>Discriminator: confidence telling real from fake</span></div>
+      </div>`;
+      $('#gn-say').textContent = step === 0 ? 'Step 0: the generator makes obvious fakes, the discriminator spots them easily.'
+        : step >= total ? 'After enough rounds, the generator\'s fakes score in the high 80s while the discriminator\'s confidence has fallen into the high 50s: barely better than guessing. That gap closing is the "competing" part of GAN.'
+          : `Step ${step} of ${total}: both networks are still improving against each other.`;
+    };
+    el.innerHTML = `<p class="wgt">Try it: train the tug of war</p>
+      <div id="gn-bars"></div>
+      <div class="wgplayrow"><div class="wgsec"><button class="btn ghost" id="gn-step" type="button">Step</button><button class="btn ghost danger" id="gn-reset" type="button">Reset</button></div><button class="btn play" id="gn-play" type="button">${playLabel(false)}</button></div>
+      <p class="wgcap" id="gn-say"></p>`;
+    const resetAll = () => { step = 0; if (timer) { clearInterval(timer); timer = null; } $('#gn-play').innerHTML = playLabel(false); render(); };
+    $('#gn-step').onclick = () => { if (timer) { clearInterval(timer); timer = null; $('#gn-play').innerHTML = playLabel(false); } step = Math.min(step + 1, total); render(); };
+    $('#gn-reset').onclick = resetAll;
+    $('#gn-play').onclick = () => {
+      if (timer) { clearInterval(timer); timer = null; $('#gn-play').innerHTML = playLabel(false); return; }
+      if (step >= total) resetAll();
+      $('#gn-play').innerHTML = playLabel(true);
+      timer = trackTimer(setInterval(() => { step++; if (step >= total) { step = total; render(); clearInterval(timer); timer = null; $('#gn-play').innerHTML = playLabel(false); return; } render(); }, 260));
+    };
+    render();
+  },
+  // next-token probabilities with a temperature slider, and a sample button that builds a sentence
+  tokensample(el) {
+    const words = ['mat', 'floor', 'chair', 'roof', 'moon', 'table'];
+    const logits = [4.2, 2.6, 2.1, 0.6, -0.5, 1.8];
+    let temp = 1, generated = [];
+    const rnd = seeded(17);
+    const probs = t => { const z = logits.map(l => l / Math.max(0.1, t)), m = Math.max(...z), ex = z.map(v => Math.exp(v - m)), s = ex.reduce((a, b) => a + b, 0); return ex.map(v => v / s); };
+    const render = () => {
+      const p = probs(temp);
+      $('#tk-bars').innerHTML = `<div class="wgbars">${words.map((w, i) => `<div class="wgbar"><i style="height:${Math.max(2, p[i] * 100)}%"></i><b>${(p[i] * 100).toFixed(0)}%</b><span>${w}</span></div>`).join('')}</div>`;
+      $('#tk-sent').textContent = `The cat sat on the${generated.length ? ' ' + generated.join(' ') : ''} …`;
+      $('#tk-tv').textContent = temp.toFixed(2);
+    };
+    el.innerHTML = `<p class="wgt">Try it: change the temperature and sample</p>
+      <div class="wgrow"><label>Temperature <input id="tk-t" type="range" min="0.2" max="2" step="0.1" value="1"></label><b id="tk-tv">1.00</b></div>
+      <div id="tk-bars"></div>
+      <div class="wgrow"><button class="btn ghost" id="tk-sample" type="button">Sample next word</button><button class="btn ghost danger" id="tk-reset" type="button">Reset</button></div>
+      <p class="wgo" id="tk-sent"></p>
+      <p class="wgcap">Low temperature always picks the top word. High temperature flattens the odds, so rarer words get a real chance.</p>`;
+    $('#tk-t').addEventListener('input', () => { temp = +$('#tk-t').value; render(); });
+    $('#tk-sample').onclick = () => { const p = probs(temp); let r = rnd(), acc = 0, pick = words.length - 1; for (let i = 0; i < p.length; i++) { acc += p[i]; if (r <= acc) { pick = i; break; } } generated.push(words[pick]); render(); };
+    $('#tk-reset').onclick = () => { generated = []; render(); };
+    render();
+  },
+  // real tabular Q-learning over a tiny grid world: train more episodes, watch the greedy path shorten, then play it out
+  gridworld(el) {
+    const size = 4, goal = size * size - 1, actions = [[-1, 0], [1, 0], [0, -1], [0, 1]], idx = (r, c) => r * size + c;
+    const rnd = seeded(23);
+    let Q = Array.from({ length: size * size }, () => [0, 0, 0, 0]);
+    const episodeCounts = [0, 2, 5, 10, 20, 40], snapshots = [], qSnapshots = [];
+    const trainEpisodes = n => { for (let e = 0; e < n; e++) { let r = 0, c = 0, steps = 0; while (idx(r, c) !== goal && steps < 40) { const s = idx(r, c), a = rnd() < 0.2 ? Math.floor(rnd() * 4) : Q[s].indexOf(Math.max(...Q[s])); const nr = Math.max(0, Math.min(size - 1, r + actions[a][0])), nc = Math.max(0, Math.min(size - 1, c + actions[a][1])), ns = idx(nr, nc), reward = ns === goal ? 10 : -1; Q[s][a] += 0.3 * (reward + 0.9 * Math.max(...Q[ns]) - Q[s][a]); r = nr; c = nc; steps++; } } };
+    let prevCount = 0;
+    episodeCounts.forEach(n => {
+      trainEpisodes(n - prevCount); prevCount = n;
+      let r = 0, c = 0, steps = 0; const path = [idx(0, 0)];
+      while (idx(r, c) !== goal && steps < 30) { const s = idx(r, c), a = Q[s].indexOf(Math.max(...Q[s])); r = Math.max(0, Math.min(size - 1, r + actions[a][0])); c = Math.max(0, Math.min(size - 1, c + actions[a][1])); steps++; path.push(idx(r, c)); }
+      snapshots.push(path);
+      qSnapshots.push(Q.map(row => [...row])); // Q at exactly this many training episodes, so the overlay matches the slider, not the final trained table
+    });
+    let snapIdx = 0, playPos = 0, timer = null, showQ = false;
+    const qMaxAt = i => Math.max(...qSnapshots[snapIdx][i]);
+    const drawGrid = (path, pos) => {
+      const qmax = Array.from({ length: size * size }, (_, i) => qMaxAt(i));
+      const qhi = Math.max(0.001, ...qmax.map(v => Math.max(0, v)));
+      let html = `<div class="cvgrid" style="grid-template-columns:repeat(${size},34px)">`;
+      for (let i = 0; i < size * size; i++) {
+        const onPath = path.includes(i), isCur = path[pos] === i, isGoal = i === goal, isStart = i === 0;
+        let bg = isCur ? 'var(--mauve)' : isGoal ? 'var(--green)' : isStart ? 'var(--blue)' : onPath ? 'var(--s1)' : 'var(--base)';
+        if (showQ && !isCur && !isGoal && !isStart) { const t = Math.max(0, qmax[i]) / qhi; bg = `color-mix(in srgb, var(--peach) ${Math.round(t * 70)}%, var(--base))`; }
+        html += `<div class="cvcell" style="background:${bg};border-radius:6px">${isGoal ? 'G' : isStart ? 'S' : ''}</div>`;
+      }
+      html += '</div>'; $('#gw-grid').innerHTML = html;
+    };
+    const render = () => {
+      $('#gw-epv').textContent = episodeCounts[snapIdx];
+      const path = snapshots[snapIdx]; playPos = Math.min(playPos, path.length - 1);
+      drawGrid(path, playPos);
+      $('#gw-say').textContent = `After ${episodeCounts[snapIdx]} training episodes, the greedy path is ${path.length - 1} steps long.${showQ ? ' The peach shade is each cell\'s best learned Q-value: brighter means the agent has learned that square leads somewhere good.' : ''}`;
+    };
+    el.innerHTML = `<p class="wgt">Try it: train the agent, then watch it walk the path</p>
+      <div class="wgrow"><label>Episodes trained <input id="gw-ep" type="range" min="0" max="${episodeCounts.length - 1}" value="0"></label><b id="gw-epv"></b><i class="wgdiv"></i><span class="wgsub">Q-values</span><span id="gw-qtoggle"></span></div>
+      <div class="wgplayrow"><div class="wgsec"><button class="btn ghost danger" id="gw-reset" type="button">Reset</button></div><button class="btn play" id="gw-play" type="button">${playLabel(false)}</button></div>
+      <div class="nndiag" id="gw-grid"></div>
+      <p class="wgcap" id="gw-say"></p>`;
+    $('#gw-qtoggle').innerHTML = ['Off', 'On'].map((n, i) => `<button type="button" class="seg2${i === 0 ? ' on' : ''}" data-q="${i}">${n}</button>`).join('');
+    $('#gw-qtoggle').onclick = e => { const b = e.target.closest('button'); if (!b) return; showQ = b.dataset.q === '1'; $$('#gw-qtoggle button').forEach(x => x.classList.toggle('on', x === b)); render(); };
+    $('#gw-ep').addEventListener('input', () => { snapIdx = +$('#gw-ep').value; playPos = 0; render(); });
+    $('#gw-reset').onclick = () => { playPos = 0; render(); };
+    $('#gw-play').onclick = () => {
+      if (timer) { clearInterval(timer); timer = null; $('#gw-play').innerHTML = playLabel(false); return; }
+      playPos = 0; $('#gw-play').innerHTML = playLabel(true);
+      timer = trackTimer(setInterval(() => { playPos++; const path = snapshots[snapIdx]; if (playPos >= path.length) { clearInterval(timer); timer = null; $('#gw-play').innerHTML = playLabel(false); playPos = path.length - 1; } render(); }, 450));
+    };
+    render();
+  },
+  // RLHF made concrete: two candidate replies with reward-model scores, and a preference bar that nudges toward the higher-scoring one over a few steps
+  rlhfnudge(el) {
+    const prompt = 'A customer writes: "My order arrived broken."';
+    const respA = { text: 'So sorry about that! Here is a refund and a replacement on the way.', reward: 8.4 };
+    const respB = { text: 'Not my problem, try contacting someone else.', reward: 1.2 };
+    const maxT = 6;
+    let t = 0, timer = null;
+    const render = () => {
+      const target = respA.reward >= respB.reward ? 1 : 0;
+      const pA = 0.5 + (target === 1 ? 0.46 : -0.46) * (t / maxT);
+      const pB = 1 - pA;
+      $('#rl-bars').innerHTML = `<div class="wgbars">
+        <div class="wgbar"><i style="height:${pA * 100}%;background:var(--green)"></i><b>${(pA * 100).toFixed(0)}%</b><span>A: reward ${respA.reward}</span></div>
+        <div class="wgbar"><i style="height:${pB * 100}%;background:var(--red)"></i><b>${(pB * 100).toFixed(0)}%</b><span>B: reward ${respB.reward}</span></div>
+      </div>`;
+      $('#rl-say').textContent = t === 0 ? 'Before any RLHF nudging, the policy is split roughly evenly between the two candidate responses.'
+        : t >= maxT ? 'After enough nudges, the policy strongly favours response A, the one the reward model scored higher.'
+          : `Nudge ${t} of ${maxT}: the policy is shifting toward whichever response the reward model preferred.`;
+    };
+    el.innerHTML = `<p class="wgt">Try it: nudge the policy with RLHF</p>
+      <p class="wgcap">${mdEsc(prompt)}</p>
+      <div class="wgtable"><div><code>A: ${respA.text}</code><span class="ok">reward ${respA.reward}</span></div><div><code>B: ${respB.text}</code><span class="bad">reward ${respB.reward}</span></div></div>
+      <div id="rl-bars"></div>
+      <div class="wgplayrow"><div class="wgsec"><button class="btn ghost" id="rl-step" type="button">Step</button><button class="btn ghost danger" id="rl-reset" type="button">Reset</button></div><button class="btn play" id="rl-play" type="button">${playLabel(false)}</button></div>
+      <p class="wgcap" id="rl-say"></p>`;
+    const resetAll = () => { t = 0; if (timer) { clearInterval(timer); timer = null; } $('#rl-play').innerHTML = playLabel(false); render(); };
+    $('#rl-step').onclick = () => { if (timer) { clearInterval(timer); timer = null; $('#rl-play').innerHTML = playLabel(false); } t = Math.min(t + 1, maxT); render(); };
+    $('#rl-reset').onclick = resetAll;
+    $('#rl-play').onclick = () => {
+      if (timer) { clearInterval(timer); timer = null; $('#rl-play').innerHTML = playLabel(false); return; }
+      if (t >= maxT) resetAll();
+      $('#rl-play').innerHTML = playLabel(true);
+      timer = trackTimer(setInterval(() => { t++; if (t >= maxT) { t = maxT; render(); clearInterval(timer); timer = null; $('#rl-play').innerHTML = playLabel(false); return; } render(); }, 500));
+    };
+    render();
   },
   // fill in the blanks of an f-string and watch the sentence change
   fstring(el) {
@@ -595,6 +1017,7 @@ new ResizeObserver(fit).observe(cview);
 fit();
 
 async function loadChapter() {
+  activeTimers.forEach(clearInterval); activeTimers = [];
   const id = decodeURIComponent(location.hash.slice(1));
   const idx = all.findIndex(x => slug(x.g) + '/' + slug(x.n) === id);
   if (idx < 0) { setNav($('#tprev'), null, 'Previous topic'); setNav($('#tnext'), null, 'Next topic'); $('#notepane').innerHTML = ''; setTitle('Chapter'); showMessage('Chapter not found', 'Pick one from the list on the left.'); return; }

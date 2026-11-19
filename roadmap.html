@@ -21,7 +21,22 @@
             <h1>Roadmap</h1>
             <p class="lead">Follow the classes from M.4 to M.6, one chapter at a time</p>
           </div>
-          <a class="btn" id="start" href="#"><svg class="i"><use href="#i-rocket-launch"/></svg><span>Start your journey</span></a>
+          <div class="rhact">
+            <a class="btn" id="start" href="#"><svg class="i"><use href="#i-rocket-launch"/></svg><span>Start your journey</span></a>
+            <button class="btn ghost danger" id="reset" type="button"><svg class="i"><use href="#i-warning"/></svg><span>Reset</span></button>
+          </div>
+        </div>
+
+        <div class="modalbg" id="resetbg" hidden>
+          <div class="modal" role="alertdialog" aria-label="Reset progress">
+            <div class="modalic"><svg class="i"><use href="#i-warning"/></svg></div>
+            <h3>Reset all progress?</h3>
+            <p>Every chapter you have marked done gets unmarked. This cannot be undone.</p>
+            <div class="modalact">
+              <button class="btn ghost" id="resetcancel" type="button">Cancel</button>
+              <button class="btn danger" id="resetok" type="button">Reset progress</button>
+            </div>
+          </div>
         </div>
 
         <div class="stats">
@@ -77,6 +92,11 @@ else {
   if (nDone) startBtn.querySelector('span').textContent = 'Continue learning';
   startBtn.href = href(next.g, next.n);
 }
+const resetbg = $('#resetbg');
+$('#reset').onclick = () => resetbg.hidden = false;
+$('#resetcancel').onclick = () => resetbg.hidden = true;
+resetbg.onclick = e => { if (e.target === resetbg) resetbg.hidden = true; };
+$('#resetok').onclick = () => { localStorage.removeItem('coder:done'); location.reload(); };
 </script>
 </body>
 </html>

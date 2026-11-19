@@ -387,6 +387,21 @@ a.tab:hover{color:var(--text);text-decoration:underline;text-underline-offset:2p
 .mod.soon{opacity:.55}
 @media(max-width:640px){.stats{grid-template-columns:1fr 1fr}.stats>div:nth-child(3){border-left:0}.stats>div:nth-child(n+3){border-top:1px solid var(--s0)}}
 .rh{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.rhact{display:flex;align-items:center;gap:8px}
+.rhact .btn{margin-top:0}
+.btn.ghost.danger{color:var(--red)}
+.btn.ghost.danger:hover{background:color-mix(in srgb,var(--red) 15%,var(--s0))}
+.btn.danger{background:var(--red);color:var(--crust)}
+.btn.danger:hover{background:#ffa5b8}
+.modalbg{position:fixed;inset:0;background:#11111bcc;display:grid;place-items:center;z-index:20;padding:16px}
+.modalbg[hidden]{display:none}
+.modal{width:360px;max-width:100%;background:var(--mantle);border-radius:14px;padding:24px;text-align:center}
+.modal .modalic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;margin:0 auto 14px;color:var(--red);background:color-mix(in srgb,var(--red) 15%,var(--base))}
+.modal .modalic .i{width:22px;height:22px}
+.modal h3{font-size:16px;font-weight:700;margin-bottom:6px}
+.modal p{color:var(--o1);font-size:13px;margin-bottom:20px}
+.modalact{display:flex;gap:10px;justify-content:center}
+.modalact .btn{margin-top:0}
 .btn{display:inline-flex;align-items:center;gap:8px;margin-top:6px;padding:7px 14px;border-radius:8px;background:var(--mauve);color:var(--crust);font-weight:700;cursor:pointer}
 .btn:hover{background:#ddc1fb}
 .btn .i{width:15px;height:15px}
@@ -452,7 +467,7 @@ a.tab:hover{color:var(--text);text-decoration:underline;text-underline-offset:2p
 .wg input{background:var(--base);color:var(--text);border-radius:6px;padding:5px 9px;width:130px;border-bottom:1px solid var(--s1)}
 .wg input:focus{outline:0;border-bottom-color:var(--mauve)}
 .wg .code{background:var(--crust);margin:8px 0}
-.wg .wgo{margin:8px 0 0}
+.wg .wgo{margin:8px 0 14px}
 .wg .wgo b{color:var(--green)}
 .wgtable{display:flex;flex-direction:column;gap:6px;margin-top:4px}
 .wgtable>div{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:8px 12px;border-radius:8px;background:var(--crust)}
@@ -494,11 +509,47 @@ a.tab:hover{color:var(--text);text-decoration:underline;text-underline-offset:2p
 .mnweights canvas{border-radius:4px}
 .cmgrid{display:grid;grid-template-columns:90px 1fr 1fr;gap:8px;align-items:center;margin:10px 0}
 .cmgrid b{color:var(--o1);font-size:12px;text-align:center;min-width:0}
-.cmgrid input{width:100%;min-width:0;text-align:center;box-sizing:border-box}
+.cmcell{padding:10px;border-radius:10px;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
+.cmcell.ok{background:color-mix(in srgb,var(--green) 13%,var(--base))}
+.cmcell.bad{background:color-mix(in srgb,var(--red) 13%,var(--base))}
+.cmcell i{font-style:normal;font-weight:700;font-size:13px}
+.cmcell.ok i{color:var(--green)}
+.cmcell.bad i{color:var(--red)}
+.cmcell input{width:70%;min-width:0;text-align:center;box-sizing:border-box;background:transparent;border-bottom:1px solid var(--s1)}
+.cmcell span{color:var(--o1);font-size:10.5px;text-align:center}
 .ttbar{display:flex;gap:2px;margin:10px 0}
 .ttbar i{flex:1;height:28px;border-radius:3px}
-.foldbar{display:flex;gap:4px;margin:10px 0}
-.foldbar i{flex:1;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--crust);font-weight:700;font-size:12px}
+.cvfold{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+.cvfoldrow{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.cvfoldrow i{font-style:normal;text-align:center;padding:8px 4px;border-radius:8px;font-size:11px;font-weight:700}
+.cvfoldrow i.train{background:color-mix(in srgb,var(--green) 13%,var(--base));color:var(--green)}
+.cvfoldrow i.test{background:color-mix(in srgb,var(--blue) 18%,var(--base));color:var(--blue)}
+.cvfoldlabels{display:grid;grid-template-columns:repeat(5,1fr)}
+.cvfoldlabels span{text-align:center;color:var(--o0);font-size:11px}
+
+/* CNN/RNN/Transformer/Generative/LLM widgets: stage + glossary cards, the convolution grid, the unrolled RNN strip */
+.wgsub{color:var(--o1);font-size:12px;align-self:center}
+.wgdiv{width:1px;align-self:stretch;background:var(--s1);margin:0 2px}
+.wgplayrow{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-bottom:10px}
+.wgsec{display:flex;gap:8px}
+.btn.play{background:var(--green);color:var(--crust);margin-top:0}
+.btn.play:hover{background:#c2f0c4}
+.btn.play .ply{font-size:9px;line-height:1}
+.convgrids{display:flex;gap:18px;flex-wrap:wrap;margin:10px 0}
+.cvgrid{display:grid;gap:2px}
+.cvcell{width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:8px;border-radius:3px;color:var(--text)}
+.cvcell.hit{outline:2px solid var(--mauve);outline-offset:-2px}
+.rnnrow{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin:10px 0}
+.rnncell{display:flex;flex-direction:column;align-items:center;gap:4px;width:56px;padding:6px;border-radius:8px;background:var(--crust)}
+.rnncell.on{outline:2px solid var(--mauve)}
+.rnncell.dim{opacity:.35}
+.rnncell i{font-style:normal;color:var(--o0);font-size:10px}
+.rnncell b{font-size:12px;color:var(--text)}
+.rnnbar{width:10px;height:36px;background:var(--s0);border-radius:4px;display:flex;align-items:flex-end;overflow:hidden}
+.rnnbar em{display:block;width:100%;background:var(--mauve);font-style:normal}
+.rnnarrow{color:var(--o0)}
+.rnncell.ctx{background:color-mix(in srgb,var(--mauve) 15%,var(--crust))}
+.wgo span.on{color:var(--green);font-weight:700}
 
 /* inputs: an underline, never a rounded outline */
 .wg input{background:transparent;border-radius:0;padding:4px 2px;width:120px;border-bottom:1px solid var(--s1)}
