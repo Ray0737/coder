@@ -45,37 +45,6 @@
           <div id="nread" hidden></div>
         </div>
 
-        <div class="pane" id="progress" data-tab="Progress" data-icon="chart-line-up" hidden>
-          <h2 class="ph">Progress</h2>
-          <p class="lead">Where you are in the course</p>
-          <div class="stats">
-            <div><b id="n-done" style="color:var(--green)">0/0</b><span>Chapters done</span></div>
-            <div><b id="n-streak" style="color:var(--peach)">0</b><span>Day streak</span></div>
-            <div><b id="n-notes" style="color:var(--blue)">0</b><span>Notes written</span></div>
-            <div><a id="n-last" class="lastlink" href="#">None yet</a><span>Last opened</span></div>
-          </div>
-          <div class="plist" id="plist"></div>
-        </div>
-
-        <div class="pane" id="backup" data-tab="Back up" data-icon="hard-drives" hidden>
-          <h2 class="ph">Back up</h2>
-          <p class="lead">Your progress and notes live in this browser only, so keep a copy</p>
-          <div class="setlist">
-            <div class="set">
-              <span class="si"><svg class="i"><use href="#i-arrow-up-right"/></svg></span>
-              <div class="st"><b>Export</b><p>Download everything as one file: chapters done, notes, streak and recent chapters.</p></div>
-              <button class="btn ghost" id="exp" type="button">Download backup</button>
-            </div>
-            <div class="set">
-              <span class="si"><svg class="i"><use href="#i-folder-open"/></svg></span>
-              <div class="st"><b>Import</b><p>Load a backup file. Chapters you finished are added to the ones you already have, and notes in the file replace notes for the same chapter.</p></div>
-              <label class="btn ghost" for="imp">Choose a file</label>
-              <input id="imp" type="file" accept="application/json,.json" hidden>
-            </div>
-          </div>
-          <p class="note wide" id="bmsg" style="margin-top:14px"></p>
-        </div>
-
       </div>
     </div>
   </main>
@@ -160,53 +129,6 @@ $('#nlist').addEventListener('keydown', e => {
 });
 addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#nread').hidden) closeNote(); });
 drawNotes();
-
-// ---- progress
-$('#n-done').textContent = doneList.filter(fromId).length + '/' + all.length;
-const st = load('coder:streak');
-const alive = st && (st.last === days(new Date()) || st.last === days(new Date(Date.now() - 864e5)));
-$('#n-streak').textContent = alive ? st.days : 0;
-$('#n-notes').textContent = mine.length;
-const lastId = (load('coder:recent') || [])[0], last = lastId && fromId(lastId);
-if (last) { $('#n-last').textContent = last.n; $('#n-last').href = pathById(lastId); }
-$('#plist').innerHTML = notes.filter(n => n[3].some(c => c !== 'Coming soon' && !c.startsWith('# '))).map(([g, ic, c, ns, yr]) => {
-  const real = ns.filter(n => n !== 'Coming soon' && !n.startsWith('# '));
-  const got = real.filter(n => doneList.includes(slug(g) + '/' + slug(n))).length;
-  return `<div class="prow" style="--c:var(--${c})"><span class="pl">${icon(ic)}<b>${esc(g)}</b><i>${yr.split(' ')[0]}</i></span><span class="pc">${got}/${real.length}</span><span class="bar2"><i style="width:${Math.round(got / real.length * 100)}%"></i></span></div>`;
-}).join('');
-
-// ---- back up
-$('#exp').onclick = () => {
-  const out = {};
-  for (let i = 0; i < localStorage.length; i++) {
-    const k = localStorage.key(i);
-    if (k.startsWith('coder:')) out[k] = localStorage.getItem(k);
-  }
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([JSON.stringify(out, null, 2)], { type: 'application/json' }));
-  a.download = 'coder-backup-' + days(new Date()) + '.json';
-  a.click();
-  URL.revokeObjectURL(a.href);
-  $('#bmsg').textContent = 'Backup downloaded (' + Object.keys(out).length + ' items).';
-};
-$('#imp').onchange = e => {
-  const f = e.target.files[0];
-  if (!f) return;
-  f.text().then(t => {
-    const data = JSON.parse(t);
-    let n = 0;
-    Object.entries(data).forEach(([k, v]) => {
-      if (!k.startsWith('coder:') || typeof v !== 'string') return;
-      if (k === 'coder:done') {
-        const merged = [...new Set([...(load('coder:done') || []), ...JSON.parse(v)])];
-        localStorage.setItem(k, JSON.stringify(merged));
-      } else localStorage.setItem(k, v);
-      n++;
-    });
-    $('#bmsg').textContent = 'Imported ' + n + ' items. Reloading...';
-    setTimeout(() => location.reload(), 600);
-  }).catch(() => { $('#bmsg').textContent = 'That file could not be read as a Coder backup.'; });
-};
 </script>
 </body>
 </html>

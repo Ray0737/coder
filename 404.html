@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<base href="/">
+<title>Wrong directory · Coder</title>
+<meta name="description" content="That page does not exist.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#11111b">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preload" href="assets/fonts/lineseedsansth_rg.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="404">
+
+  <main class="ed">
+    <div class="tabs" role="tablist"><div class="tab on" role="tab" aria-selected="true"><svg class="i"><use href="#i-warning"/></svg>404</div></div>
+    <div class="crumb">Coder › 404</div>
+    <div class="view">
+      <div class="welcome wide lost">
+        <svg class="art" viewBox="0 0 240 120" aria-hidden="true">
+          <path class="ds" d="M60 18h50l10 12h60v78H60z"/>
+          <rect class="bob" style="--i:0" x="78" y="48" width="84" height="46" rx="3" fill="url(#dots)"/>
+          <text x="120" y="82" text-anchor="middle" font-size="40" fill="var(--mauve)" font-family="inherit">?</text>
+        </svg>
+        <h1>Wrong directory, are you?</h1>
+        <p class="lead">There is no file at <code id="lostpath">this address</code>. It may have moved, or the link may be mistyped.</p>
+        <div class="lostact">
+          <a class="btn" href="/"><svg class="i"><use href="#i-house"/></svg><span>Back to the start</span></a>
+          <a class="btn ghost" href="/roadmap"><svg class="i"><use href="#i-map-trifold"/></svg><span>Open the roadmap</span></a>
+        </div>
+        <p class="note wide">Or pick a folder from the tree on the left.</p>
+      </div>
+    </div>
+  </main>
+
+<script src="shell.js"></script>
+<script>document.getElementById('lostpath').textContent = location.pathname;</script>
+</body>
+</html>
