@@ -1063,13 +1063,13 @@ function setTitle(title, entry) {
 
 // the < > buttons at the top right go to the previous and next topic
 function setNav(a, x, label) {
-  if (x) { a.href = `chapter.html#${slug(x.g)}/${slug(x.n)}`; a.dataset.tip = `${label}: ${x.n}`; a.classList.remove('off'); }
+  if (x) { a.href = href(x.g, x.n); a.dataset.ch = slug(x.g) + '/' + slug(x.n); a.dataset.tip = `${label}: ${x.n}`; a.classList.remove('off'); }
   else { a.removeAttribute('href'); a.dataset.tip = `No ${label.toLowerCase()}`; a.classList.add('off'); }
 }
 
 function markSidebar(id) {
   $$('#tree a.on').forEach(a => a.classList.remove('on'));
-  const a = $(`#tree a[href="chapter.html#${id}"]`);
+  const a = $(`#tree a[data-ch="${id}"]`);
   if (!a) return;
   a.classList.add('on');
   const grp = a.closest('ul').previousElementSibling;
@@ -1121,11 +1121,12 @@ fit();
 
 async function loadChapter() {
   activeTimers.forEach(clearInterval); activeTimers = [];
-  const id = decodeURIComponent(location.hash.slice(1));
+  const id = chapterId();
   const idx = all.findIndex(x => slug(x.g) + '/' + slug(x.n) === id);
   if (idx < 0) { setNav($('#tprev'), null, 'Previous topic'); setNav($('#tnext'), null, 'Next topic'); $('#notepane').innerHTML = ''; setTitle('Chapter'); showMessage('Chapter not found', 'Pick one from the list on the left.'); return; }
   const entry = all[idx];
   setTitle(entry.n, entry);
+  if (pretty) { const u = location.origin + pathById(id); $('link[rel=canonical]').href = u; $('meta[property="og:url"]').content = u; }
   markSidebar(id);
   buildNote(id);
   setNav($('#tprev'), all[idx - 1], 'Previous topic');
@@ -1147,7 +1148,7 @@ async function loadChapter() {
   const title = meta.title || entry.n;
   setTitle(title, entry);
   const prev = all[idx - 1], next = all[idx + 1];
-  const to = x => `chapter.html#${slug(x.g)}/${slug(x.n)}`;
+  const to = x => href(x.g, x.n) + `" data-ch="${slug(x.g)}/${slug(x.n)}`;
   lessonEl.innerHTML = `<h1>${esc(title)}</h1>${meta.summary ? `<p class="sum">${mdEsc(meta.summary)}</p>` : ''}${html}
     <div class="cta">
       <div class="ctat"><b>Finished this chapter?</b><span>Jot it down, tick it off, then keep going.</span>${prev ? `<a class="prevlink" href="${to(prev)}">${icon('caret-left')}Previous: ${esc(prev.n)}</a>` : ''}</div>
@@ -1178,5 +1179,17 @@ async function loadChapter() {
   $('.view').scrollTop = 0;
 }
 
+// the chapter id comes from the path (/m5/ai-development/mlp) on the live site, from the hash (#ai-development/mlp) when opened locally
+function chapterId() {
+  const m = location.pathname.match(/^\/m\d\/([^/]+)\/([^/]+?)\/?$/);
+  return m ? m[1] + '/' + m[2] : decodeURIComponent(location.hash.slice(1));
+}
+// on the live site chapter links are real paths; swap the chapter in place instead of reloading the whole page
+document.addEventListener('click', e => {
+  const a = e.target.closest('a[data-ch]');
+  if (!a || !pretty || e.button || e.metaKey || e.ctrlKey || e.shiftKey) return;
+  e.preventDefault(); history.pushState(null, '', a.getAttribute('href')); loadChapter();
+});
+addEventListener('popstate', loadChapter);
 addEventListener('hashchange', loadChapter);
 loadChapter();

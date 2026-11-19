@@ -1014,3 +1014,4 @@ textarea{border:0;outline:0}
 .qlkey i.a{width:10px;height:10px;border-radius:50%;background:var(--blue)}
 .qlkey i.t{color:var(--red)}
 .qlkey i.w{width:10px;height:10px;border-radius:2px;background:var(--s1)}
+*{-webkit-tap-highlight-color:transparent}

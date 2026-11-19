@@ -148,7 +148,7 @@ async function showWork() {
         <div class="wact">
           <button class="btn ghost" id="wcopy" type="button" data-tip="Copy file">${icon('notebook')}</button>
           <a class="btn ghost" href="${path}" download="${esc(f.file)}" data-tip="Download">${icon('arrow-up-right')}</a>
-          <a class="btn ghost" href="chapter.html#${f.chapter}" data-tip="Read the chapter">${icon('file-text')}</a>
+          <a class="btn ghost" href="${pathById(f.chapter)}" data-tip="Read the chapter">${icon('file-text')}</a>
         </div>
         <div class="cpanel">
           <div class="chd"><span class="ni">${icon('lightbulb')}</span><div><b>What this cell does</b><i id="cwhich"></i></div>

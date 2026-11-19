@@ -1,0 +1,6 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/:yr(m[4-6])/:group/:chapter", "destination": "/chapter.html" }
+  ]
+}

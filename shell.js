@@ -186,9 +186,13 @@ const $ = s => document.querySelector(s), $$ = s => document.querySelectorAll(s)
 const esc = s => s.replace(/&/g,'&amp;');
 const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const icon = n => `<svg class="i"><use href="#i-${n}"/></svg>`;
-const href = (g,n) => `chapter.html#${slug(g)}/${slug(n)}`;
+// chapter addresses: /m5/ai-development/mlp on the live site (vercel.json rewrites them to chapter.html), chapter.html#ai-development/mlp when opened locally, where nothing rewrites
+const yrOf = Object.fromEntries(notes.map(([g,,,,yr]) => [slug(g), yr.split(' ')[0].toLowerCase().replace('.', '')]));
+const pretty = /^https?:$/.test(location.protocol) && !/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+const pathById = id => pretty ? `/${yrOf[id.split('/')[0]]}/${id}` : `chapter.html#${id}`;
+const href = (g,n) => pathById(slug(g) + '/' + slug(n));
 const all = notes.flatMap(([g,ic,c,ns]) => ns.filter(n => n !== 'Coming soon' && !n.startsWith('# ')).map(n => ({g,c,n})));
-const item = ({g,c,n}) => `<li style="--c:var(--${c})"><a href="${href(g,n)}">${icon('file-text')}${esc(n)}</a></li>`;
+const item = ({g,c,n}) => `<li style="--c:var(--${c})"><a href="${href(g,n)}" data-ch="${slug(g)}/${slug(n)}">${icon('file-text')}${esc(n)}</a></li>`;
 const load = k => { try { return JSON.parse(localStorage.getItem(k)) } catch { return null } };
 
 // build the page chrome around this page's <main class="ed">; the sidebar is the Main tree, unless the page supplies <template id="outline"> (About does) and then it shows that outline
