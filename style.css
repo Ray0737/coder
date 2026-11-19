@@ -993,3 +993,24 @@ textarea{border:0;outline:0}
 .cbinfo .cbnote{color:var(--o1)}
 .fcsvg{width:100%;max-width:460px;background:var(--base);border-radius:8px;margin:4px 0}
 #cb-c .bt,#cb-d .bt{padding:4px 7px}
+.ntg{height:28px;box-sizing:border-box;padding:0 12px;font-size:12px;justify-content:center}
+.ntg.ic{width:28px;padding:0}
+.ntg .i{width:14px;height:14px}
+.crr{gap:6px}
+.qlrow{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:flex-start;margin:6px 0 10px}
+.qlgrid{display:grid;grid-template-columns:repeat(5,52px);gap:3px}
+.qc{position:relative;width:52px;height:52px;border-radius:6px;background:var(--base);display:flex;align-items:center;justify-content:center;color:var(--peach);font-size:18px}
+.qc b{font-weight:400}
+.qc small{font-size:10px;color:var(--text)}
+.qc.w{background:var(--s1)}
+.qc.g{background:color-mix(in srgb,var(--green) 25%,var(--base));color:var(--green)}
+.qc.t{background:color-mix(in srgb,var(--red) 22%,var(--base));color:var(--red)}
+.qc .ag{position:absolute;width:20px;height:20px;border-radius:50%;background:var(--blue);box-shadow:0 0 0 3px color-mix(in srgb,var(--blue) 30%,transparent)}
+.qlside{flex:1 1 240px;max-width:320px}
+.qlside svg{width:100%;height:auto;background:var(--base);border-radius:8px}
+.qlkey{list-style:none;padding:0;margin:10px 0 0;display:flex;flex-wrap:wrap;gap:4px 14px;font-size:11px;color:var(--o1)}
+.qlkey li{display:flex;align-items:center;gap:6px}
+.qlkey i{display:inline-block;min-width:12px;text-align:center;font-style:normal;color:var(--text)}
+.qlkey i.a{width:10px;height:10px;border-radius:50%;background:var(--blue)}
+.qlkey i.t{color:var(--red)}
+.qlkey i.w{width:10px;height:10px;border-radius:2px;background:var(--s1)}

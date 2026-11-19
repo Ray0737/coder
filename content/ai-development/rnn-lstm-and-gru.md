@@ -1,6 +1,6 @@
 ---
-title: RNN, LSTM and GRU: sequence models, vanishing gradients and seq2seq
-summary: A network with a memory, and why plain memory fades.
+title: RNN, LSTM and GRU
+summary: Recurrent networks, long short-term memory and gated recurrent units: a network with a memory, and why plain memory fades.
 ---
 
 > [!aha] An MLP looks at one input and forgets it immediately. A sentence, a sound, a stock price: these only make sense in order. An RNN carries a running summary, the **hidden state**, forward from one step to the next, so step 10 can still be shaped by what happened at step 1.

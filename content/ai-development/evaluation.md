@@ -1,6 +1,6 @@
 ---
-title: Evaluation: fitting, the numbers that catch it, and cross validation
-summary: Checking whether a model actually learned, or just memorised, and trusting the score.
+title: Evaluation
+summary: Fitting, metrics and cross validation: checking whether a model actually learned, or just memorised.
 ---
 
 > [!aha] A model that is too simple can't learn the pattern. A model that is too complex learns the pattern *and* every random wobble in the training data, then fails on anything new. Evaluation is how you tell which one happened, with real numbers instead of a guess.

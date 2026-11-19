@@ -1,6 +1,6 @@
 ---
-title: CNN: convolution, pooling, feature maps, ResNet, transfer learning and data augmentation
-summary: Teaching a network to see, one small sliding window at a time.
+title: CNN
+summary: Convolutional neural network: teaching a network to see, one small sliding window at a time.
 ---
 
 > [!aha] A photo has thousands of pixels, but almost everything useful in it is a small local pattern repeated all over the image: an edge, a corner, a curve. A CNN learns a handful of tiny pattern-detectors and slides each one across the whole picture instead of inventing a separate rule for every pixel.

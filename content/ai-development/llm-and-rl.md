@@ -1,6 +1,6 @@
 ---
-title: LLM and reinforcement learning: fine-tuning, RLHF and Q-learning
-summary: Predicting the next word, and learning from reward instead of labels.
+title: LLM and RL
+summary: Large language models and reinforcement learning: predicting the next word, and learning from reward instead of labels.
 ---
 
 > [!aha] Underneath everything, a large language model does one simple job on repeat: given the text so far, guess a probability for every possible next word, then pick one. Reinforcement learning answers a completely different question: no labelled "right answer" exists, so an agent instead learns from a reward signal, by trial and error.
@@ -21,9 +21,13 @@ embedding
 
 Put together, here is what happens for every single token the model produces:
 
-```widget
-llmforward
-```
+1. **Text in:** you send some text, like "The cat sat".
+2. **Tokenize:** the text is cut into tokens and each piece becomes a number from a fixed vocabulary.
+3. **Embed:** each token number becomes a vector, so similar meanings sit close together.
+4. **Transformer × N:** the vectors pass through N Transformer layers (dozens in big models), each one refining what every token means in context.
+5. **Output probabilities:** the last layer gives a probability for every token in the vocabulary. One is picked, added to the text, and the whole thing repeats.
+
+Each layer refines the representation. Generating a paragraph means running this loop once per token.
 
 ## Language modeling: predicting the next token
 
@@ -35,11 +39,12 @@ Every candidate next word gets a score (a **logit**), and those scores get turne
 
 ## Fine-tuning and RLHF
 
-GPT becomes ChatGPT through a four-stage pipeline. Click through the stages.
+GPT becomes ChatGPT through a four-stage pipeline:
 
-```widget
-rlhfpipe
-```
+1. **Pre-training:** the model reads a huge amount of text and learns to predict the next token. Knowledgeable, but not yet helpful.
+2. **SFT (supervised fine-tuning):** train on human-written examples of good answers so it follows instructions.
+3. **Reward model:** humans rank several answers, and a separate model learns to predict those rankings as a score.
+4. **PPO:** reinforcement learning nudges the model toward answers the reward model scores highly, while staying close to the original.
 
 
 A **base model** is trained purely to predict the next token over huge amounts of text, which makes it good at continuing text, not necessarily at being a helpful assistant. **Fine-tuning** keeps training it, but on a smaller, curated set of examples of the behaviour you actually want.
@@ -59,10 +64,10 @@ The reward model's two scores never change. What changes, one nudge at a time, i
 An RL agent takes actions in an environment, gets a reward signal, and gradually learns which actions tend to lead to more reward. There is no "correct answer" supplied anywhere, just trial, error, and a score.
 
 ```widget
-gridworld
+qlearning
 ```
 
-Drag "Episodes trained" up and watch the greedy path from start to goal get shorter. At 0 episodes the agent has learned nothing and barely finds the goal; after enough practice, it settles on a short, direct route. Press Play to watch it actually walk that route. Switch "Q-values" on to shade every cell by its best learned Q-value: the brighter cells are the ones the agent has learned lead somewhere good, which is *why* the path straightens out, not just that it does.
+Press Train and watch the average reward (purple line) climb. At first the agent wanders and sometimes falls into the trap; after enough episodes it settles on a short, direct route. Press Walk to watch it follow the arrows, and switch "Show" to Q-values to shade every cell by its best learned Q-value: the cells closer to the goal glow brighter, because the reward flows backwards through the grid one step at a time.
 
 ## Q-learning and policy gradient, in one line each
 
@@ -73,9 +78,9 @@ Drag "Episodes trained" up and watch the greedy path from start to goal get shor
 
 1. Set the temperature all the way down, then all the way up, in the token widget. Describe the difference in how predictable the bar chart becomes.
 2. In the RLHF widget, press Reset then Step once. Did the preference bars move toward A or B, and does that match which response had the higher reward?
-3. In the grid-world widget, compare the path length at 0 episodes trained against 40. What changed about the agent's behaviour, concretely? Turn on Q-values and describe what the shading looks like near the start versus near the goal.
+3. In the Q-learning widget, press Walk before training, then train fully and press Walk again. What changed about the agent's behaviour, concretely? Switch to Q-values and describe what the shading looks like near the start versus near the goal.
 4. Why does RLHF need a separate reward model at all? Why not just have humans score every single response the model produces while training?
-5. In the grid world, the reward is -1 per step and +10 at the goal. Why would that encourage a *shorter* path, not just *any* path that reaches the goal?
+5. In the grid world, the reward is -0.1 per step, +10 at the goal and -5 in the trap. Why would that encourage a *shorter* path, not just *any* path that reaches the goal?
 
 ## Quick recap
 

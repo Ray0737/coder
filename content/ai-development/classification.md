@@ -1,5 +1,5 @@
 ---
-title: Classification: drawing boundaries
+title: Classification
 summary: Logistic regression, SVM, decision trees and KNN: four opinions on where one class ends and the next begins.
 ---
 
@@ -32,7 +32,7 @@ classifierboundaries
 
 > [!compare] Think of four people drawing a border on a map. One uses a ruler (logistic regression). One uses a French curve and keeps the widest gap between countries (SVM). One only draws along the grid lines of the map (decision tree). One just asks "which five countries are closest to this spot?" (KNN).
 
-**No Free Lunch:** no single classifier is best for every problem. The right one depends on your data, so in practice you try several and compare them (that is what the Evaluation and Cross validation chapters are for). The next four sections open up how each one works.
+**No Free Lunch:** no single classifier is best for every problem. The right one depends on your data, so in practice you try several and compare them (that is what the Evaluation chapter is for). The next four sections open up how each one works.
 
 ## Logistic regression: a line, then a probability
 

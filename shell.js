@@ -171,9 +171,9 @@ const notes = [
   ['Raspberry Pi Vision','circuitry','red',['# Know the board','The board and its ports','# Boot and connect','Flashing the OS with Raspberry Pi Imager','HDMI, SSH and VS Code: ways to connect','# Linux on the Pi','Debian commands and the terminal cheatsheet','venv, activate and the break-system-packages error','Editing on the Pi: vim and nano','# GPIO, a quick recap','LED, button, servo and ultrasonic: what they connect to','Driving a motor: the L298N driver and a step-down converter for 12V','# Vision','Hand tracking with MediaPipe','YOLOv8 object detection','Running lightweight','# Wrap-up','Problems we faced'],'M.5 Applied AI'],
   ['Computer Vision','eye','sky',['# Introduction','What is computer vision','# OpenCV basics','Reading and displaying','Mouse events','Crop, flip, rotate and resize','Color spaces','Thresholding and edge detection','Contours','Bitwise operations and masking','# Detection','Haar cascades: face and eye detection','Face recognition','Feature matching (ORB)','Trained object detection (YOLO)','# Beyond OpenCV','Beyond the repo: hand tracking and servo'],'M.5 Applied AI'],
   ['AI Development','brain','mauve',['# AI, ML and DL','AI, ML and DL',
-    '# ML: Data and training','Data handling','Epoch, batch size and learning rate',
-    '# ML: Supervised','Linear regression','Classification: drawing boundaries',
-    '# ML: Unsupervised','Unsupervised learning: K-means and PCA',
+    '# ML: Data and training','Data handling','Basic parameters',
+    '# ML: Supervised','Linear regression','Classification',
+    '# ML: Unsupervised','Unsupervised learning',
     '# ML: Evaluation','Evaluation',
     '# Deep learning','MLP','CNN','RNN, LSTM and GRU','Transformer','Generative models','LLM and RL'
   ],'M.5 Applied AI'],

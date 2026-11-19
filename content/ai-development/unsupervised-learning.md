@@ -1,5 +1,5 @@
 ---
-title: Unsupervised learning: K-means and PCA
+title: Unsupervised learning
 summary: No labels, no answer key. Find the groups in the data, and find the few numbers that matter.
 ---
 

@@ -373,17 +373,48 @@
       { t: 'VAE decoder', s: '64×64 → 512×512', note: 'The decoder from a VAE expands the cleaned-up small latent into the full-size picture.' }], 'Stable Diffusion = VAE (compress) + diffusion (denoise in the small space) + CLIP (text steers it). Each piece solves one specific problem.'),
 
     // ---------- LLM / RL ----------
-    llmforward: flow('Try it: what happens for every single token', [
-      { t: 'Text in', s: '"The cat sat"', note: 'You send some text.' },
-      { t: 'Tokenize', s: 'split into IDs', note: 'The text is cut into tokens (pieces of words) and each piece becomes a number from a fixed vocabulary.' },
-      { t: 'Embed', s: 'ID → vector', note: 'Each token ID becomes a vector of numbers, so similar meanings sit close together.' },
-      { t: 'Transformer × N', s: 'attention + FFN', note: 'The vectors pass through N Transformer layers (dozens in big models), each one refining what every token means in context.' },
-      { t: 'Output probs', s: 'next token', note: 'The last layer gives a probability for every token in the vocabulary. One is picked, appended, and the whole thing repeats.' }], 'Each layer refines the representation. Generating a paragraph means running this loop once per token.'),
-    rlhfpipe: flow('Try it: from GPT to ChatGPT', [
-      { t: 'Pre-training', s: 'predict next token', note: 'The model reads a huge amount of text and learns to predict the next token. Knowledgeable, but not yet helpful.' },
-      { t: 'SFT', s: 'fine-tune on examples', note: 'Supervised fine-tuning: train on human-written examples of good answers so it follows instructions.' },
-      { t: 'Reward model', s: 'learn to score', note: 'Humans rank several answers; a separate reward model learns to predict those rankings as a score.' },
-      { t: 'PPO', s: 'optimise vs reward', note: 'Reinforcement learning (PPO) nudges the model toward answers the reward model scores highly, while staying close to the original.' }], 'RLHF is where reinforcement learning meets language models.'),
+    // real tabular Q-learning on a 5x5 grid, trained live in the page: arrows show the greedy policy, shading shows the best Q-value, the plot shows reward per episode
+    qlearning(el) {
+      const q = s => el.querySelector(s), N = 5, wall = new Set(['1,1', '2,1', '1,3', '3,3']), trap = '3,2', goal = '4,4';
+      const D = [[0, -1], [1, 0], [0, 1], [-1, 0]], AR = ['↑', '→', '↓', '←'], EP = 200;
+      const key = (x, y) => x + ',' + y;
+      const step = (x, y, a) => { let nx = x + D[a][0], ny = y + D[a][1]; if (nx < 0 || ny < 0 || nx >= N || ny >= N || wall.has(key(nx, ny))) { nx = x; ny = y; } const k = key(nx, ny); return { x: nx, y: ny, r: k === goal ? 10 : k === trap ? -5 : -0.1, done: k === goal || k === trap }; };
+      let Q, rnd, rets, ep, agent, steps, reward, timer, walkT, show = 0;
+      const reset = () => { Q = {}; for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) Q[key(x, y)] = [0, 0, 0, 0]; rnd = seeded(13); rets = []; ep = 0; agent = [0, 0]; steps = 0; reward = 0; clearInterval(timer); clearInterval(walkT); timer = walkT = null; };
+      const best = k => { const v = Q[k]; return v.indexOf(Math.max(...v)); };
+      const episode = () => { let x = 0, y = 0, R = 0; const eps = Math.max(.05, .4 * (1 - ep / EP)); for (let t = 0; t < 60; t++) { const k = key(x, y), a = rnd() < eps ? Math.floor(rnd() * 4) : best(k), s = step(x, y, a); Q[k][a] += .5 * (s.r + (s.done ? 0 : .9 * Math.max(...Q[key(s.x, s.y)])) - Q[k][a]); R += s.r; x = s.x; y = s.y; if (s.done) break; } rets.push(R); ep++; };
+      el.innerHTML = `<p class="wgt">Try it: train an agent with Q-learning</p>
+        <div class="tb"><span>Show</span>${chips('ql-s', ['Policy', 'Q-values'])}<span class="sp"></span>${bt('ql-train', 'Train', 'act')}${bt('ql-walk', 'Walk')}${bt('ql-reset', 'Reset')}</div>
+        <div class="tb ro"><span id="ql-ro"></span></div>
+        <div class="qlrow"><div class="qlgrid" id="ql-g"></div><div class="qlside"><p class="wgt2">Reward per episode</p><svg viewBox="0 0 300 130" id="ql-p"></svg>
+          <ul class="qlkey"><li><i class="a"></i>Agent</li><li><i>★</i>Goal +10</li><li><i class="t">✕</i>Trap −5</li><li><i class="w"></i>Wall</li><li><i>·</i>Each step −0.1</li></ul></div></div>
+        <p class="wgo" id="ql-n"></p>`;
+      const draw = () => {
+        const mx = Math.max(1, ...Object.entries(Q).filter(([k]) => k !== goal && k !== trap).map(([, v]) => Math.max(...v)));
+        let g = '';
+        for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+          const k = key(x, y), seen = Q[k].some(v => v !== 0), isA = agent[0] === x && agent[1] === y;
+          let cls = 'qc', inner = '', bg = '';
+          if (wall.has(k)) cls += ' w'; else if (k === goal) { cls += ' g'; inner = '★'; } else if (k === trap) { cls += ' t'; inner = '✕'; }
+          else if (show === 0) inner = seen ? `<b>${AR[best(k)]}</b>` : '';
+          else { const m = Math.max(...Q[k]); bg = `background:color-mix(in srgb,var(--green) ${Math.round(Math.max(0, m) / mx * 55)}%,var(--base))`; inner = `<small>${m.toFixed(1)}</small>`; }
+          g += `<div class="${cls}" style="${bg}">${inner}${isA ? '<i class="ag"></i>' : ''}</div>`;
+        }
+        q('#ql-g').innerHTML = g;
+        const w = 300, h = 130, n = Math.max(rets.length, 2), xs = i => 26 + i / (EP - 1) * (w - 36), ys = v => 112 - (Math.max(-6, Math.min(10, v)) + 6) / 16 * 100;
+        const avg = rets.map((_, i) => { const s = rets.slice(Math.max(0, i - 9), i + 1); return s.reduce((a, b) => a + b, 0) / s.length; });
+        q('#ql-p').innerHTML = `<line x1="26" y1="112" x2="${w - 10}" y2="112" stroke="var(--s1)"/><line x1="26" y1="12" x2="26" y2="112" stroke="var(--s1)"/><line x1="26" y1="${ys(0)}" x2="${w - 10}" y2="${ys(0)}" stroke="var(--s0)" stroke-dasharray="3 3"/>
+          <polyline points="${rets.map((v, i) => xs(i) + ',' + ys(v)).join(' ')}" fill="none" stroke="var(--peach)" stroke-width="1" opacity=".5"/><polyline points="${avg.map((v, i) => xs(i) + ',' + ys(v)).join(' ')}" fill="none" stroke="var(--mauve)" stroke-width="2"/>
+          <text x="22" y="${ys(10) + 3}" font-size="8" fill="var(--o0)" text-anchor="end">10</text><text x="22" y="${ys(0) + 3}" font-size="8" fill="var(--o0)" text-anchor="end">0</text><text x="22" y="${ys(-5) + 3}" font-size="8" fill="var(--o0)" text-anchor="end">−5</text><text x="${w - 10}" y="126" font-size="8" fill="var(--o0)" text-anchor="end">episode ${EP}</text>`;
+        q('#ql-ro').innerHTML = `Episodes <b>${ep} / ${EP}</b> · Last reward <b>${rets.length ? rets[rets.length - 1].toFixed(1) : '0.0'}</b> · Walk: steps <b>${steps}</b>, reward <b>${reward.toFixed(1)}</b>`;
+        q('#ql-n').textContent = ep === 0 ? 'Nothing learned yet: every Q-value is 0. Press Train to let the agent practise 200 episodes of trial and error.' : ep < EP ? 'Training: each episode the agent explores (sometimes at random), then nudges its Q-values toward what it just earned.' : 'Trained. The purple line is the average reward per episode: it climbs as the agent stops hitting the trap and finds the short route. Press Walk to watch it follow the arrows.';
+      };
+      pickIn(q, '#ql-s', i => { show = i; draw(); });
+      q('#ql-train').onclick = () => { if (timer) { clearInterval(timer); timer = null; q('#ql-train').textContent = 'Train'; return; } if (ep >= EP) { reset(); } q('#ql-train').textContent = 'Pause'; timer = trackTimer(setInterval(() => { for (let i = 0; i < 4 && ep < EP; i++) episode(); draw(); if (ep >= EP) { clearInterval(timer); timer = null; q('#ql-train').textContent = 'Train'; } }, 60)); };
+      q('#ql-walk').onclick = () => { clearInterval(walkT); agent = [0, 0]; steps = 0; reward = 0; draw(); walkT = trackTimer(setInterval(() => { if (steps >= 30) { clearInterval(walkT); return; } const s = step(agent[0], agent[1], best(key(agent[0], agent[1]))); agent = [s.x, s.y]; steps++; reward += s.r; draw(); if (s.done) clearInterval(walkT); }, 280)); };
+      q('#ql-reset').onclick = () => { reset(); q('#ql-train').textContent = 'Train'; draw(); };
+      reset(); draw();
+    },
 
     // a toy tokenizer: common words stay whole, rarer words are cut into pieces. Real tokenizers (BPE) learn their pieces from data.
     tokenizer(el) {

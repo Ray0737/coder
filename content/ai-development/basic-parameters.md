@@ -1,6 +1,6 @@
 ---
-title: Epoch, batch size and learning rate
-summary: The three dials that control how training happens, not what is learned.
+title: Basic parameters
+summary: Epoch, batch size and learning rate: the three dials that control how training happens, not what is learned.
 ---
 
 > [!aha] These three words describe the *rhythm* of training, not the model itself. Get them wrong and even a good model never learns well.

@@ -1,6 +1,6 @@
 ---
-title: Generative models: autoencoders, VAE, GAN and diffusion
-summary: Four different ways to teach a network to make something new.
+title: Generative models
+summary: Autoencoders, VAE, GAN and diffusion: four ways to teach a network to make something new.
 ---
 
 > [!aha] A classifier answers "what is this?". A generative model answers "give me a new one of these". That single difference in goal is why this family of models looks so different from everything else in this course.

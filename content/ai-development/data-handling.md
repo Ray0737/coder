@@ -1,6 +1,6 @@
 ---
-title: Data: cleaning and the train/test split
-summary: A model is only as good as the data it never cheats off of.
+title: Data handling
+summary: Cleaning, and the train/test split: a model is only as good as the data it never cheats off of.
 ---
 
 > [!aha] Never grade a student on the exact questions they studied from. Never test a model on the exact examples it trained on either. That one habit is the difference between a model that works and one that only looks like it works.

@@ -1,6 +1,6 @@
 ---
-title: MLP: perceptrons, backpropagation, dropout, batch norm, optimizers and weight init
-summary: One artificial neuron, stacked into layers, taught by trial and error.
+title: MLP
+summary: Multilayer perceptron: one artificial neuron, stacked into layers, taught by trial and error.
 ---
 
 > [!aha] A multi-layer perceptron is many tiny "guess, check, adjust" machines stacked in layers. Each one only ever does three things: multiply, add, decide.

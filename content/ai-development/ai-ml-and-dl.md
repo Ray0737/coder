@@ -1,6 +1,6 @@
 ---
-title: AI, ML and DL: what they are and how a neural network fits in
-summary: Three nested ideas, then the shape every neural network shares.
+title: AI, ML and DL
+summary: Artificial intelligence, machine learning and deep learning: three nested ideas, then the shape every neural network shares.
 ---
 
 > [!aha] AI, ML and DL are not three separate fields sitting side by side. They are nested, like dolls: every deep learning system is machine learning, and every machine learning system is AI. The circles get smaller and more specific as you go in.

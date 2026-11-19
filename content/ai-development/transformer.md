@@ -1,6 +1,6 @@
 ---
-title: Transformer: self-attention, positional encoding and BERT/GPT
-summary: Every word looks at every other word, all at once, instead of one at a time.
+title: Transformer
+summary: Self-attention, positional encoding and BERT/GPT: every word looks at every other word, all at once.
 ---
 
 > [!aha] An RNN reads a sentence one word at a time, so word 10 only learns about word 1 after passing through 9 steps of memory. A Transformer lets every word look directly at every other word in one step. That one change is most of why modern language models got so much better.
