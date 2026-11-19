@@ -90,7 +90,7 @@ function drawNotes() {
     ? (q ? `${shown.length} of ${mine.length} notes match` : `${mine.length} ${mine.length === 1 ? 'note' : 'notes'} across ${new Set(mine.map(m => m.e.g)).size} ${new Set(mine.map(m => m.e.g)).size === 1 ? 'class' : 'classes'}`)
     : 'Everything you wrote, in one place';
   if (!mine.length) {
-    $('#nlist').innerHTML = `<div class="nempty">${icon('notebook')}<b>No notes yet</b><p>Open any chapter and write in the note panel beside it. Whatever you write there shows up here, grouped by class.</p><a class="btn" href="chapter.html#basic-python/printing-and-getting-input">Open the first chapter</a></div>`;
+    $('#nlist').innerHTML = `<div class="nempty"><span class="ni">${icon('notebook')}</span><b>Start your journey</b><p>Open any chapter and write in the note panel beside it. Whatever you write there shows up here, grouped by class.</p><a class="btn" href="chapter.html#basic-python/printing-and-getting-input">Open the first chapter</a></div>`;
     return;
   }
   if (!shown.length) { $('#nlist').innerHTML = '<p class="note wide">No note matches that search.</p>'; return; }

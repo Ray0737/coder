@@ -356,6 +356,11 @@ a.tab:hover{color:var(--text);text-decoration:underline;text-underline-offset:2p
 .stats>div+div{border-left:1px solid var(--s0)}
 .stats b{font-size:26px;font-weight:400;line-height:1.2}
 .stats span{color:var(--o1)}
+.yrfilter{display:flex;align-items:center;gap:6px;margin:4px 0 14px}
+.yrfilter b{color:var(--o1);font-size:12.5px;font-weight:700;margin-right:4px}
+.yrfilter button{padding:5px 14px;border-radius:7px;background:var(--mantle);color:var(--o1);font-size:12.5px;font-weight:700;cursor:pointer}
+.yrfilter button:hover{color:var(--text)}
+.yrfilter button.on{background:var(--mauve);color:var(--crust);font-weight:700}
 .pathwrap{border:1px solid var(--s0);border-radius:10px;overflow-x:auto;padding:22px 24px 26px}
 .path{display:flex;width:max-content}
 .mod{position:relative;flex:none;width:262px}
@@ -367,6 +372,8 @@ a.tab:hover{color:var(--text);text-decoration:underline;text-underline-offset:2p
 .ring .ck{position:absolute;right:-6px;top:-6px;width:18px;height:18px;background:var(--base);border-radius:50%;color:var(--green)}
 .mod:not(:last-child) .ring::after{content:"";position:absolute;left:74px;top:calc(50% - 1px);width:174px;border-top:2px dotted var(--c)}
 .mod:not(:last-child) .ring::before{content:"";position:absolute;left:248px;top:calc(50% - 5px);border-left:7px solid var(--c);border-top:5px solid transparent;border-bottom:5px solid transparent}
+.mod.hide{display:none}
+.mod.nolink .ring::after,.mod.nolink .ring::before{content:none}
 .chs{position:relative;list-style:none;margin-top:14px;padding-left:27px}
 .chs::before{content:"";position:absolute;left:32px;top:-14px;bottom:8px;width:1px;background:var(--s0)}
 .chs li{position:relative;padding:5px 0}
@@ -453,6 +460,46 @@ a.tab:hover{color:var(--text);text-decoration:underline;text-underline-offset:2p
 .wgtable .ok{color:var(--green)}
 .wgtable .bad{color:var(--red);text-align:right}
 
+/* custom range slider: no default OS track/thumb anywhere in a widget */
+.wg input[type=range]{-webkit-appearance:none;appearance:none;background:none;border-bottom:0;width:180px;padding:0;height:16px}
+.wg input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:2px;background:var(--s0)}
+.wg input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;margin-top:-5.5px;border-radius:50%;background:var(--mauve);cursor:pointer}
+.wg input[type=range]::-moz-range-track{height:4px;border-radius:2px;background:var(--s0)}
+.wg input[type=range]::-moz-range-thumb{width:15px;height:15px;border:0;border-radius:50%;background:var(--mauve);cursor:pointer}
+.wg input[type=range]:focus{outline:0}
+.wg input[type=range]:focus::-webkit-slider-thumb{box-shadow:0 0 0 3px color-mix(in srgb,var(--mauve) 35%,transparent)}
+
+/* neural-net diagrams, activation/training widgets (MLP chapter) */
+.nndiag{margin:10px 0;padding:10px;border-radius:8px;background:var(--crust)}
+.wgt2{margin:18px 0 8px;color:var(--mauve);font-weight:700;font-size:12px}
+.wgcap{margin:8px 0 0;color:var(--o0);font-size:12px}
+.seg2{padding:5px 11px;border-radius:7px;background:var(--base);color:var(--o1);font-size:12px;cursor:pointer;margin-right:4px}
+.seg2:hover{color:var(--text)}
+.seg2.on{background:var(--mauve);color:var(--crust);font-weight:700}
+.mntabs{margin-bottom:10px}
+.wgbars{display:flex;align-items:flex-end;gap:18px;height:110px;padding:0 10px}
+.wgbar{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;flex:1;height:100%}
+.wgbar i{display:block;width:100%;border-radius:4px 4px 0 0;background:var(--mauve)}
+.wgbar b{color:var(--text);font-size:11px}
+.wgbar span{color:var(--o0);font-size:11px}
+.mnloss{background:var(--crust);border-radius:8px;padding:10px}
+.mnpreds{display:flex;flex-wrap:wrap;gap:10px;margin:8px 0}
+.mnpred{display:flex;flex-direction:column;align-items:center;gap:2px;width:60px}
+.mnpred canvas{border-radius:6px}
+.mnpred b{font-size:13px}
+.mnpred b.ok{color:var(--green)}
+.mnpred b.bad{color:var(--red)}
+.mnpred span{color:var(--o0);font-size:11px}
+.mnweights{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.mnweights canvas{border-radius:4px}
+.cmgrid{display:grid;grid-template-columns:90px 1fr 1fr;gap:8px;align-items:center;margin:10px 0}
+.cmgrid b{color:var(--o1);font-size:12px;text-align:center;min-width:0}
+.cmgrid input{width:100%;min-width:0;text-align:center;box-sizing:border-box}
+.ttbar{display:flex;gap:2px;margin:10px 0}
+.ttbar i{flex:1;height:28px;border-radius:3px}
+.foldbar{display:flex;gap:4px;margin:10px 0}
+.foldbar i{flex:1;height:36px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--crust);font-weight:700;font-size:12px}
+
 /* inputs: an underline, never a rounded outline */
 .wg input{background:transparent;border-radius:0;padding:4px 2px;width:120px;border-bottom:1px solid var(--s1)}
 .wg input:focus{outline:0;box-shadow:none;border-bottom-color:var(--mauve)}
@@ -476,11 +523,8 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .ctat b{display:block;font-size:16px;font-weight:700}
 .ctat span{color:var(--o1)}
 .ctab{display:flex;gap:10px;flex-wrap:wrap}
-.cta .btn{margin-top:0;padding:11px 20px;font-size:13px}
-.cta .btn .i{width:14px;height:14px}
-.prevlink{margin:14px 0 40px}
-.prevlink a{display:inline-flex;align-items:center;gap:6px;color:var(--o1)}
-.prevlink a:hover{color:var(--text);text-decoration:underline;text-underline-offset:2px}
+.cta .btn{margin-top:0;padding:7px 14px;font-size:12px}
+.cta .btn .i{width:12px;height:12px}
 .prevlink .i{width:12px;height:12px}
 .lesson a.btn{color:var(--crust)}
 .lesson a.btn:hover{color:var(--crust);background:#ddc1fb;text-decoration:none}
@@ -513,7 +557,6 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .chap.mid:not(.nonote) .notepane,.chap.wide:not(.nonote) .notepane{position:sticky;top:0;height:calc(100vh - 170px);min-height:340px}
 .chap.narrow .notepane{display:none}
 .chap.narrow.drawer .notepane{display:flex;position:fixed;z-index:6;right:12px;top:64px;bottom:40px;width:min(440px,calc(100vw - 24px));min-height:0;box-shadow:0 2px 14px #0007;background:var(--mantle)}
-.cta{margin-top:40px}
 
 /* notes page */
 .lastlink{font-size:13px;line-height:1.9;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--blue)}
@@ -534,8 +577,6 @@ input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-
 .set .btn{margin-top:0;flex:none}
 textarea{border:0;outline:0}
 .notepane textarea{border:0;box-shadow:none}
-.cta .btn{padding:7px 14px;font-size:12px}
-.cta .btn .i{width:12px;height:12px}
 .ctat .prevlink{display:inline-flex;align-items:center;gap:6px;margin-top:10px;color:var(--o1)}
 .ctat .prevlink:hover{color:var(--text);text-decoration:underline;text-underline-offset:2px}
 .ctat .prevlink .i{width:12px;height:12px}
@@ -563,9 +604,10 @@ textarea{border:0;outline:0}
 .pv.lesson>:first-child{margin-top:0}
 .pv.lesson p{margin:6px 0}
 .pv.lesson .code{margin:10px 0}
-.nempty{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:40px 0}
-.nempty>.i{width:30px;height:30px;color:var(--mauve);margin-bottom:8px}
-.nempty b{font-size:15px}
+.nempty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:64px 40px;border-radius:16px;background:var(--mantle)}
+.nempty .ni{width:56px;height:56px;border-radius:14px;display:grid;place-items:center;color:var(--mauve);background:color-mix(in srgb,var(--mauve) 15%,var(--base));margin-bottom:10px}
+.nempty .ni .i{width:28px;height:28px}
+.nempty b{font-size:20px}
 .nempty p{color:var(--o1);max-width:420px;margin-bottom:14px}
 
 /* notes as small vertical cards */
@@ -634,6 +676,23 @@ textarea{border:0;outline:0}
 .tree .todo{margin:0 6px;padding:2px 8px 2px 18px;color:var(--o0);opacity:.55}
 .tree .todo span{display:flex;align-items:center;gap:6px}
 .tree .todo .i{width:12px;height:12px}
+/* Tools page: one full-width card per category, plain chips link out to each tool's site */
+.tlist{display:flex;flex-direction:column;gap:28px;margin-top:26px}
+.tcat h3{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--s0)}
+.tcat h3 .i{width:20px;height:20px;color:var(--mauve);flex:none}
+.tcat h3 span{flex:1;font-size:16px;font-weight:700}
+.tcat h3 i{font-style:normal;color:var(--o0);font-size:12px}
+.trows{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:2px 12px}
+.trow{display:flex;align-items:center;gap:12px;padding:8px 10px;border-radius:8px;color:var(--sub0)}
+.trow:hover{background:var(--s0);color:var(--text)}
+.trow .tri{width:36px;height:36px;border-radius:9px;background:#fff;display:grid;place-items:center;flex:none;overflow:hidden}
+.trow .tri:has(.i){background:var(--s0)}
+.trow .tri img{width:20px;height:20px;object-fit:contain}
+.trow .tri .i{width:18px;height:18px;color:var(--o0)}
+.trow .trt{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.trow .trt b{color:var(--text);font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.trow .trt i{font-style:normal;color:var(--o0);font-size:11.5px}
+.trow>.i{width:13px;height:13px;color:var(--o0);flex:none}
 .wlist{display:flex;flex-direction:column;margin-top:18px}
 .wlist a{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--s0);color:var(--sub0)}
 .wlist a .i{width:16px;height:16px;color:var(--mauve)}
@@ -641,14 +700,14 @@ textarea{border:0;outline:0}
 .wlist a b{display:block;color:var(--text);font-weight:700}
 .wlist a i{font-style:normal;color:var(--o0);font-size:11px}
 .wlist a:hover b{text-decoration:underline;text-underline-offset:2px}
-.wtop{display:flex;align-items:center;gap:14px;margin-bottom:6px}
-.wtop .ni{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;color:var(--c);background:color-mix(in srgb,var(--c) 15%,var(--base));flex:none}
-.wtop .ni .i{width:22px;height:22px}
-.wtop h1{font-size:24px;font-weight:400}
-.wtop .sum{color:var(--o1);margin-top:2px;max-width:640px}
-.wact{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 6px}
-.wact .btn{margin-top:0;padding:6px 12px;font-size:12px}
-.wact .btn .i{width:12px;height:12px}
+.wtop{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.wtop .ni{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:var(--c);background:color-mix(in srgb,var(--c) 15%,var(--base));flex:none}
+.wtop .ni .i{width:20px;height:20px}
+.wtop h1{font-size:19px;font-weight:400}
+.wtop .sum{color:var(--o1);margin-top:2px;font-size:13px}
+.wact{display:flex;gap:8px;margin:0 0 24px}
+.wact .btn{margin-top:0;padding:8px;justify-content:center}
+.wact .btn .i{width:14px;height:14px}
 .wact a.btn:hover{text-decoration:none;color:var(--text)}
 .wcode{margin:14px 0}
 .wcode pre{padding:12px 14px 16px}
@@ -656,8 +715,9 @@ textarea{border:0;outline:0}
 .wcode .cl b{display:inline-block;width:3.2ch;margin-right:18px;text-align:right;color:var(--o0);font-weight:400;user-select:none}
 
 /* work file: code cells on the left, what the selected cell does on the right */
-.wgrid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;align-items:start;margin-top:14px}
+.wgrid{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;align-items:start}
 .wcells{display:flex;flex-direction:column;gap:10px}
+.wside{position:sticky;top:0}
 .wcell{padding:12px 16px 14px;border-radius:12px;background:var(--mantle);cursor:pointer}
 .wcell:hover{background:color-mix(in srgb,var(--s0) 45%,var(--mantle))}
 .wcell.on{background:var(--s0)}
@@ -668,20 +728,19 @@ textarea{border:0;outline:0}
 .wcell code{font:12.5px/1.65 ui-monospace,SFMono-Regular,Consolas,"Courier New",monospace;color:var(--text)}
 .wcell .k{color:var(--mauve)}.wcell .s{color:var(--green)}.wcell .n{color:var(--peach)}.wcell .b{color:var(--blue)}.wcell .c{color:var(--o0)}
 .cout{margin-top:10px;padding:8px 12px;border-radius:8px;background:var(--crust);color:var(--sub1);font:12px/1.6 ui-monospace,SFMono-Regular,Consolas,"Courier New",monospace;white-space:pre-wrap}
-.cpanel{position:sticky;top:0;padding:16px 18px 18px;border-radius:14px;background:var(--mantle)}
+.cpanel{padding:0}
 .cpanel b{display:block;color:var(--mauve);font-size:12px;margin-bottom:8px}
 .cpanel p{color:var(--sub1);font-size:13px;line-height:1.75;margin:0 0 14px}
 .cpanel .btn{margin-top:0;padding:5px 11px;font-size:12px}
 .cpanel .btn .i{width:12px;height:12px}
-@media(max-width:1100px){.wgrid{grid-template-columns:minmax(0,1fr)}.cpanel{position:static;order:-1}}
+@media(max-width:1100px){.wgrid{grid-template-columns:minmax(0,1fr)}.wside{position:static;order:-1}}
 /* the output sits in the same cell: a thin line, an Out [n] label, plain text, no dark box */
 .cout{margin-top:12px;padding:12px 0 0;border-radius:0;background:none;border-top:1px dashed var(--s1)}
 .cout .ocl{color:var(--peach);margin-bottom:6px}
 .cout pre{margin:0;color:var(--sub1);font:12.5px/1.65 ui-monospace,SFMono-Regular,Consolas,"Courier New",monospace;white-space:pre-wrap}
 
 /* the explain card: icon and title on top, the words in plain type with code words set apart, then a line and the cell tools */
-.cpanel{padding:18px 20px 16px}
-.cpanel .chd{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.cpanel .chd{display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-top:18px;border-top:1px solid var(--s0)}
 .cpanel .chd .ni{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;flex:none;color:var(--yellow);background:color-mix(in srgb,var(--yellow) 13%,var(--base))}
 .cpanel .chd .ni .i{width:18px;height:18px}
 .cpanel .chd div{flex:1;min-width:0}

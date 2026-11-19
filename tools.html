@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tools · Coder</title>
+<meta name="description" content="The tool stack this major reaches for to get a project shipped.">
+<meta name="theme-color" content="#11111b">
+<link rel="preload" href="assets/fonts/lineseedsansth_rg.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="tools">
+
+  <main class="ed">
+    <div class="tabs" role="tablist"><div class="tab on" role="tab" aria-selected="true"><svg class="i"><use href="#i-wrench"/></svg>Tools</div></div>
+    <div class="crumb">Coder › Tools</div>
+    <div class="view">
+      <div class="welcome wide">
+        <h1>Tool stack</h1>
+        <p class="lead">What we reach for to get a project shipped, layer by layer</p>
+
+        <div class="tlist" id="tlist"></div>
+      </div>
+    </div>
+  </main>
+
+<script src="shell.js"></script>
+<script>
+// each tool is [name, url, logo-file-in-assets/tools (or null to fall back to the category icon)]
+const TOOLS = [
+  ['terminal-window', 'Languages', [
+    ['Python', 'https://www.python.org/', 'python.svg'], ['C', 'https://en.cppreference.com/w/c', 'c.svg'], ['C++', 'https://isocpp.org/', 'cplusplus.svg'],
+    ['Arduino C++ (.ino)', 'https://www.arduino.cc/reference/en/', 'arduino.svg'], ['HTML', 'https://developer.mozilla.org/en-US/docs/Web/HTML', 'html5.svg'],
+    ['CSS', 'https://developer.mozilla.org/en-US/docs/Web/CSS', null], ['JavaScript', 'https://developer.mozilla.org/en-US/docs/Web/JavaScript', 'javascript.svg'],
+    ['TSX (TypeScript)', 'https://www.typescriptlang.org/', 'typescript.svg'], ['Bash / Terminal', 'https://www.gnu.org/software/bash/', 'gnubash.svg'],
+  ]],
+  ['code', 'IDE & coding tools', [
+    ['VS Code', 'https://code.visualstudio.com/', null], ['Antigravity', 'https://antigravity.google/', null], ['Cursor', 'https://cursor.com/', 'cursor.svg'],
+    ['Google Apps Script', 'https://developers.google.com/apps-script', 'googleappsscript.svg'], ['Jupyter', 'https://jupyter.org/', 'jupyter.svg'],
+    ['Google Colab', 'https://colab.research.google.com/', 'googlecolab.svg'], ['Anaconda', 'https://www.anaconda.com/', 'anaconda.svg'], ['Arduino IDE', 'https://www.arduino.cc/en/software', 'arduino.svg'],
+  ]],
+  ['puzzle-piece', 'VS Code extensions', [
+    ['Python', 'https://marketplace.visualstudio.com/items?itemName=ms-python.python', 'python.svg'],
+    ['Pylance', 'https://marketplace.visualstudio.com/items?itemName=ms-python.vscode-pylance', null],
+    ['C/C++', 'https://marketplace.visualstudio.com/items?itemName=ms-vscode.cpptools', 'cplusplus.svg'],
+    ['Arduino', 'https://marketplace.visualstudio.com/items?itemName=vsciot-vscode.vscode-arduino', 'arduino.svg'],
+    ['Jupyter', 'https://marketplace.visualstudio.com/items?itemName=ms-toolsai.jupyter', 'jupyter.svg'],
+    ['GitHub Copilot', 'https://marketplace.visualstudio.com/items?itemName=GitHub.copilot', 'githubcopilot.svg'],
+    ['GitLens', 'https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens', null],
+    ['ESLint', 'https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint', 'eslint.svg'],
+    ['Prettier', 'https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode', 'prettier.svg'],
+    ['Live Server', 'https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer', null],
+    ['Tailwind CSS IntelliSense', 'https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss', 'tailwindcss.svg'],
+    ['Docker', 'https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker', 'docker.svg'],
+    ['Remote - SSH', 'https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-ssh', null],
+    ['Thunder Client', 'https://marketplace.visualstudio.com/items?itemName=rangav.vscode-thunder-client', null],
+    ['GitHub Theme', 'https://marketplace.visualstudio.com/items?itemName=GitHub.github-vscode-theme', 'github.svg'],
+    ['Catppuccin', 'https://marketplace.visualstudio.com/items?itemName=Catppuccin.catppuccin-vsc', null],
+    ['One Dark Pro', 'https://marketplace.visualstudio.com/items?itemName=zhuangtongfa.Material-theme', null],
+    ['Material Icon Theme', 'https://marketplace.visualstudio.com/items?itemName=PKief.material-icon-theme', null],
+    ['Dracula Official', 'https://marketplace.visualstudio.com/items?itemName=dracula-theme.theme-dracula', null],
+  ]],
+  ['brain', 'AI models & assistants', [
+    ['Claude', 'https://claude.ai/', 'claude.svg'], ['Codex', 'https://openai.com/codex/', null], ['Gemini', 'https://gemini.google.com/', 'googlegemini.svg'],
+    ['DeepSeek', 'https://www.deepseek.com/', 'deepseek.svg'], ['Qwen', 'https://qwen.ai/', null], ['GitHub Copilot', 'https://github.com/features/copilot', 'githubcopilot.svg'],
+    ['Manus', 'https://manus.im/', null], ['Gemma', 'https://ai.google.dev/gemma', null], ['Perplexity', 'https://www.perplexity.ai/', 'perplexity.svg'], ['SciSpace', 'https://scispace.com/', null],
+  ]],
+  ['eye', 'ML & computer vision', [
+    ['TensorFlow', 'https://www.tensorflow.org/', 'tensorflow.svg'], ['PyTorch', 'https://pytorch.org/', 'pytorch.svg'], ['scikit-learn', 'https://scikit-learn.org/', 'scikitlearn.svg'],
+    ['YOLO', 'https://www.ultralytics.com/', null], ['OpenCV', 'https://opencv.org/', 'opencv.svg'], ['OpenCV-contrib', 'https://github.com/opencv/opencv_contrib', 'opencv.svg'],
+    ['Roboflow', 'https://roboflow.com/', 'roboflow.svg'], ['RPi.GPIO', 'https://pypi.org/project/RPi.GPIO/', 'raspberrypi.svg'], ['rpi_lcd', 'https://pypi.org/project/rpi-lcd/', 'raspberrypi.svg'],
+    ['Hugging Face', 'https://huggingface.co/', 'huggingface.svg'], ['NumPy', 'https://numpy.org/', 'numpy.svg'], ['Pandas', 'https://pandas.pydata.org/', 'pandas.svg'],
+    ['PyQt5', 'https://pypi.org/project/PyQt5/', 'qt.svg'], ['Tkinter', 'https://docs.python.org/3/library/tkinter.html', null], ['Keras', 'https://keras.io/', 'keras.svg'],
+    ['Matplotlib', 'https://matplotlib.org/', null], ['ONNX', 'https://onnx.ai/', 'onnx.svg'], ['NVIDIA CUDA', 'https://developer.nvidia.com/cuda-toolkit', 'nvidia.svg'],
+  ]],
+  ['hard-drives', 'Cloud & dev platforms', [
+    ['Vercel', 'https://vercel.com/', 'vercel.svg'], ['Supabase', 'https://supabase.com/', 'supabase.svg'], ['Google Cloud', 'https://cloud.google.com/', 'googlecloud.svg'],
+    ['LINE Developers', 'https://developers.line.biz/', 'line.svg'], ['Google Developers', 'https://developers.google.com/', 'google.svg'],
+    ['Google OAuth', 'https://developers.google.com/identity/protocols/oauth2', 'google.svg'], ['Playwright', 'https://playwright.dev/', null],
+    ['Meta for Developers', 'https://developers.facebook.com/', 'meta.svg'], ['Kaggle', 'https://www.kaggle.com/', 'kaggle.svg'], ['Git', 'https://git-scm.com/', 'git.svg'],
+    ['GitHub', 'https://github.com/', 'github.svg'], ['LeetCode', 'https://leetcode.com/', 'leetcode.svg'], ['HackerRank', 'https://www.hackerrank.com/', 'hackerrank.svg'],
+    ['Docker', 'https://www.docker.com/', 'docker.svg'], ['PostgreSQL', 'https://www.postgresql.org/', 'postgresql.svg'], ['Postman', 'https://www.postman.com/', 'postman.svg'],
+    ['npm', 'https://www.npmjs.com/', 'npm.svg'], ['Bootstrap', 'https://getbootstrap.com/', 'bootstrap.svg'], ['Stack Overflow', 'https://stackoverflow.com/', 'stackoverflow.svg'],
+    ['Flask', 'https://flask.palletsprojects.com/', 'flask.svg'], ['FastAPI', 'https://fastapi.tiangolo.com/', 'fastapi.svg'], ['Firebase', 'https://firebase.google.com/', 'firebase.svg'],
+    ['Nginx', 'https://nginx.org/', 'nginx.svg'], ['Linux', 'https://www.linux.org/', 'linux.svg'], ['Ubuntu', 'https://ubuntu.com/', 'ubuntu.svg'],
+  ]],
+  ['cube', 'Design & 3D', [
+    ['Onshape', 'https://www.onshape.com/', null], ['Blender', 'https://www.blender.org/', 'blender.svg'], ['Fusion 360', 'https://www.autodesk.com/products/fusion-360', null],
+    ['Figma', 'https://www.figma.com/', 'figma.svg'], ['Canva', 'https://www.canva.com/', null],
+  ]],
+  ['github-logo', 'GitHub essentials', [
+    ['ponytail', 'https://github.com/DietrichGebert/ponytail', null], ['caveman', 'https://github.com/JuliusBrussee/caveman', null],
+    ['brag', 'https://github.com/latent-spaces/brag', null], ['superpowers', 'https://github.com/obra/superpowers', null],
+    ['MediaPipe', 'https://github.com/google-ai-edge/mediapipe', null], ['T3MP3ST', 'https://github.com/elder-plinius/T3MP3ST', null],
+    ['OpenCV', 'https://github.com/opencv/opencv', null], ['Haar Cascades', 'https://github.com/opencv/opencv/tree/master/data/haarcascades', null],
+  ]],
+  ['flask', 'Research & productivity', [
+    ['Google Scholar', 'https://scholar.google.com/', 'googlescholar.svg'], ['Medium', 'https://medium.com/', 'medium.svg'], ['iLovePDF', 'https://www.ilovepdf.com/', null],
+    ['Obsidian', 'https://obsidian.md/', 'obsidian.svg'], ['Notion', 'https://www.notion.so/', 'notion.svg'],
+  ]],
+];
+const mark = (ic, logo) => logo ? `<img src="assets/tools/${logo}" alt="" loading="lazy">` : icon(ic);
+const host = href => { try { return new URL(href).hostname.replace(/^www\./, ''); } catch { return href; } };
+$('#tlist').innerHTML = TOOLS.map(([ic, name, tools]) => `<article class="tcat"><h3>${icon(ic)}<span>${esc(name)}</span><i>${tools.length} tools</i></h3><div class="trows">${tools.map(([t, href, logo]) => `<a class="trow" href="${esc(href)}" target="_blank" rel="noopener"><span class="tri">${mark(ic, logo)}</span><span class="trt"><b>${esc(t)}</b><i>${esc(host(href))}</i></span>${icon('arrow-up-right')}</a>`).join('')}</div></article>`).join('');
+</script>
+</body>
+</html>

@@ -31,6 +31,7 @@
           <div><b id="s-ch">0/0</b><span>Chapters done</span></div>
         </div>
 
+        <div class="yrfilter" id="yrfilter"><b>Filter</b><button class="on" data-yr="">All</button></div>
         <div class="pathwrap"><div class="path" id="path"></div></div>
         <p class="note wide" style="margin-top:14px">Your progress saves in this browser. You will be able to tick chapters off once the chapter pages are in.</p>
       </div>
@@ -52,8 +53,19 @@ $('#path').innerHTML = notes.map(([g, ic, c, ns, yr]) => {
   const items = ns.map(n => n.startsWith('# ') ? `<li class="sec">${esc(n.slice(2))}</li>`
     : n === 'Coming soon' ? '<li class="soonli">Coming soon</li>'
     : `<li><a class="ch${doneSet.has(slug(g) + '/' + slug(n)) ? ' on' : ''}" href="${href(g, n)}" title="${esc(n)}"><i></i><span>${esc(n)}</span></a></li>`).join('');
-  return `<div class="mod ${state}" data-g="${esc(g)}" style="--c:var(--${c})"><div class="mh"><b>${esc(g)}</b><span>${yr.split(' ')[0]}${soon ? '' : ' · ' + got + '/' + real.length}</span></div><div class="ring">${icon(ic)}${state === 'done' ? icon('check-circle').replace('class="i"', 'class="i ck"') : ''}</div><ul class="chs">${items}</ul></div>`;
+  return `<div class="mod ${state}" data-g="${esc(g)}" data-yr="${esc(yr.split(' ')[0])}" style="--c:var(--${c})"><div class="mh"><b>${esc(g)}</b><span>${yr.split(' ')[0]}${soon ? '' : ' · ' + got + '/' + real.length}</span></div><div class="ring">${icon(ic)}${state === 'done' ? icon('check-circle').replace('class="i"', 'class="i ck"') : ''}</div><ul class="chs">${items}</ul></div>`;
 }).join('');
+
+// filter tabs: one per year found in the path, "All" first; clicking shows only that year's modules
+const yrs = [...new Set(notes.map(([,,,,yr]) => yr.split(' ')[0]))];
+$('#yrfilter').insertAdjacentHTML('beforeend', yrs.map(y => `<button data-yr="${esc(y)}">${esc(y)}</button>`).join(''));
+$('#yrfilter').onclick = e => {
+  const b = e.target.closest('button'); if (!b) return;
+  $$('#yrfilter button').forEach(x => x.classList.toggle('on', x === b));
+  $$('.mod').forEach(m => m.classList.toggle('hide', !!b.dataset.yr && m.dataset.yr !== b.dataset.yr));
+  const shown = $$('.mod:not(.hide)');
+  shown.forEach((m, i) => m.classList.toggle('nolink', i === shown.length - 1));
+};
 $('#s-done').textContent = cDone; $('#s-prog').textContent = cProg; $('#s-avail').textContent = cAvail;
 $('#s-ch').textContent = nDone + '/' + nTotal;
 

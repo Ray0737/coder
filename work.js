@@ -88,9 +88,43 @@ async function showWork() {
   const f = wItems.find(x => wId(x) === id);
   if (!f) {
     setHead('Work', 'Coder › Work');
-    wmain.innerHTML = `<h1>Work</h1><p class="lead">The code version of each class: the full programs, tools and scripts</p>
-      <p class="note wide">Chapters explain the ideas. Work is where the finished thing lives, so you can open the whole program, tool or script for a class instead of rebuilding it from the lesson. Pick a file from the list on the left.</p>
-      <div class="wlist">${wItems.map(x => `<a href="work.html#${wId(x)}">${icon('code')}<span><b>${esc(x.file)}</b>${esc(x.title)}</span><i>${esc(notes.find(n => slug(n[0]) === x.cs)[0])}</i></a>`).join('')}</div>`;
+    wmain.innerHTML = `
+      <h1>Coder</h1>
+      <p class="lead">Code, circuits, robots and AI, one chapter at a time</p>
+      <div class="cols">
+        <div>
+          <section>
+            <h3>Start</h3>
+            <ul class="links">
+              <li><a href="#" data-open="main">${icon('folder-open')}Browse work</a></li>
+              <li><a href="#" data-cmd>${icon('magnifying-glass')}Go to a chapter</a></li>
+              <li><a href="#" data-group="Basic Python">${icon('terminal-window')}Open Python</a></li>
+              <li><a href="#" data-group="AI Development">${icon('brain')}Open AI Development</a></li>
+              <li><a href="tools.html">${icon('wrench')}Recommended tools</a></li>
+            </ul>
+          </section>
+          <section>
+            <h3>Recent</h3>
+            <ul class="links" id="recent"></ul>
+          </section>
+        </div>
+        <div>
+          <section class="walk">
+            <h3>Walkthroughs</h3>
+            <a href="#" data-group="Basic Python">${icon('terminal-window')}<span><b>Start with Python</b>From print() up to a Tkinter app</span></a>
+            <a href="#" data-group="Circuits, Arduino &amp; GPIO">${icon('cpu')}<span><b>Circuits to robots</b>Ohm's law, Arduino, ESP32, Raspberry Pi</span></a>
+            <a href="#" data-group="AI Development">${icon('brain')}<span><b>AI Development</b>From AI vs ML up to LLMs</span></a>
+          </section>
+        </div>
+      </div>
+      <p class="startup">${icon('list-checks')}Pick a file in Work to begin</p>`;
+    const recent = $('#recent');
+    if (recent) recent.innerHTML = (load('coder:recent') || [])
+      .map(s => all.find(x => slug(x.g) + '/' + slug(x.n) === s)).filter(Boolean)
+      .map(x => `<li><a href="${href(x.g, x.n)}">${esc(x.n)}</a><span class="dim">${esc(x.g)}</span></li>`).join('');
+    $$('#wmain [data-open]').forEach(a => a.onclick = e => { e.preventDefault(); open(); });
+    $$('#wmain [data-group]').forEach(a => a.onclick = e => { e.preventDefault(); open(); $$('.grp').forEach(b => setGroup(b, b.dataset.g === a.dataset.group)); });
+    $$('#wmain [data-cmd]').forEach(a => a.onclick = e => { e.preventDefault(); cmd.focus(); });
     return;
   }
   const folder = notes.find(n => slug(n[0]) === f.cs);
@@ -107,19 +141,21 @@ async function showWork() {
   }
   code = code.replace(/\r\n?/g, '\n');
   const cells = cutCells(code, f.cutAt);
-  wmain.innerHTML = `<div class="wtop"><span class="ni" style="--c:var(--${folder[2]})">${icon('code')}</span><div><h1>${esc(f.file)}</h1><p class="sum">${esc(f.note)}</p></div></div>
-    <div class="wact">
-      <button class="btn ghost" id="wcopy" type="button">${icon('notebook')}<span>Copy file</span></button>
-      <a class="btn ghost" href="${path}" download="${esc(f.file)}">${icon('arrow-up-right')}Download</a>
-      <a class="btn ghost" href="chapter.html#${f.chapter}">${icon('file-text')}Read the chapter</a>
-    </div>
-    <div class="wgrid">
+  wmain.innerHTML = `<div class="wgrid">
       <div class="wcells">${cells.map((c, i) => `<section class="wcell" tabindex="0" data-i="${i}"><span class="cin">In [${i + 1}]<em>${esc(c.label)}</em></span><pre><code>${mdCode(c.code, 'python')}</code></pre>${f.outs[i] ? `<div class="cout"><span class="cin ocl">Out [${i + 1}]</span><pre>${esc(f.outs[i])}</pre></div>` : ''}</section>`).join('')}</div>
-      <aside class="cpanel">
-        <div class="chd"><span class="ni">${icon('lightbulb')}</span><div><b>What this cell does</b><i id="cwhich"></i></div>
-          <span class="cnav"><button type="button" id="cprev" data-tip="Previous cell">${icon('caret-left')}</button><button type="button" id="cnext" data-tip="Next cell">${icon('caret-right')}</button></span></div>
-        <p id="cdoes"></p>
-        <div class="cft"><button class="btn ghost" id="ccopy" type="button">${icon('notebook')}<span>Copy this cell</span></button><span id="cpos"></span></div>
+      <aside class="wside">
+        <div class="wtop"><span class="ni" style="--c:var(--${folder[2]})">${icon('code')}</span><div><h1>${esc(f.file)}</h1><p class="sum">${esc(f.note)}</p></div></div>
+        <div class="wact">
+          <button class="btn ghost" id="wcopy" type="button" data-tip="Copy file">${icon('notebook')}</button>
+          <a class="btn ghost" href="${path}" download="${esc(f.file)}" data-tip="Download">${icon('arrow-up-right')}</a>
+          <a class="btn ghost" href="chapter.html#${f.chapter}" data-tip="Read the chapter">${icon('file-text')}</a>
+        </div>
+        <div class="cpanel">
+          <div class="chd"><span class="ni">${icon('lightbulb')}</span><div><b>What this cell does</b><i id="cwhich"></i></div>
+            <span class="cnav"><button type="button" id="cprev" data-tip="Previous cell">${icon('caret-left')}</button><button type="button" id="cnext" data-tip="Next cell">${icon('caret-right')}</button></span></div>
+          <p id="cdoes"></p>
+          <div class="cft"><button class="btn ghost" id="ccopy" type="button">${icon('notebook')}<span>Copy this cell</span></button><span id="cpos"></span></div>
+        </div>
       </aside>
     </div>`;
 
@@ -136,7 +172,11 @@ async function showWork() {
     $('#cnext').disabled = i === cells.length - 1;
     if (scroll) $$('.wcell')[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   };
-  const flash = (btn, text) => { const s = btn.querySelector('span'), old = s.textContent; s.textContent = text; setTimeout(() => s.textContent = old, 1400); };
+  const flash = (btn, text) => {
+    const s = btn.querySelector('span');
+    if (s) { const old = s.textContent; s.textContent = text; setTimeout(() => s.textContent = old, 1400); return; }
+    const old = btn.dataset.tip; btn.dataset.tip = text; setTimeout(() => btn.dataset.tip = old, 1400);
+  };
   const copy = (text, btn) => (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(() => flash(btn, 'Copied')).catch(() => {});
   $('.wcells').addEventListener('click', e => { const c = e.target.closest('.wcell'); if (c) pick(+c.dataset.i); });
   $('.wcells').addEventListener('keydown', e => { const c = e.target.closest('.wcell'); if (c && e.target === c && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); pick(+c.dataset.i); } });
