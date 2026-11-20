@@ -61,7 +61,6 @@ const HEADER = `
     <a class="logo" href="index.html" aria-label="Coder home"><svg class="i"><use href="#i-code"/></svg></a>
     <nav class="menu" aria-label="Main">
       <a href="index.html">Home</a>
-      <a href="notes.html">Notes</a>
       <a href="work.html">Work</a>
       <a href="roadmap.html">Roadmap</a>
       <a href="tools.html">Tools</a>
@@ -83,7 +82,6 @@ const HEADER = `
   </header>
 `;
 const ACT_REST = `
-    <a href="notes.html" title="Notes" aria-label="Notes"><svg class="i"><use href="#i-notebook"/></svg></a>
     <a href="work.html" title="Work" aria-label="Work"><svg class="i"><use href="#i-toolbox"/></svg></a>
     <a href="roadmap.html" title="Roadmap" aria-label="Roadmap"><svg class="i"><use href="#i-map-trifold"/></svg></a>
     <a href="tools.html" title="Tools" aria-label="Tools"><svg class="i"><use href="#i-wrench"/></svg></a>
@@ -102,7 +100,7 @@ const FOOTER = `
     <span class="hide" title="Branch"><svg class="i"><use href="#i-path"/></svg>main</span>
     <span class="hide" title="Problems"><svg class="i"><use href="#i-warning"/></svg>0</span>
     <span id="count" title="Chapters"><svg class="i"><use href="#i-notebook"/></svg></span>
-    <a href="notes.html" id="done" title="Chapters done"><svg class="i"><use href="#i-check-circle"/></svg></a>
+    <span id="done" title="Chapters done"><svg class="i"><use href="#i-check-circle"/></svg></span>
     <span class="gap"></span>
     <span class="hide" title="Language"><svg class="i"><use href="#i-translate"/></svg>EN</span>
     <span class="sep hide"></span>
@@ -164,12 +162,12 @@ const SETTINGS = `
 `;
 // ponytail: chapter list lives here until a data.js exists; chapter hrefs are placeholders.
 const notes = [
-  ['Basic Python','terminal-window','yellow',['# Core Python','Printing and getting input','Lists','Conditionals','Loops','Functions','Tuples and dictionaries','Object-oriented programming','Tkinter GUI','Capstone: Tkinter study planner','# Prep for AI Development','os: files and folders','sys: arguments and the interpreter','NumPy: arrays','Matplotlib: plots','Pandas: tables'],'M.4 Foundations'],
-  ['Circuits, Arduino & GPIO','cpu','peach',['# Circuit basics','Voltage, current and resistance','Series, parallel and mixed circuits','Circuit diagrams and measuring','# Get to know the hardware','The Arduino board','Pins deep dive: digital, PWM and I2C','Breadboard basics','# Software','Arduino IDE and the sketch','# Wire it up','Resistors and the voltage divider','LED: blink, and active-high vs active-low','Button: digital input, pull-up and pull-down','LCD: wiring I2C','Ultrasonic sensor (HC-SR04)','Servo motor with PWM'],'M.4 Foundations'],
-  ['Physics in Robotics','robot','green',['# Physics principles','Linear motion','Circular motion','Differential drive: distance and angle to motor speed','# Robot setup','Hardware: ESP32 and motors','# Code setup','Project setup','Motor protocol: Dynamixel 2.0','# CAD','Chassis design in Onshape','# Final mission','The final mission'],'M.4 Foundations'],
-  ['LINE Chatbot','chat-text','teal',['# Chatbot basics','What a chatbot is and how it is built','Rule-based NLP: matching what people say','# Dialogflow','Dialogflow intents','# LINE','LINE Official Account and Messaging API','# Backend','Webhook and database: Apps Script and Google Sheets','# Replies and wrap-up','Rich replies: Flex Messages','End to end: check stock'],'M.4 Foundations'],
-  ['Raspberry Pi Vision','circuitry','red',['# Know the board','The board and its ports','# Boot and connect','Flashing the OS with Raspberry Pi Imager','HDMI, SSH and VS Code: ways to connect','# Linux on the Pi','Debian commands and the terminal cheatsheet','venv, activate and the break-system-packages error','Editing on the Pi: vim and nano','# GPIO, a quick recap','LED, button, servo and ultrasonic: what they connect to','Driving a motor: the L298N driver and a step-down converter for 12V','# Vision','Hand tracking with MediaPipe','YOLOv8 object detection','Running lightweight','# Wrap-up','Problems we faced'],'M.5 Applied AI'],
-  ['Computer Vision','eye','sky',['# Introduction','What is computer vision','# OpenCV basics','Reading and displaying','Mouse events','Crop, flip, rotate and resize','Color spaces','Thresholding and edge detection','Contours','Bitwise operations and masking','# Detection','Haar cascades: face and eye detection','Face recognition','Feature matching (ORB)','Trained object detection (YOLO)','# Beyond OpenCV','Beyond the repo: hand tracking and servo'],'M.5 Applied AI'],
+  ['Basic Python','terminal-window','yellow',['# Core Python','Printing and getting input','Lists','Conditionals','Loops','Functions','Tuples and dicts','OOP','Tkinter GUI','Capstone: study planner','# Prep for AI Development','os: files and folders','sys: arguments','NumPy: arrays','Matplotlib: plots','Pandas: tables'],'M.4 Foundations'],
+  ['Circuits, Arduino & GPIO','cpu','peach',['# Circuit basics','Voltage, current and resistance','Series and parallel circuits','Circuit diagrams and measuring','# Get to know the hardware','The Arduino board','Pins: digital, PWM and I2C','Breadboard basics','# Software','Arduino IDE and the sketch','# Wire it up','The voltage divider','LED: blink and active levels','Button: pull-up and pull-down','LCD: wiring I2C','Ultrasonic sensor (HC-SR04)','Servo motor with PWM'],'M.4 Foundations'],
+  ['Physics in Robotics','robot','green',['# Physics principles','Linear motion','Circular motion','Differential drive speeds','# Robot setup','Hardware: ESP32 and motors','# Code setup','Project setup','Motor protocol: Dynamixel 2.0','# CAD','Chassis design in Onshape','# Final mission','The final mission'],'M.4 Foundations'],
+  ['LINE Chatbot','chat-text','teal',['# Chatbot basics','What a chatbot is','Rule-based NLP','# Dialogflow','Dialogflow intents','# LINE','LINE OA and Messaging API','# Backend','Webhook and database','# Replies and wrap-up','Rich replies: Flex Messages','End to end: check stock'],'M.4 Foundations'],
+  ['Raspberry Pi Vision','circuitry','red',['# Know the board','The board and its ports','# Boot and connect','Flashing the OS','HDMI, SSH and VS Code','# Linux on the Pi','Terminal cheatsheet','Environment','Editing with vim and nano','# GPIO, a quick recap','What GPIO connects to','Driving a motor with L298N','# Vision','Hand tracking with MediaPipe','YOLOv8 object detection','Running lightweight','# Wrap-up','Problems we faced'],'M.5 Applied AI'],
+  ['Computer Vision','eye','sky',['# Introduction','Basic definition','# OpenCV basics','Reading and displaying','Mouse events','Crop, flip and resize','Color spaces','Thresholding and edges','Contours','Bitwise ops and masking','# Detection','Haar cascades','Face recognition','Feature matching (ORB)','Trained detection (YOLO)','# Beyond OpenCV','Hand tracking and servo'],'M.5 Applied AI'],
   ['AI Development','brain','mauve',['# AI, ML and DL','AI, ML and DL',
     '# ML: Data and training','Data handling','Basic parameters',
     '# ML: Supervised','Linear regression','Classification',
@@ -181,7 +179,7 @@ const notes = [
   ['Research','lightbulb','sapphire',['Coming soon'],'M.6 Capstone'],
   ['Final Project','sparkle','flamingo',['Coming soon'],'M.6 Capstone'],
 ];
-const pages = [['Home','index.html','house'],['Tools','tools.html','wrench'],['Notes','notes.html','notebook'],['Work','work.html','toolbox'],['Roadmap','roadmap.html','map-trifold'],['About Coder','about.html','info'],['About the major','major.html','graduation-cap'],['Projects','projects.html','cube'],['Materials','materials.html','books'],['Changelog','about.html#changelog','clock']];
+const pages = [['Home','index.html','house'],['Tools','tools.html','wrench'],['Work','work.html','toolbox'],['Roadmap','roadmap.html','map-trifold'],['About Coder','about.html','info'],['About the major','major.html','graduation-cap'],['Projects','projects.html','cube'],['Materials','materials.html','books'],['Changelog','about.html#changelog','clock']];
 const $ = s => document.querySelector(s), $$ = s => document.querySelectorAll(s);
 const esc = s => s.replace(/&/g,'&amp;');
 const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');

@@ -1151,30 +1151,35 @@ async function loadChapter() {
   const to = x => href(x.g, x.n) + `" data-ch="${slug(x.g)}/${slug(x.n)}`;
   lessonEl.innerHTML = `<h1>${esc(title)}</h1>${meta.summary ? `<p class="sum">${mdEsc(meta.summary)}</p>` : ''}${html}
     <div class="cta">
-      <div class="ctat"><b>Finished this chapter?</b><span>Jot it down, tick it off, then keep going.</span>${prev ? `<a class="prevlink" href="${to(prev)}">${icon('caret-left')}Previous: ${esc(prev.n)}</a>` : ''}</div>
+      <div class="ctat"><b>Finished this chapter?</b><span>Jot it down, tick it off, then keep going.</span></div>
       <div class="ctab">
+        ${prev ? `<a class="btn ghost prevbtn" href="${to(prev)}">${icon('caret-left')}Previous: ${esc(prev.n)}</a>` : ''}
         <button class="btn ghost" id="opennote" type="button">${icon('notebook')}Open note</button>
         <button class="btn ghost" id="mark" type="button"></button>
-        ${next ? `<a class="btn" href="${to(next)}"><span>Move on to ${esc(next.n)}</span>${icon('caret-right')}</a>` : `<a class="btn" href="roadmap.html"><span>Back to the roadmap</span>${icon('caret-right')}</a>`}
+        ${next ? `<a class="btn" href="${to(next)}"><span>Next: ${esc(next.n)}</span>${icon('caret-right')}</a>` : `<a class="btn" href="roadmap.html"><span>Roadmap</span>${icon('caret-right')}</a>`}
       </div>
     </div>`;
   $('#opennote').onclick = openNote;
   Object.assign(widgets, window.moreWidgets || {});
   $$('[data-widget]').forEach(el => widgets[el.dataset.widget] && widgets[el.dataset.widget](el));
-  const mark = $('#mark');
+  const mark = $('#mark'), topmark = $('#topmark');
   const paint = () => {
     const isDone = (load('coder:done') || []).includes(id);
     mark.innerHTML = icon('check-circle') + (isDone ? 'Done' : 'Mark as done');
     mark.classList.toggle('on', isDone);
+    topmark.classList.toggle('on', isDone);
+    topmark.dataset.tip = isDone ? 'Done — click to unmark' : 'Mark as done';
     const f = $('#done');
     if (f && f.lastChild) f.lastChild.textContent = (load('coder:done') || []).length + '/' + all.length + ' done';
   };
-  mark.onclick = () => {
+  const toggleDone = () => {
     const d = load('coder:done') || [];
     writeJSON('coder:done', d.includes(id) ? d.filter(s => s !== id) : [...d, id]);
     if (!d.includes(id)) touchStreak();
     paint();
   };
+  mark.onclick = toggleDone;
+  topmark.onclick = toggleDone;
   paint();
   $('.view').scrollTop = 0;
 }

@@ -55,15 +55,20 @@
           </div>
         </div>
 
-        <div class="stats">
-          <div><b id="s-done" style="color:var(--green)">0</b><span>Completed</span></div>
-          <div><b id="s-prog" style="color:var(--peach)">0</b><span>In progress</span></div>
-          <div><b id="s-avail" style="color:var(--blue)">0</b><span>Available</span></div>
-          <div><b id="s-ch">0/0</b><span>Chapters done</span></div>
+        <div class="pfilterrow">
+          <div class="yrfilter" id="yrfilter"><b>Filter</b><button class="on" data-yr="">All</button></div>
+          <div class="pstats">
+            <span><b id="s-done" style="color:var(--green)">0</b> done</span>
+            <span><b id="s-prog" style="color:var(--peach)">0</b> in progress</span>
+            <span><b id="s-avail" style="color:var(--blue)">0</b> available</span>
+            <span><b id="s-ch">0/0</b> chapters</span>
+          </div>
+          <div class="pscroll">
+            <button class="ib" id="pprev" type="button" aria-label="Scroll left" title="Scroll left"><svg class="i"><use href="#i-caret-left"/></svg></button>
+            <button class="ib" id="pnext" type="button" aria-label="Scroll right" title="Scroll right"><svg class="i"><use href="#i-caret-right"/></svg></button>
+          </div>
         </div>
-
-        <div class="yrfilter" id="yrfilter"><b>Filter</b><button class="on" data-yr="">All</button></div>
-        <div class="pathwrap"><div class="path" id="path"></div></div>
+        <div class="pathwrap" id="pathwrap"><div class="path" id="path"></div></div>
         <p class="note wide" style="margin-top:14px">Your progress saves in this browser. You will be able to tick chapters off once the chapter pages are in.</p>
       </div>
     </div>
@@ -113,6 +118,11 @@ $('#reset').onclick = () => resetbg.hidden = false;
 $('#resetcancel').onclick = () => resetbg.hidden = true;
 resetbg.onclick = e => { if (e.target === resetbg) resetbg.hidden = true; };
 $('#resetok').onclick = () => { localStorage.removeItem('coder:done'); location.reload(); };
+
+// manual scroll of the path graph, one module-width per click
+const pathwrap = $('#pathwrap');
+$('#pprev').onclick = () => pathwrap.scrollBy({ left: -280, behavior: 'smooth' });
+$('#pnext').onclick = () => pathwrap.scrollBy({ left: 280, behavior: 'smooth' });
 </script>
 </body>
 </html>

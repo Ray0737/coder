@@ -1,4 +1,4 @@
-// Shared Markdown reader: used by chapter.js (lessons and the note preview) and notes.html (your notes).
+// Shared Markdown reader: used by chapter.js (lessons and the note preview).
 // Needs shell.js first, for icon().
 
 // ---- tiny Markdown: headings, paragraphs, lists, tables, code blocks, note boxes, images, links, bold, italic, inline code
