@@ -80,11 +80,13 @@ Two name traps worth knowing, since papers use them freely: the sigmoid is also 
 
 > [!aha] Backpropagation is grading a group project from the end backwards: the final answer was wrong, so you ask "which step contributed most to that?", walk back through the layers, and nudge every weight that played a part.
 
-1. Run the input forward through every layer to get an answer (a **forward pass**).
-2. Compare the answer to the real one with a **loss function**: a single number for "how wrong".
-3. Walk backward layer by layer, working out how much each weight is to blame (the **gradient**).
-4. Nudge every weight a little in the direction that lowers the loss.
-5. Repeat, for every example, for many **epochs**.
+```tgrid5
+1. Forward pass | Run the input forward through every layer to get an answer. Each layer takes the numbers from the one before, applies its weights and activation, and passes the result on.
+2. Loss | Compare the answer with the real one using a **loss function**: a single number for "how wrong". A perfect answer gives a loss near zero.
+3. Backward pass | Walk backward layer by layer and work out how much each weight is to blame for the loss. That share of the blame is the **gradient**.
+4. Update | Nudge every weight a little in the direction that lowers the loss. How big the nudge is gets set by the learning rate, below.
+5. Repeat | Do it for every example, many times over. One full pass through all the data is an **epoch**, and training usually takes many epochs.
+```
 
 That nudge is controlled by the **learning rate**: too big and training overshoots and never settles, too small and it crawls.
 
@@ -192,9 +194,11 @@ How big is this network at the edges? Each image is 28 × 28 = 784 pixels, each 
 
 Three ways to look at the same run:
 
-- **Bird's Eye**: the loss curve. Train loss (solid) always falls. Validation loss (dashed) falls too, then creeps back up late: the network is starting to memorise instead of generalise. That is **overfitting**, from the earlier chapter, happening live.
-- **Neuron Level**: ten sample digits with the model's current guess and confidence, plus a peek at 16 of the first hidden layer's neurons. Early on their weights look like static. By the later epochs, patterns appear: some neurons specialise in a stroke, a loop, a corner.
-- **Math Level**: the same formulas from this chapter (`z`, the activation, the loss, the gradient step), with this epoch's real numbers dropped in.
+```tgrid
+Bird's Eye | The loss curve. Train loss (solid) always falls. Validation loss (dashed) falls too, then creeps back up late: the network is starting to memorise instead of generalise. That is **overfitting**, from the earlier chapter, happening live.
+Neuron Level | Ten sample digits with the model's current guess and confidence, plus a peek at 16 of the first hidden layer's neurons. Early on their weights look like static. By the later epochs, patterns appear: some neurons specialise in a stroke, a loop, a corner.
+Math Level | The same formulas from this chapter (`z`, the activation, the loss, the gradient step), with this epoch's real numbers dropped in.
+```
 
 ```cta
 flask | See it for yourself | Train a small network in your browser, or put an MLP next to a CNN and compare them.

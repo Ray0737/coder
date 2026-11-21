@@ -1963,47 +1963,6 @@ const widgets = {
     $('#cv-reset').onclick = reset;
     render();
   },
-  // an unrolled hidden state, stepping through time; toy formulas contrast plain-RNN decay, LSTM-style gating and GRU-style interpolation
-  // ponytail: simplified teaching formulas, not real LSTM/GRU gate equations, swap in the real gate maths if this ever needs to be numerically exact
-  rnnunroll(el) {
-    const xs = [3, -1, 2, 5, -4, 1];
-    const gates = [1, 1, 0, 1, 0, 1];
-    let mode = 'Plain RNN', t = 0, timer = null;
-    const step = (h, x) => Math.tanh(0.5 * h + x * 0.3) * 0.55;
-    const stepLSTM = (h, x, gate) => gate ? Math.max(-3, Math.min(3, 0.9 * h + x * 0.15)) : x * 0.3;
-    // toy GRU: an update gate blends the old state with a fresh candidate, instead of the LSTM's hard keep/replace switch
-    const stepGRU = (h, x, gate) => { const z = gate ? 0.15 : 0.8; const cand = Math.tanh(x * 0.4); return (1 - z) * h + z * cand; };
-    const fns = { 'Plain RNN': (h, x, g) => step(h, x), 'LSTM gates': stepLSTM, 'GRU gates': stepGRU };
-    const compute = () => { let h = 0; const hs = [0]; const f = fns[mode]; for (let i = 0; i < xs.length; i++) { h = f(h, xs[i], gates[i]); hs.push(h); } return hs; };
-    const render = () => {
-      const hs = compute();
-      $('#rn-row').innerHTML = xs.map((x, i) => {
-        const h = hs[i + 1], seen = i <= t, pct = Math.min(100, Math.abs(h) / 3 * 100);
-        return `<div class="rnncell${i === t ? ' on' : ''}${!seen ? ' dim' : ''}"><i>x=${x}</i><div class="rnnbar"><em style="height:${seen ? pct : 0}%"></em></div><b>${seen ? h.toFixed(2) : '·'}</b></div>`;
-      }).join('<span class="rnnarrow">→</span>');
-      $('#rn-say').textContent = t >= xs.length - 1
-        ? (mode === 'Plain RNN' ? 'By the last step, the hidden state has shrunk close to zero: the early input is forgotten. That is the vanishing gradient problem.'
-          : mode === 'LSTM gates' ? 'With gates open most steps, the hidden state stays large much longer: the network can still "remember" the early input.'
-            : 'GRU blends old and new every step instead of fully overwriting, so it also keeps more of the early signal than a plain RNN.')
-        : `Step ${t + 1} of ${xs.length}.`;
-    };
-    el.innerHTML = `<p class="wgt">Try it: step through time</p>
-      <div class="tb"><span class="wgsub">Cell</span><span class="opts" id="rn-mode"></span><span class="sp"></span><button class="bt act" id="rn-play" type="button">Play</button><button class="bt" id="rn-step" type="button">Step</button><button class="bt" id="rn-reset" type="button">Reset</button></div>
-      <div class="rnnrow" id="rn-row"></div>
-      <p class="wgcap" id="rn-say"></p>`;
-    $('#rn-mode').innerHTML = Object.keys(fns).map((n, i) => `<button type="button" class="bt${i === 0 ? ' on' : ''}" data-m="${n}">${n}</button>`).join('');
-    const resetAll = () => { t = 0; if (timer) { clearInterval(timer); timer = null; } $('#rn-play').textContent = 'Play'; render(); };
-    $('#rn-mode').onclick = e => { const b = e.target.closest('button'); if (!b) return; mode = b.dataset.m; $$('#rn-mode button').forEach(x => x.classList.toggle('on', x === b)); resetAll(); };
-    $('#rn-step').onclick = () => { if (timer) { clearInterval(timer); timer = null; $('#rn-play').textContent = 'Play'; } t = Math.min(t + 1, xs.length - 1); render(); };
-    $('#rn-play').onclick = () => {
-      if (timer) { clearInterval(timer); timer = null; $('#rn-play').textContent = 'Play'; return; }
-      if (t >= xs.length - 1) resetAll();
-      $('#rn-play').textContent = 'Pause';
-      timer = trackTimer(setInterval(() => { t++; if (t >= xs.length - 1) { t = xs.length - 1; render(); clearInterval(timer); timer = null; $('#rn-play').textContent = 'Play'; return; } render(); }, 650));
-    };
-    $('#rn-reset').onclick = resetAll;
-    render();
-  },
   // seq2seq: an encoder reads the whole input one token at a time, then a decoder emits the (differently-sized) output one token at a time
   seq2seqdemo(el) {
     const inp = ['I', 'am', 'happy'], out = ['Estoy', 'feliz'];
@@ -2292,8 +2251,7 @@ const widgets = {
         <button type="button" class="seg2" data-s="0">Free</button><button type="button" class="seg2" data-s="55">Balanced</button><button type="button" class="seg2" data-s="100">Tight</button></div>
       <div class="klrows" id="kl-rows"></div>
       <div class="afrow" id="kl-st"></div>
-      <p class="wgo" id="kl-say"></p>
-      <p class="wgcap">Bars: the model after RLHF. White tick: how likely the base model was to write that reply. Rewards and base odds are made up to show the idea. The formula behind the bars is the standard best answer to "maximise reward, but pay for drifting from the base model".</p>`;
+`;
     const run = () => {
       const s = +$('#kl-b').value, bt = beta(s);
       const w = R.map(x => x.p0 * Math.exp(x.r / bt)), z = w.reduce((a, c) => a + c, 0), P = w.map(v => v / z);
@@ -2304,9 +2262,6 @@ const widgets = {
       $('#kl-rows').innerHTML = R.map((x, i) => `<div class="klr"><div class="klt"><b style="color:var(--${x.c})">${x.k}</b><span>${mdEsc(x.text)}<small>${x.tag} · reward score ${x.r}</small></span></div>
         <div class="klb"><i style="width:${P[i] * 100}%;background:var(--${x.c})"></i><u style="left:${x.p0 * 100}%"></u></div><div class="kln"><b>${pc(P[i])}</b><small>base ${pc(x.p0)}</small></div></div>`).join('');
       $('#kl-st').innerHTML = `<div><span>Average reward</span><small>what the reward model says</small><b>${er.toFixed(1)}</b></div><div><span>Drift from base model</span><small>KL, in nats</small><b>${kl.toFixed(2)}</b></div><div><span>Flattering reply D</span><small>chance the model writes it</small><b>${pc(P[3])}</b></div>`;
-      $('#kl-say').textContent = bt < 1.2 ? 'Penalty too weak: the model is free to chase the score, so it piles onto the replies the reward model loves most, including the flattery that does not help anyone. This is reward hacking.'
-        : bt < 7 ? 'Middle ground: reply A, the genuinely helpful one, gains the most and the curt reply B shrinks, but the flattery creeps up too, because the reward model likes it. A real system has to watch for that.'
-          : 'Penalty very strong: the model barely moves from the base model. Nothing goes wrong, but RLHF has also changed almost nothing.';
     };
     $('#kl-b').oninput = run;
     el.querySelectorAll('.seg2[data-s]').forEach(b => b.onclick = () => { $('#kl-b').value = b.dataset.s; run(); });

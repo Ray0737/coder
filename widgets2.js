@@ -38,22 +38,26 @@
 
   window.moreWidgets = {
     // ---------- RNN / LSTM ----------
-    // gradient left after t steps back: a plain RNN multiplies by w each step, an LSTM cell state multiplies by the forget gate f
+    // gradient left after t steps back: a plain RNN multiplies by w each step, an LSTM cell state by the forget gate f, a GRU keeps (1 - z) of its old state
+    // ponytail: only the main path is drawn (one factor per step); the real gradient has extra terms
     gradcompare(el) {
       const q = s => el.querySelector(s), st = { pos: 20 };
       el.innerHTML = `<p class="wgt">Try it: how much signal survives going back in time</p>
         <div class="tb"><span>Gradient flowing back through 20 timesteps</span><span class="sp"></span>${btns('gc', false)}</div>
         <div class="tb ro"><label>RNN weight w <input id="gc-w" type="range" min="0.5" max="1.2" step="0.01" value="0.8"></label><b id="gc-wv"></b>
-          <label>LSTM forget gate f <input id="gc-f" type="range" min="0.8" max="1" step="0.01" value="0.95"></label><b id="gc-fv"></b></div>
-        <div class="plots" id="gc-p"></div><p class="wgo" id="gc-say"></p>
-        <p class="wgcap">Each step back multiplies the signal by w (plain RNN) or by the forget gate f (LSTM cell state). Below 1 it shrinks exponentially, above 1 it explodes. Values here are the exact powers w<sup>t</sup> and f<sup>t</sup>.</p>`;
+          <label>LSTM forget gate f <input id="gc-f" type="range" min="0.8" max="1" step="0.01" value="0.95"></label><b id="gc-fv"></b>
+          <label>GRU update gate z <input id="gc-z" type="range" min="0" max="0.2" step="0.01" value="0.1"></label><b id="gc-zv"></b></div>
+        <div class="plots" id="gc-p"></div><div class="afrow" id="gc-say"></div>
+        <p class="wgcap sm">Each step back multiplies the signal by w (RNN), f (LSTM) or 1 − z (GRU, the share of old state it keeps). Below 1 it shrinks exponentially, above 1 it explodes.</p>`;
       const draw = () => {
-        const w = +q('#gc-w').value, f = +q('#gc-f').value, rnn = Array.from({ length: 21 }, (_, t) => w ** t), lstm = Array.from({ length: 21 }, (_, t) => f ** t), at = st.pos;
-        q('#gc-wv').textContent = w.toFixed(2); q('#gc-fv').textContent = f.toFixed(2);
-        q('#gc-p').innerHTML = lines([{ v: rnn, c: 'red' }, { v: lstm, c: 'blue' }], 2, at, 'Gradient size (red = RNN, blue = LSTM)', 'steps back 20', 420, 150);
-        q('#gc-say').innerHTML = `After <b>${at}</b> steps back: RNN keeps <b>${(rnn[at] * 100).toFixed(rnn[at] < 0.1 ? 1 : 0)}%</b> of the signal, LSTM keeps <b>${(lstm[at] * 100).toFixed(0)}%</b>. ${w < 1 ? (rnn[20] < 0.05 ? 'The RNN has effectively forgotten step 0.' : '') : 'w above 1 makes the RNN gradient explode instead.'}`;
+        const w = +q('#gc-w').value, f = +q('#gc-f').value, z = +q('#gc-z').value, k = 1 - z, at = st.pos;
+        const pw = base => Array.from({ length: 21 }, (_, t) => base ** t), rnn = pw(w), lstm = pw(f), gru = pw(k);
+        q('#gc-wv').textContent = w.toFixed(2); q('#gc-fv').textContent = f.toFixed(2); q('#gc-zv').textContent = z.toFixed(2);
+        q('#gc-p').innerHTML = lines([{ v: rnn, c: 'red' }, { v: lstm, c: 'blue' }, { v: gru, c: 'green' }], 2, at, 'Gradient size (red = RNN, blue = LSTM, green = GRU)', 'steps back 20', 420, 150);
+        const pc = v => (v * 100).toFixed(v < 0.1 ? 1 : 0) + '%';
+        q('#gc-say').innerHTML = `<div><span>Plain RNN</span><small>after ${at} steps back</small><b style="color:var(--red)">${pc(rnn[at])}</b></div><div><span>LSTM</span><small>after ${at} steps back</small><b style="color:var(--blue)">${pc(lstm[at])}</b></div><div><span>GRU</span><small>after ${at} steps back</small><b style="color:var(--green)">${pc(gru[at])}</b></div>`;
       };
-      q('#gc-w').oninput = draw; q('#gc-f').oninput = draw;
+      ['#gc-w', '#gc-f', '#gc-z'].forEach(id => q(id).oninput = draw);
       wire(q, 'gc', st, 20, 180, draw); draw();
     },
 
@@ -386,21 +390,44 @@
       reset(); draw();
     },
 
-    // a toy tokenizer: common words stay whole, rarer words are cut into pieces. Real tokenizers (BPE) learn their pieces from data.
+    // a toy tokenizer: it cuts text into the longest pieces it knows, with a space glued to the front of a piece (like GPT). Real tokenizers (BPE) learn 50,000+ pieces from data; the ids here are made up.
     tokenizer(el) {
-      const q = s => el.querySelector(s), common = new Set('a an and are as at be but by can do for from has have he how i if in is it its of on or she so that the their then there they this to was we what when which who will with you your cat dog sat mat on love like learning ai weather today hello world'.split(' '));
+      const q = s => el.querySelector(s), esc = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+      const V = new Set(('a an and are as at be but by can do for from has have he how i if in is it its of on or she so that the their then there they this to was we what when which who will with you your cat dog sat mat love like learn learning ai weather today hello world model data text token tokens word words answer answers question questions chat gpt sentence read reads machine neural network ' +
+        'un re pre dis in im non over under out up down sub inter ing ed er est ly tion ation ization ness ment able ible al ous ive ful less ish ity ize s es ' +
+        'straight forward stand fascin ating believ unbeliev understand').split(' '));
       const id = t => { let h = 7; for (const c of t) h = (h * 31 + c.charCodeAt(0)) % 50000; return h + 1; };
-      const cut = w => { const o = []; let i = 0; while (i < w.length) { const n = w.length - i > 8 ? 5 : w.length - i > 5 ? 4 : w.length - i; o.push(w.slice(i, i + n)); i += n; } return o; };
-      const tok = s => s.split(/(\s+)/).filter(x => x).reduce((a, w, k, arr) => { if (/^\s+$/.test(w)) return a; const sp = k > 0 && /^\s+$/.test(arr[k - 1]), lw = w.toLowerCase().replace(/[^a-z]/g, ''); return a.concat(common.has(lw) || w.length <= 5 ? [(sp ? '·' : '') + w] : cut(w).map((p, i) => (sp && !i ? '·' : '') + p)); }, []);
       const cols = ['blue', 'mauve', 'peach', 'green', 'pink', 'yellow'];
+      // greedy longest match; a single leading space belongs to the piece after it
+      const tok = txt => {
+        const out = []; let i = 0;
+        while (i < txt.length) {
+          const sp = txt[i] === ' ' && i + 1 < txt.length && txt[i + 1] !== ' ' ? 1 : 0, st = i + sp;
+          let n = 0;
+          if (/[A-Za-z]/.test(txt[st] || '')) { for (let l = Math.min(14, txt.length - st); l > 0; l--) { const w = txt.slice(st, st + l); if (V.has(w.toLowerCase()) && /^[A-Za-z]+$/.test(w)) { n = l; break; } } if (!n) n = 1; }
+          else n = 1;
+          out.push(txt.slice(i, st + n)); i = st + n;
+        }
+        return out;
+      };
       el.innerHTML = `<p class="wgt">Try it: how a model reads text</p>
-        <div class="tb"><label>Text <input id="tz-in" type="text" value="Understanding AI is fascinating" style="width:260px"></label><span class="sp"></span>${bt('tz-1', 'Example', 'act')}${bt('tz-clear', 'Clear')}</div>
-        <div class="tb ro"><span id="tz-ro"></span></div><div class="toks" id="tz-t"></div>
-        <p class="wgcap">A toy tokenizer: common words stay whole and rarer long words are cut into pieces (the dot marks "after a space"). A real tokenizer learns its pieces from data, but the idea is the same: text becomes a list of numbered pieces.</p>`;
-      const ex = ['Understanding AI is fascinating', 'The cat sat on the mat', 'Unbelievably straightforward tokenization', 'ChatGPT answers questions'];
+        <div class="tb"><label>Text <input id="tz-in" type="text" value="Understanding AI is fascinating" style="width:300px"></label><span class="sp"></span>${bt('tz-1', 'Example', 'act')}${bt('tz-clear', 'Clear')}</div>
+        <p class="wgt2">1. Cut into pieces</p><div class="tkx" id="tz-x"></div>
+        <p class="wgt2">2. Every piece has a number</p><div class="toks" id="tz-t"></div>
+        <p class="wgt2">3. What the model actually receives</p><div class="tkids" id="tz-i"></div>
+        <div class="afrow" id="tz-st"></div>
+        <p class="wgcap sm">A toy tokenizer: it cuts text into the longest pieces it knows, and a dot marks a space glued to the front of a piece. Real tokenizers learn tens of thousands of pieces from data and the numbers here are made up, but the idea is the same: text becomes a list of numbers.</p>`;
+      const ex = ['Understanding AI is fascinating', 'The cat sat on the mat', 'Unbelievably straightforward tokenization', 'ChatGPT answers questions', 'Hello, world!'];
       let e = 0;
-      const draw = () => { const s = q('#tz-in').value, t = tok(s); q('#tz-t').innerHTML = t.map((x, i) => `<div class="tk" style="--c:var(--${cols[i % 6]})"><b>${x.replace(/</g, '&lt;')}</b><small>${id(x)}</small></div>`).join('');
-        q('#tz-ro').innerHTML = `<b>${t.length}</b> tokens · <b>${s.length}</b> characters · ${t.length ? (s.length / t.length).toFixed(1) : '0'} characters per token`; };
+      const draw = () => {
+        const s = q('#tz-in').value, t = tok(s), words = (s.match(/\S+/g) || []).length;
+        q('#tz-x').innerHTML = t.length ? t.map((x, i) => `<span class="tki" data-i="${i}" style="--c:var(--${cols[i % 6]})">${esc(x)}</span>`).join('') : '<span class="dim">Type something above</span>';
+        q('#tz-t').innerHTML = t.map((x, i) => `<div class="tk" data-i="${i}" style="--c:var(--${cols[i % 6]})"><b>${esc(x.replace(/^ /, '·'))}</b><small>${id(x.toLowerCase())}</small></div>`).join('');
+        q('#tz-i').textContent = t.length ? '[' + t.map(x => id(x.toLowerCase())).join(', ') + ']' : '[]';
+        q('#tz-st').innerHTML = `<div><span>Characters</span><small>letters, spaces, marks</small><b>${s.length}</b></div><div><span>Tokens</span><small>${t.length ? (s.length / t.length).toFixed(1) : '0'} characters per token</small><b>${t.length}</b></div><div><span>Words</span><small>split on spaces</small><b>${words}</b></div>`;
+      };
+      const hot = (ev, on) => { const n = ev.target.closest('[data-i]'); if (n) el.querySelectorAll(`[data-i="${n.dataset.i}"]`).forEach(x => x.classList.toggle('hot', on)); };
+      el.addEventListener('mouseover', ev => hot(ev, true)); el.addEventListener('mouseout', ev => hot(ev, false));
       q('#tz-in').oninput = draw; q('#tz-clear').onclick = () => { q('#tz-in').value = ''; draw(); };
       q('#tz-1').onclick = () => { e = (e + 1) % ex.length; q('#tz-in').value = ex[e]; draw(); };
       draw();
