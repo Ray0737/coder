@@ -1474,3 +1474,12 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 .tg span b{display:inline;font-size:inherit;margin:0;color:var(--text);font-weight:700}
 .tg span code{font-size:inherit;padding:0 3px}
 .tg span em{font-style:italic}
+.lost{gap:10px;padding:20px 24px;max-width:440px}
+.lostic{width:56px;height:56px;border-radius:16px}
+.lostic .i{width:28px;height:28px}
+.lost h1{font-size:20px;margin:4px 0 0}
+.lost .lead{font-size:12px;line-height:1.6;max-width:40ch}
+.lost code{font-size:11px;padding:1px 6px}
+.lost .note{font-size:11px}
+.lostact{gap:8px;margin:4px 0 0}
+.lostact .btn{padding:6px 12px;font-size:12px}
