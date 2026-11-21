@@ -1471,3 +1471,6 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 #tz-x .tki:nth-child(even){background:var(--base)}
 #tz-x .tki.hot{background:var(--s1)}
 #tz-x .dim{font-size:12px;color:var(--o1)}
+.tg span b{display:inline;font-size:inherit;margin:0;color:var(--text);font-weight:700}
+.tg span code{font-size:inherit;padding:0 3px}
+.tg span em{font-style:italic}

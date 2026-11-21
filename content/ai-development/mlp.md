@@ -109,19 +109,33 @@ In words: the blame at the end is pushed backwards through the very same weights
 
 ## Why deep networks are hard to train
 
-More layers should help, and at first they do. In Nielsen's MNIST tests, one hidden layer of 30 neurons scored 96.48%, two layers 96.90%, but a third gave 96.57% and a fourth 96.53%. Same settings, more layers, no gain. The extra layers could in theory just do nothing, so something is wrong with *learning*, not with the idea.
-
-The clue: the layers learn at wildly different speeds. Early layers often barely move while later layers learn fine. That is the **vanishing gradient** problem.
+Deep networks are hard to train because of the **vanishing gradient**. The blame for a wrong answer is passed back through every layer, and at each layer it gets multiplied by a small number. By the time it reaches the early layers there is almost nothing left, so they barely learn while the later layers learn fine.
 
 > [!compare] Think of a game of telephone. The blame for a wrong answer has to be whispered back through every layer. Each layer passes it on a little quieter, so by the time it reaches the first layer it is almost silent and that layer has nothing to learn from.
 
-**Why it happens:** by the chain rule, the gradient at an early layer is a *product* of one term per later layer. Each term is roughly `w × σ′(z)` (the weight times the activation's slope). A sigmoid's slope is never above 0.25, so unless the weights are big, every extra layer multiplies the signal by something small and it shrinks fast.
+The effect shows up in the numbers. In Nielsen's MNIST tests, with the same settings every time, extra layers stopped helping after the second one, even though they could in theory just do nothing:
 
-> [!aha] The real culprit is not "vanishing" or "exploding" on its own, it is **unstable**. A product of many terms is only stable if they happen to balance out near 1. By chance they almost never do, so the early layers get either nothing or far too much.
+| Hidden layers | 1 | 2 | 3 | 4 |
+|---|---|---|---|---|
+| Test accuracy | 96.48% | 96.90% | 96.57% | 96.53% |
 
-Making the weights large does not fix it, because a large `w` also pushes `z` out onto the flat tails of the sigmoid, where `σ′(z)` is tiny again. That is why the fixes are the ones you already met: ReLU (no flat side), smaller starting weights, and a sensible optimizer.
+### Why the signal shrinks
 
-A few more suspects, from papers Nielsen points to: Glorot and Bengio (2010) found that sigmoids can saturate the last hidden layer early in training, and Sutskever, Martens, Dahl and Hinton (2013) showed that good weight initialization and momentum make a big difference. Training deep networks has no single cause, and it is still an active research area.
+```tgrid
+A product of terms | By the chain rule, the gradient at an early layer multiplies one term for every later layer. Each term is roughly `w × σ′(z)`: the weight times the activation's slope.
+A small slope | A sigmoid's slope is never above 0.25, so unless the weights are big, every extra layer multiplies the signal by something small.
+Unstable, not just vanishing | A product of many terms is only stable if they happen to balance out near 1. By chance they almost never do, so early layers get either nothing or far too much.
+```
+
+### What fixes it
+
+Making the weights large does not help, because a large `w` also pushes `z` out onto the flat tails of the sigmoid, where `σ′(z)` is tiny again. The fixes are the ones you already met:
+
+```tgrid
+ReLU | No flat side, so the slope stays 1 for positive inputs instead of shrinking.
+Smaller starting weights | Start with `z` near 0, where the sigmoid is steep, so learning can take off straight away.
+A sensible optimizer | Momentum and per-weight step sizes keep early layers moving even when their gradient is small.
+```
 
 ## The rest of the toolbox
 
@@ -184,13 +198,13 @@ w = w - lr * m / (s ** 0.5 + 1e-8)       # real Adam also corrects m and s for t
 
 ## MNIST training replay: watch it learn
 
-MNIST is a set of 70,000 small handwritten digits, 0–9, the "hello world" of deep learning. Below is a simulated training run of a small MLP on MNIST: scrub the epoch slider and watch the loss drop, the guesses improve, and the first hidden layer's weights settle into shapes.
+MNIST is a set of 70,000 small handwritten digits, 0–9, the "hello world" of deep learning. How big is this network at the edges? Each image is 28 × 28 = 784 pixels, each a greyscale value between 0 and 1, so the input layer has **784 neurons**. The output layer has **10**, one per digit. To read the answer you do not compare against a 0.5 threshold, you simply take the output neuron with the highest activation (`argmax`). The 0.5 rule is for a single yes/no output, like "is this a 9, or not?". A 64 × 64 image would need 4,096 input neurons.
+
+Below is a simulated training run of a small MLP on MNIST: scrub the epoch slider and watch the loss drop, the guesses improve, and the first hidden layer's weights settle into shapes.
 
 ```widget
 mnisttrainingreplay
 ```
-
-How big is this network at the edges? Each image is 28 × 28 = 784 pixels, each a greyscale value between 0 and 1, so the input layer has **784 neurons**. The output layer has **10**, one per digit. To read the answer you do not compare against a 0.5 threshold, you simply take the output neuron with the highest activation (`argmax`). The 0.5 rule is for a single yes/no output, like "is this a 9, or not?". A 64 × 64 image would need 4,096 input neurons.
 
 Three ways to look at the same run:
 
