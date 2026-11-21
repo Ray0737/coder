@@ -5,6 +5,8 @@ summary: Artificial intelligence, machine learning and deep learning: three nest
 
 > [!aha] AI, ML and DL are not three separate fields sitting side by side. They are nested, like dolls: every deep learning system is machine learning, and every machine learning system is AI. The circles get smaller and more specific as you go in.
 
+> [!tip] **Got the guts for the real thing?** These chapters keep the maths light on purpose. If you want to go deeper and do not mind the heavy maths, read [Michael Nielsen's Neural Networks and Deep Learning](http://neuralnetworksanddeeplearning.com/), a free online book that builds a network from scratch, one idea at a time. Then take on [Deep Learning by Ian Goodfellow, Yoshua Bengio and Aaron Courville](https://www.deeplearningbook.org/), the standard textbook, also free to read online.
+
 ## Artificial intelligence: the biggest circle
 
 **AI** is any program that does something that looks intelligent: answering a question, picking a move, recognising a face. By that definition, a thermostat that decides when to turn on the heat and a giant language model both count, just at wildly different levels of sophistication.

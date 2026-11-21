@@ -5,6 +5,40 @@ summary: Cleaning, and the train/test split: a model is only as good as the data
 
 > [!aha] Never grade a student on the exact questions they studied from. Never test a model on the exact examples it trained on either. That one habit is the difference between a model that works and one that only looks like it works.
 
+## What kind of data goes in?
+
+A model only understands **numbers**. Whatever you start with, the first job is to turn it into a list of numbers. Here is what to expect for each kind of data:
+
+| Data | What it looks like | How it becomes numbers | Usual model |
+|---|---|---|---|
+| Table (CSV) | Rows and columns: age, price, city | Numbers are used as they are. A category like city becomes 0/1 columns, one per city (**one-hot**) | Linear regression, MLP |
+| Image | A grid of pixels | Every pixel is a number, 0 to 255 (or scaled to 0 to 1). A 28 × 28 greyscale picture is 784 numbers. Colour has 3 grids: red, green, blue | CNN |
+| Sound | Air pressure wobbling over time | Measured thousands of times a second, giving a long list of numbers. Often turned into a **spectrogram**, a picture of which pitches are loud when | CNN, RNN, Transformer |
+| Words (text) | A sentence | Cut into **tokens**, each token gets an ID number, then a vector that carries its meaning | RNN, Transformer, LLM |
+| Time series | One reading per tick: sensor, stock price | Already a list of numbers, kept in order | RNN, LSTM |
+
+> [!aha] To a model, a photo, a song and a sentence are all the same thing: a long list of numbers. What changes is which model is good at reading them.
+
+### How is it trained?
+
+Whatever the data was, training follows the same path:
+
+1. **Turn it into numbers** (pixels, samples, token IDs, columns).
+2. **Clean and scale** it, so no feature dominates by size alone.
+3. **Split** it into train, validation and test sets.
+4. **Loop:** feed in a batch, get a guess, measure the loss, nudge the weights, repeat for many epochs.
+5. **Test once** on the held-back test set.
+
+### Features, labels and classes
+
+Every training example is a row with two parts. The **features** are the inputs: the measurable things about one example. The **label** is the answer you want the model to learn. When the label is one of a fixed set of choices, each choice is a **class**. When the label is a number, there are no classes (that is regression).
+
+```widget
+featurelabel
+```
+
+Without labels you are in unsupervised territory: the model gets features only and finds structure by itself.
+
 ## Cleaning: garbage in, garbage out
 
 Real data is messy before it is useful: missing values, duplicate rows, typos, wildly different scales (age in years next to income in the thousands). **Cleaning** means fixing or removing these before training even starts.
@@ -36,11 +70,16 @@ traintestsplit
 2. What would go wrong if you cleaned and split the data in the wrong order: split first, then fill in missing values using the *whole* dataset's average?
 3. Push validation down to 5% and train up to 80%. What does the model lose by having a tiny validation set, even though it now trains on more data?
 4. Why does tuning settings against the *test* set, instead of the validation set, quietly ruin the one number you have left to trust?
+5. A 64 × 64 colour photo is fed to a model. How many numbers is that? Which kind of model reads it best?
+6. In the widget, which columns are features, which is the label, and what are the three classes? What changes when the label is a price?
 
 ## Quick recap
 
 | Tool | Real-life picture | What it does |
 |---|---|---|
+| Feature | One measurable thing about an example | An input column the model reads |
+| Label | The answer key | What the model should predict |
+| Class | One choice on a multiple-choice question | A possible value of a yes/no or many-way label |
 | Cleaning | Proofreading before you submit | Fixes missing, duplicate or inconsistent data before training |
 | Scaling | Converting units to one system | Puts every feature on a similar range |
 | Train set | The practice questions | What the model actually learns from |

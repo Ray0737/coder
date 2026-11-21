@@ -133,8 +133,11 @@ const widgets = {
     };
     el.innerHTML = `<p class="wgt">Try it: pick an activation function</p>
       <div class="wgrow" id="w-af-tabs"></div>
+      <div class="pcs" id="w-af-info"></div>
       <div class="nndiag" id="w-af-plot"></div>
       <div class="wgtable" id="w-af-rows"></div>`;
+    const info = {"Step": ["Heaviside step function", "The original on/off switch of the 1950s perceptron. It checks whether the weighted sum is above zero and answers 1, otherwise 0. Its job: make a hard yes/no decision with nothing in between.", "Dead simple, a clear yes/no answer.", "No slope to learn from, and a tiny nudge can flip it. Practically never used in modern training."], "Sigmoid": ["Logistic function", "A smooth S-shaped curve that squashes any score into the range 0 to 1. Its job: turn a raw score into a \"how sure am I\" probability, which is why it suits a single yes/no output.", "Smooth, and its 0–1 output reads naturally as a probability, so it suits a yes/no output.", "Flat at both ends, so big inputs give almost no slope and learning stalls (the vanishing gradient, below). Never negative, which makes training less balanced."], "Softmax": ["Normalized exponential function", "Looks at all the scores together and shares out 100% between them, so the results add up to 1. Its job: sit on the output layer and pick one class out of several, like which digit from 0 to 9.", "A clean \"one pie, shared out\" answer across all classes.", "Only makes sense on the output layer, and it is built for one answer at a time, not \"several can be true at once\"."], "tanh": ["Hyperbolic tangent", "Sigmoid stretched to run from -1 to 1 and centred on 0. Its job: let a neuron push a signal down as well as up, mostly in hidden layers of older and recurrent networks.", "Centred on 0, which usually trains better than Sigmoid.", "Still goes flat at both ends, so it can still stall in deep networks."], "ReLU": ["Rectified Linear Unit", "Outputs 0 for anything negative and passes positive scores straight through. Its job: be the cheap, fast default in the hidden layers of most modern networks.", "Cheap, and never flat on the positive side, so deep networks train much faster.", "A neuron stuck on negative inputs outputs 0 and gets no slope, so it can \"die\" and stop learning."]};
+    const EQ = { Step: 'f(x) = 1 if x > 0, otherwise 0', Sigmoid: 'f(x) = 1 / (1 + e^(-x))', Softmax: 'f(x\u1d62) = e^(x\u1d62) / sum of e^(x\u2c7c)', tanh: 'f(x) = (e^x - e^(-x)) / (e^x + e^(-x))', ReLU: 'f(x) = max(0, x)' };
     $('#w-af-tabs').innerHTML = Object.keys(fns).map((n, i) => `<button type="button" class="seg2${i === 0 ? ' on' : ''}" data-f="${n}">${n}</button>`).join('');
     const plot = (f, yMin, yMax, name) => {
       const w = 360, h = 190, padL = 44, padR = 18, padT = 14, padB = 30;
@@ -161,6 +164,7 @@ const widgets = {
     };
     const paint = name => {
       $$('#w-af-tabs button').forEach(b => b.classList.toggle('on', b.dataset.f === name));
+      { const [fm, d, pr, c] = info[name], eq = EQ[name]; $('#w-af-info').innerHTML = `<div class="pc"><div class="pch"><b>${fm}</b><code>${eq}</code></div><div class="pcl"><div><em>What it does</em>${mdInline(d)}</div><div class="pro"><em>Pros</em>${mdInline(pr)}</div><div class="con"><em>Cons</em>${mdInline(c)}</div></div></div>`; }
       if (name === 'Softmax') {
         const exps = Object.fromEntries(Object.entries(raw).map(([k, v]) => [k, Math.exp(v)]));
         const sum = Object.values(exps).reduce((a, b) => a + b, 0);
@@ -175,6 +179,144 @@ const widgets = {
     };
     $('#w-af-tabs').onclick = e => { const b = e.target.closest('button'); if (b) paint(b.dataset.f); };
     paint('Step');
+  },
+  // features / label / classes on the classic iris table, plus a regression example
+  featurelabel(el) {
+    const sets = {
+      Class: { fh: ['Sepal length (cm)', 'Sepal width (cm)', 'Petal length (cm)', 'Petal width (cm)'], lh: 'Species',
+        rows: [[5.1, 3.5, 1.4, 0.2, 'setosa'], [4.9, 3.0, 1.4, 0.2, 'setosa'], [7.0, 3.2, 4.7, 1.4, 'versicolor'], [6.4, 3.2, 4.5, 1.5, 'versicolor'], [6.3, 3.3, 6.0, 2.5, 'virginica'], [5.8, 2.7, 5.1, 1.9, 'virginica']],
+        q: [5.0, 3.4, 1.5, 0.2],
+        note: 'This is the famous <b>iris</b> dataset: 150 flowers, 4 measurements each. Classes: <b class="fl-c">setosa</b>, <b class="fl-c">versicolor</b> and <b class="fl-c">virginica</b>. The label can only be one of these three.' },
+      Number: { fh: ['Area (m²)', 'Bedrooms', 'Distance to city (km)'], lh: 'Price (k$)', rows: [[50, 1, 12, 150], [80, 2, 8, 240], [120, 3, 5, 380], [65, 2, 15, 170]], q: [90, 2, 6],
+        note: 'No classes here: the label is any number, so this is <b>regression</b>.' },
+    };
+    el.innerHTML = `<p class="wgt">Try it: what is the label?</p>
+      <div class="wgrow" id="w-fl-tabs"><button type="button" class="seg2 on" data-k="Class">Label is a class (iris)</button><button type="button" class="seg2" data-k="Number">Label is a number</button></div>
+      <div class="fltab" id="w-fl"></div><p class="wgsay" id="w-flnote"></p>`;
+    const paint = k => {
+      const s = sets[k], n = s.fh.length, g = `style="grid-template-columns:repeat(${n + 1},minmax(74px,1fr))"`;
+      $$('#w-fl-tabs button').forEach(b => b.classList.toggle('on', b.dataset.k === k));
+      const head = `<div class="flr flg" ${g}><span class="flb" style="grid-column:span ${n}">Features (the inputs)</span><span class="flb">Label (the answer)</span></div>
+        <div class="flr flh" ${g}>${s.fh.map(h => `<span>${h}</span>`).join('')}<span>${s.lh}</span></div>`;
+      const rows = s.rows.map(r => `<div class="flr" ${g}>${r.map((v, i) => `<span>${typeof v === 'number' && k === 'Class' ? v.toFixed(1) : v}</span>`).join('')}</div>`).join('');
+      const q = `<div class="flr" ${g}>${s.q.map(v => `<span>${k === 'Class' ? v.toFixed(1) : v}</span>`).join('')}<span>?</span></div>`;
+      $('#w-fl').innerHTML = head + rows + q;
+      $('#w-flnote').innerHTML = s.note + ' The last row is a new example: the model sees only the features and must guess the label.';
+    };
+    $('#w-fl-tabs').onclick = e => { const bt = e.target.closest('button'); if (bt) paint(bt.dataset.k); };
+    paint('Class');
+  },
+  // regularization: one wiggly curve fitted with none / L1 / L2 / more data, curve + weights side by side
+  regviz(el) {
+    const D = 10, W = 320, H = 210, truth = x => Math.sin(2.4 * x);
+    let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    const noise = () => (rnd() + rnd() + rnd() - 1.5) * 0.55;
+    const mk = n => Array.from({ length: n }, (_, i) => { const x = -1 + 2 * (i + 0.5) / n + (rnd() - 0.5) * 0.06; return [x, truth(x) + noise()]; });
+    const few = mk(12), many = mk(60), test = mk(80);
+    const feat = x => Array.from({ length: D }, (_, k) => x ** k);
+    const dot = (a, b) => a.reduce((s, v, i) => s + v * b[i], 0);
+    const solve = (A, b) => { // gaussian elimination with pivoting
+      const n = b.length, M = A.map((r, i) => [...r, b[i]]);
+      for (let c = 0; c < n; c++) {
+        let m = c; for (let r = c + 1; r < n; r++) if (Math.abs(M[r][c]) > Math.abs(M[m][c])) m = r;
+        [M[c], M[m]] = [M[m], M[c]];
+        for (let r = c + 1; r < n; r++) { const f = M[r][c] / M[c][c]; for (let k = c; k <= n; k++) M[r][k] -= f * M[c][k]; }
+      }
+      const x = Array(n).fill(0);
+      for (let r = n - 1; r >= 0; r--) x[r] = (M[r][n] - dot(M[r].slice(r + 1, n), x.slice(r + 1))) / M[r][r];
+      return x;
+    };
+    const fit = (pts, kind, lam) => {
+      const X = pts.map(p => feat(p[0])), y = pts.map(p => p[1]), n = pts.length;
+      const G = Array.from({ length: D }, (_, i) => Array.from({ length: D }, (_, j) => X.reduce((s, r) => s + r[i] * r[j], 0) / n));
+      const g = Array.from({ length: D }, (_, i) => X.reduce((s, r, k) => s + r[i] * y[k], 0) / n);
+      if (kind !== 'L1') return solve(G.map((r, i) => r.map((v, j) => v + (i === j && i > 0 ? lam : 0) + (i === j ? 1e-9 : 0))), g);
+      // L1: ISTA (gradient step, then shrink). ponytail: fixed 6000 steps, plenty for 10 weights
+      let L = 1, v = Array(D).fill(1); for (let t = 0; t < 40; t++) { const u = G.map(r => dot(r, v)); L = Math.hypot(...u); v = u.map(a => a / L); }
+      let wt = Array(D).fill(0);
+      for (let t = 0; t < 6000; t++) {
+        const gr = G.map((r, i) => dot(r, wt) - g[i]);
+        wt = wt.map((a, i) => { const z = a - gr[i] / L; return i === 0 ? z : Math.sign(z) * Math.max(0, Math.abs(z) - lam / L); });
+      }
+      return wt;
+    };
+    const mse = (w, pts) => pts.reduce((s, p) => s + (dot(w, feat(p[0])) - p[1]) ** 2, 0) / pts.length;
+    el.innerHTML = `<p class="wgt">Try it: tame a wiggly curve</p>
+      <div class="wgrow" id="w-rg-tabs">${['None', 'L1', 'L2', 'Dropout', 'More data'].map((n, i) => `<button type="button" class="seg2${i ? '' : ' on'}" data-k="${n}">${n}</button>`).join('')}</div>
+      <div class="tms" id="w-rg-desc" style="margin:22px 0 16px"></div>
+      <div class="wgrow" id="w-rg-lamrow"><label>Penalty strength (λ) <input id="w-rg-lam" type="range" min="1" max="100" value="55"></label><b id="w-rg-lamv"></b></div>
+      <div class="dropviz" id="w-rg-fig"></div><p class="wgsay" id="w-rg-say"></p><div id="w-rg-drop" hidden></div>`;
+    let dropReady = false;
+    let kind = 'None';
+    const paint = () => {
+      const lam = 10 ** (-4 + $('#w-rg-lam').value / 25);
+      $$('#w-rg-tabs button').forEach(b => b.classList.toggle('on', b.dataset.k === kind));
+      $('#w-rg-lamrow').style.display = kind === 'L1' || kind === 'L2' ? '' : 'none';
+      const DESC = {"None": ["None", "No penalty on the weights. The model is free to fit the training data as tightly as it can, which is fine for simple problems but risky for complex ones, because it can memorise the noise and overfit."], "L1": ["L1 regularization (Lasso)", "Adds the sum of the absolute weight values to the loss. This pushes unimportant weights all the way to exactly zero, which effectively removes those connections. Useful when you want the model to keep only the features that matter."], "L2": ["L2 regularization (Ridge, weight decay)", "Adds the sum of the squared weight values to the loss. It keeps every weight small without forcing any of them to zero, so no single weight can dominate. The most common regularization, and the usual default."], "Dropout": ["Dropout", "Changes the network instead of the loss. At each training step, a random share of neurons (for example 50%) is switched off, so the network cannot lean on any single neuron and has to spread what it knows across many of them."], "More data": ["More (or artificially expanded) training data", "Gives the model more variety to learn from, so it has less room to memorise. When you cannot collect more, you can expand what you have, for example by slightly shifting, rotating or flipping the training images."]};
+      $('#w-rg-desc').innerHTML = `<div class="tm"><b>${DESC[kind][0]}</b><span>${DESC[kind][1]}</span></div>`;
+      const dp = kind === 'Dropout';
+      $('#w-rg-drop').hidden = !dp; $('#w-rg-fig').hidden = dp; $('#w-rg-say').hidden = dp;
+      if (dp) { if (!dropReady) { dropReady = true; widgets.dropoutdiagram($('#w-rg-drop')); } return; }
+      $('#w-rg-lamv').textContent = lam.toPrecision(2);
+      const pts = kind === 'More data' ? many : few, w = fit(pts, kind, kind === 'L1' || kind === 'L2' ? lam : 0);
+      const px = x => 36 + (x + 1) / 2 * (W - 48), py = y => 10 + (1.7 - y) / 3.4 * (H - 36);
+      const curve = Array.from({ length: 81 }, (_, i) => { const x = -1 + i / 40, y = Math.max(-1.7, Math.min(1.7, dot(w, feat(x)))); return `${px(x).toFixed(1)},${py(y).toFixed(1)}`; }).join(' ');
+      const tr = Array.from({ length: 81 }, (_, i) => { const x = -1 + i / 40; return `${px(x).toFixed(1)},${py(truth(x)).toFixed(1)}`; }).join(' ');
+      const dots = pts.map(p => `<circle cx="${px(p[0])}" cy="${py(p[1])}" r="3" fill="var(--peach)"/>`).join('');
+      const fig1 = `<svg viewBox="0 0 ${W} ${H}" width="100%"><line x1="36" y1="${py(0)}" x2="${W - 12}" y2="${py(0)}" stroke="var(--s0)"/>
+        <polyline points="${tr}" fill="none" stroke="var(--o0)" stroke-dasharray="4 4"/><polyline points="${curve}" fill="none" stroke="var(--mauve)" stroke-width="2"/>${dots}
+        <text x="${W / 2}" y="${H - 6}" text-anchor="middle" font-size="10" fill="var(--o1)">input (x)</text></svg>`;
+      const mx = Math.max(...w.map(Math.abs)), bw = (W - 48) / D, zero = w.filter(a => Math.abs(a) < 1e-3).length;
+      const bars = w.map((a, i) => { const h = Math.abs(a) / mx * (H - 70) / 2, x = 36 + i * bw, y0 = (H - 26) / 2 + 8;
+        return `<rect x="${x + 3}" y="${a >= 0 ? y0 - h : y0}" width="${bw - 6}" height="${Math.max(1, h)}" rx="2" fill="var(--${a >= 0 ? 'blue' : 'red'})" opacity="${Math.abs(a) < 1e-3 ? .25 : 1}"/>
+          <text x="${x + bw / 2}" y="${H - 8}" text-anchor="middle" font-size="9" fill="var(--o0)">w${i}</text>`; }).join('');
+      const fig2 = `<svg viewBox="0 0 ${W} ${H}" width="100%"><line x1="36" y1="${(H - 26) / 2 + 8}" x2="${W - 12}" y2="${(H - 26) / 2 + 8}" stroke="var(--s1)"/>${bars}
+        <text x="36" y="12" font-size="10" fill="var(--o1)">largest weight: ${mx.toFixed(mx < 10 ? 2 : 0)}</text></svg>`;
+      $('#w-rg-fig').innerHTML = `<figure><figcaption>Fitted curve (dashed = the real pattern)</figcaption>${fig1}</figure><figure><figcaption>The 10 weights behind it</figcaption>${fig2}</figure>`;
+      const say = { None: 'No penalty: the curve chases every dot, and a few huge weights do the work.', L1: `L1 tax: ${zero} of 10 weights are pushed to exactly zero. Raise λ and more switch off.`, L2: 'L2 tax: every weight shrinks, none hits exactly zero. Raise λ and the curve gets stiffer.', 'More data': `Same model, ${many.length} dots instead of ${few.length}: the curve settles on the real pattern with no penalty at all.` }[kind];
+      $('#w-rg-say').innerHTML = `${say} Error on dots it trained on: <b>${mse(w, pts).toFixed(3)}</b>. Error on 80 new dots: <b>${mse(w, test).toFixed(3)}</b>.`;
+    };
+    $('#w-rg-tabs').onclick = e => { const b = e.target.closest('button'); if (b) { kind = b.dataset.k; paint(); } };
+    $('#w-rg-lam').oninput = paint;
+    paint();
+  },
+  // dropout: the same small network with and without random neurons switched off
+  dropoutdiagram(el) {
+    const layers = [3, 5, 2], W = 280, H = 190;
+    const xs = layers.map((_, i) => 40 + i * ((W - 80) / (layers.length - 1)));
+    const ys = (n, k) => (H / (n + 1)) * (k + 1);
+    el.innerHTML = `<p class="wgt">Try it: switch neurons off</p>
+      <div class="wgrow"><label>Dropout rate <input id="w-dr" type="range" min="0" max="80" step="10" value="50"></label><b id="w-drv">50%</b>
+      <button type="button" class="seg2" id="w-drr">Pick again</button></div>
+      <div class="dropviz" id="w-drfig"></div>
+      <p class="wgsay" id="w-drsay"></p>`;
+    let off = new Set();
+    const roll = () => {
+      const r = +$('#w-dr').value / 100; off = new Set();
+      for (let k = 0; k < layers[1]; k++) if (Math.random() < r) off.add(k);
+      if (off.size === layers[1]) off.delete(0); // ponytail: always keep one neuron alive
+    };
+    const svg = drop => {
+      let g = '', n = '';
+      for (let l = 0; l < layers.length - 1; l++) for (let a = 0; a < layers[l]; a++) for (let b = 0; b < layers[l + 1]; b++) {
+        const dead = drop && ((l === 0 && off.has(b)) || (l === 1 && off.has(a)));
+        g += `<line x1="${xs[l]}" y1="${ys(layers[l], a)}" x2="${xs[l + 1]}" y2="${ys(layers[l + 1], b)}" stroke="var(--${dead ? 's0' : 'o0'})" stroke-width="1" opacity="${dead ? .5 : .6}"/>`;
+      }
+      layers.forEach((c, l) => { for (let k = 0; k < c; k++) {
+        const x = xs[l], y = ys(c, k), dead = drop && l === 1 && off.has(k);
+        n += dead ? `<circle cx="${x}" cy="${y}" r="9" fill="var(--s0)"/><path d="M${x - 4} ${y - 4}L${x + 4} ${y + 4}M${x + 4} ${y - 4}L${x - 4} ${y + 4}" stroke="var(--red)" stroke-width="2"/>`
+                    : `<circle cx="${x}" cy="${y}" r="9" fill="var(--mauve)"/>`;
+      } });
+      return `<svg viewBox="0 0 ${W} ${H}" width="100%">${g}${n}</svg>`;
+    };
+    const paint = () => {
+      $('#w-drv').textContent = $('#w-dr').value + '%';
+      $('#w-drfig').innerHTML = `<figure><figcaption>Before (all active)</figcaption>${svg(false)}</figure><figure><figcaption>With ${$('#w-dr').value}% dropout</figcaption>${svg(true)}</figure>`;
+      $('#w-drsay').textContent = `${off.size} of ${layers[1]} hidden neurons are off for this step. Next step, a different random set goes quiet.`;
+    };
+    $('#w-dr').oninput = () => { roll(); paint(); };
+    $('#w-drr').onclick = () => { roll(); paint(); };
+    roll(); paint();
   },
   // a simulated MNIST training run: scrub the epoch and watch loss, sample guesses and neuron weights change
   mnisttrainingreplay(el) {

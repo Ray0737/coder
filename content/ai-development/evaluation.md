@@ -5,18 +5,6 @@ summary: Fitting, metrics and cross validation: checking whether a model actuall
 
 > [!aha] A model that is too simple can't learn the pattern. A model that is too complex learns the pattern *and* every random wobble in the training data, then fails on anything new. Evaluation is how you tell which one happened, with real numbers instead of a guess.
 
-## Underfitting: too simple
-
-**Underfitting** is a model that performs badly even on the data it trained on. It has not found the pattern at all; it is too simple, or was not trained for long enough.
-
-> [!compare] Think of it like trying to draw a wiggly coastline with one straight line. It misses almost everything.
-
-## Overfitting: too complex
-
-**Overfitting** is a model that does *great* on the training data and badly on new data. It has not learned the general pattern, it has memorised the training examples, noise and all.
-
-> [!compare] Think of it like memorising the answers to last year's exam instead of learning the subject. Score 100% on that exact paper, and fail the real one.
-
 ## The three fits, side by side
 
 Here are the same 12 points fitted three ways. Press the buttons, or drag the degree slider (how bendy the curve is), and compare the train error with the test error on 40 points the curve never saw.
@@ -32,6 +20,26 @@ overfitcurve
 ```
 
 The train line (solid) always keeps falling as the model gets more complex: more complexity always lets it fit the training data better. The validation line (dashed) is U-shaped: it falls while the model is learning real structure, then rises once the model starts fitting noise instead. This is exactly what the validation set from the last chapter is for.
+
+## Fighting overfitting: regularization
+
+Overfitting is a numbers game: the more free parameters a model has, the easier it is to describe *any* dataset of that size, real pattern or not. A small network that reads MNIST digits, with 30 hidden neurons, already has nearly 24,000 parameters. With 100 hidden neurons it has nearly 80,000, and modern networks have millions or even billions. The true test of a model is never how well it fits the data it has seen, but how well it predicts situations it has not.
+
+There are three ways to fight it. **Get more training data**, which always helps. **Shrink the network**, which works but costs power, so people do it reluctantly. Or keep the network and the data, and add a **regularization** technique. L1 and L2 change the loss; dropout changes the network itself. Try them all on one wiggly curve first:
+
+Pick a method to read what it does, and see its effect on one wiggly curve and the 10 weights behind it. The Dropout tab swaps the curve for a small network with neurons switched off:
+
+```widget
+regviz
+```
+
+> [!compare] Think of L2 as a tax on loud weights. A weight is only allowed to grow large if the drop in loss it buys is worth the tax. The tax rate is a dial called **λ** (lambda): turn it down and the network just minimises the original loss, turn it up and it prefers small weights above all.
+
+**Why does it help?** The standard story is that small weights mean a simpler explanation of the data, and a simpler explanation should generalise better. Honest caveat: that story is terse and has soft spots, and the full explanation is still debated. What is solid is the result: for a fixed network and fixed data, regularization really does shrink the gap between training and validation error.
+
+**Fun fact:** in Python code the dial is usually named `lmbda`, because `lambda` is already a reserved word in the language.
+
+Want to see an L1 tax at work? Open the [Playground](playground.html), switch Regularization to L1, raise the regularization rate and press play: lines whose weights are pushed to zero fade out for good.
 
 ## Turning "wrong" into four numbers
 
@@ -82,6 +90,8 @@ Every example is in the test set exactly once, so the final score reflects the w
 5. A classmate says "just train for more epochs, the error will always get better." What's wrong with that, using what you just saw on the validation curve?
 6. With K=5, what fraction of the data trains the model on any one fold? Why does K=10 cost twice as much training as K=5?
 7. A model scores 92%, 61%, 90%, 88% and 89% across five folds. What does the one low fold suggest, compared to a model that scores about 90% on every fold?
+8. A network overfits badly. You raise λ from 0.1 to 100. What happens to the weights, and what new problem might appear?
+9. Which two regularization techniques change the loss function, and which one changes the network itself?
 
 ## Quick recap
 

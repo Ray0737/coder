@@ -68,12 +68,6 @@ The weighted sum `z` can be any number at all. The **activation function** is th
 activationfunctions
 ```
 
-- **Step** only ever says 0 or 1: a hard yes/no, mostly seen in the original 1950s perceptron.
-- **Sigmoid** squashes anything into 0–1, read as "how sure am I".
-- **Softmax** is Sigmoid's cousin for picking **one of several** classes: it looks at every score together and turns them into probabilities that add up to 1.
-- **tanh** is Sigmoid shifted to −1…1, so it can push a signal down as well as up.
-- **ReLU** is the lazy one: negative becomes 0, positive passes straight through. It is cheap to compute and the default choice in most hidden layers today.
-
 ### Why the smooth ones won
 
 With a hard step, a tiny nudge to one weight can flip a neuron from 0 to 1, and that flip can change how the whole network treats every *other* example. You fix your "9" and quietly break the "4"s. A sigmoid is a smoothed-out step: a tiny nudge to a weight makes a tiny change to the output, so training can improve a little at a time.
@@ -111,6 +105,22 @@ Result:  gradient of a weight = a(previous) × δ      gradient of a bias = δ
 
 In words: the blame at the end is pushed backwards through the very same weights the answer travelled forwards through, and each weight's share of the blame is how active its input was times the blame at its output.
 
+## Why deep networks are hard to train
+
+More layers should help, and at first they do. In Nielsen's MNIST tests, one hidden layer of 30 neurons scored 96.48%, two layers 96.90%, but a third gave 96.57% and a fourth 96.53%. Same settings, more layers, no gain. The extra layers could in theory just do nothing, so something is wrong with *learning*, not with the idea.
+
+The clue: the layers learn at wildly different speeds. Early layers often barely move while later layers learn fine. That is the **vanishing gradient** problem.
+
+> [!compare] Think of a game of telephone. The blame for a wrong answer has to be whispered back through every layer. Each layer passes it on a little quieter, so by the time it reaches the first layer it is almost silent and that layer has nothing to learn from.
+
+**Why it happens:** by the chain rule, the gradient at an early layer is a *product* of one term per later layer. Each term is roughly `w × σ′(z)` (the weight times the activation's slope). A sigmoid's slope is never above 0.25, so unless the weights are big, every extra layer multiplies the signal by something small and it shrinks fast.
+
+> [!aha] The real culprit is not "vanishing" or "exploding" on its own, it is **unstable**. A product of many terms is only stable if they happen to balance out near 1. By chance they almost never do, so the early layers get either nothing or far too much.
+
+Making the weights large does not fix it, because a large `w` also pushes `z` out onto the flat tails of the sigmoid, where `σ′(z)` is tiny again. That is why the fixes are the ones you already met: ReLU (no flat side), smaller starting weights, and a sensible optimizer.
+
+A few more suspects, from papers Nielsen points to: Glorot and Bengio (2010) found that sigmoids can saturate the last hidden layer early in training, and Sutskever, Martens, Dahl and Hinton (2013) showed that good weight initialization and momentum make a big difference. Training deep networks has no single cause, and it is still an active research area.
+
 ## The rest of the toolbox
 
 A few more pieces you will see on every real network, in one table:
@@ -121,6 +131,17 @@ A few more pieces you will see on every real network, in one table:
 | Batch normalization | Re-centring a scale between weighings | Rescales the numbers flowing between layers so training stays stable as it goes deeper |
 | Optimizer (SGD, Adam) | The strategy for taking the nudge | Decides *how* to use the gradient: a plain step (SGD), or a smarter step that remembers recent nudges (Adam) |
 | Weight initialization | Not starting every runner on the same square | The random starting values for every weight, before any training happens. Starting badly can stall learning before it begins |
+
+**Why a bad start hurts:** the classic recipe is to draw every starting weight from a bell curve centred on 0 with a spread of 1. That works, but it is wasteful. Give a neuron 1,000 inputs and the sum `z` collects a thousand random terms, so it easily lands 20 or more away from 0, far out on the flat tails of a sigmoid where the slope is almost zero. Those neurons start out saturated and learn at a crawl. The fix is to start with *smaller* weights, shrunk in proportion to the number of inputs, so `z` begins near 0 where the curve is steep and learning can take off straight away.
+
+### Optimizers explained
+
+```terms
+SGD (Stochastic Gradient Descent) | The simplest optimizer. It computes the gradient on a small batch of examples and takes one step downhill. Easy to understand, but it can be slow and can get stuck on flat stretches called saddle points.
+Adam | The most popular optimizer. It adapts the step size for each weight individually, combining momentum (keep moving the same way) with RMSprop (scale steps by how large the recent gradients were). Usually the best default choice.
+```
+
+> [!tip] All optimizers use gradient descent at their core. They just differ in *how* they decide the step size and direction.
 
 ## MNIST training replay: watch it learn
 
@@ -146,6 +167,8 @@ Three ways to look at the same run:
 4. Scrub past epoch 55 on Bird's Eye. Why does the validation line rise even while the train line keeps falling?
 5. You want a network to read 32 × 32 greyscale images of the 26 letters A to Z. How many input neurons and how many output neurons does it need?
 6. A step neuron and a sigmoid neuron both get a tiny nudge to one weight. Which output could jump from 0 to 1, and why does that make the step neuron hard to train?
+7. A sigmoid's slope is at most 0.25. Roughly how much does that shrink a signal passing back through 5 layers, if the weights are about 1? Why does ReLU avoid this?
+8. Why does making one weight huge not cure a vanishing gradient?
 
 *Further reading: Michael Nielsen's free book [Neural Networks and Deep Learning](http://neuralnetworksanddeeplearning.com/) is the source of several ideas on this page.*
 
@@ -159,4 +182,5 @@ Three ways to look at the same run:
 | Backpropagation | Grading a group project backwards | Works out which weights to blame and nudges them |
 | Epoch | One full lap of the training data | A single pass where every weight gets nudged once per example |
 | Learning rate | Stride length | How big each nudge is |
+| Vanishing gradient | A whisper passed down a long line | Early layers get almost no learning signal in deep networks, so they barely train |
 | Dropout, batch norm, optimizer, weight init | Benching players, re-centring a scale, a nudge strategy, a fair starting line | The extra tricks that make training stable and fast |

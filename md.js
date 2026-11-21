@@ -48,7 +48,9 @@ function mdParse(src) {
       for (i++; i < lines.length && !lines[i].startsWith(m[1]); i++) buf.push(lines[i]);
       i++;
       const lang = m[2].toLowerCase();
-      if (lang === 'widget') out.push(`<div class="wg" data-widget="${mdEsc(buf.join('').trim())}"></div>`);
+      if (lang === 'terms') out.push(`<div class="tms">${buf.filter(x => x.trim()).map(x => { const i = x.indexOf('|'); return `<div class="tm"><b>${mdInline(x.slice(0, i).trim())}</b><span>${mdInline(x.slice(i + 1).trim())}</span></div>`; }).join('')}</div>`);
+      else if (lang === 'cards') out.push(`<div class="pcs">${buf.filter(x => x.trim()).map(x => { const [n, f, d, p, c] = x.split('|').map(s => s.trim()); return `<div class="pc"><b class="pn">${mdInline(n)}</b><code>${mdInline(f)}</code><p>${mdInline(d)}</p><p class="pcl"><span class="pro"><em>Pros:</em> ${mdInline(p)}</span><span class="con"><em>Cons:</em> ${mdInline(c)}</span></p></div>`; }).join('')}</div>`);
+      else if (lang === 'widget') out.push(`<div class="wg" data-widget="${mdEsc(buf.join('').trim())}"></div>`);
       else out.push(`<figure class="code">${lang ? `<figcaption>${mdEsc(lang)}</figcaption>` : ''}<pre><code>${mdCode(buf.join('\n'), lang)}</code></pre></figure>`);
     } else if ((m = l.match(/^(#{1,3})\s+(.*)/))) {
       out.push(`<h${m[1].length}>${mdInline(m[2])}</h${m[1].length}>`); i++;
