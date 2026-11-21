@@ -136,12 +136,49 @@ A few more pieces you will see on every real network, in one table:
 
 ### Optimizers explained
 
-```terms
-SGD (Stochastic Gradient Descent) | The simplest optimizer. It computes the gradient on a small batch of examples and takes one step downhill. Easy to understand, but it can be slow and can get stuck on flat stretches called saddle points.
+Every optimizer starts from the same idea: look at the gradient, then take a step downhill. They differ in what they **remember** from earlier steps, and how that changes the next one.
+
+```tgrid
+SGD (Stochastic Gradient Descent) | The simplest optimizer. It computes the gradient on a small batch of examples and takes one step downhill. Easy to understand, but it can be slow, zig-zags in narrow valleys and can get stuck on flat stretches called saddle points.
+Momentum | SGD that remembers which way it has been going. Each step adds a bit of the previous step, so steady directions build up speed and sideways wobbles cancel out. It rolls through flat patches and across narrow valleys much faster than plain SGD.
+RMSprop | Keeps a running average of how big each weight's recent gradients were, and divides the step by it. Weights with huge gradients take smaller steps, weights with tiny gradients take bigger ones, so every weight moves at a sensible pace.
+AdaGrad | Like RMSprop, but it adds up all the past squared gradients instead of a running average. Rarely updated weights keep large steps, which suits sparse data such as words. The catch: the total only grows, so the steps keep shrinking until learning can stall.
 Adam | The most popular optimizer. It adapts the step size for each weight individually, combining momentum (keep moving the same way) with RMSprop (scale steps by how large the recent gradients were). Usually the best default choice.
+AdamW | Adam with weight decay done properly: the pull towards smaller weights is applied separately from the gradient. It is the usual choice for Transformers and large models.
 ```
 
-> [!tip] All optimizers use gradient descent at their core. They just differ in *how* they decide the step size and direction.
+> [!compare] Think of rolling a ball down a bumpy hillside in fog. SGD is a ball that stops to look around at every step. Momentum is a heavy ball that keeps its speed. RMSprop and Adam add adjustable shock absorbers: steep, jumpy directions get slowed down and gentle ones get sped up.
+
+The update rules, in short (`g` is the gradient and `lr` is the learning rate):
+
+```python
+# SGD
+w = w - lr * g
+
+# Momentum: v remembers the direction (beta is about 0.9)
+v = beta * v + g
+w = w - lr * v
+
+# RMSprop: s remembers how big the gradients were (rho is about 0.9)
+s = rho * s + (1 - rho) * g ** 2
+w = w - lr * g / (s ** 0.5 + 1e-8)
+
+# Adam: both memories at once (beta1 0.9, beta2 0.999, lr 0.001 are the usual defaults)
+m = beta1 * m + (1 - beta1) * g
+s = beta2 * s + (1 - beta2) * g ** 2
+w = w - lr * m / (s ** 0.5 + 1e-8)       # real Adam also corrects m and s for the first few steps
+```
+
+| Optimizer | What it remembers | Good at | Watch out for |
+|---|---|---|---|
+| SGD | nothing | simple, light on memory, can generalise well | slow, very sensitive to the learning rate |
+| Momentum | the direction it has been going | faster on valleys and flat patches | can overshoot a minimum |
+| RMSprop | the recent size of the gradients | uneven gradients, recurrent networks | the learning rate still needs tuning |
+| AdaGrad | all past squared gradients | sparse data | steps shrink until it stalls |
+| Adam | both of the above | a strong default, little tuning | sometimes ends a little worse than well-tuned SGD |
+| AdamW | both, plus clean weight decay | Transformers and big models | the same tuning as Adam |
+
+> [!tip] All optimizers use gradient descent at their core. They just differ in *how* they decide the step size and direction. If you are unsure, start with **Adam** and a learning rate of 0.001. If you later want the last bit of accuracy on an image model, try SGD with momentum and a tuned learning rate. You can try different learning rates yourself in the neural network playground.
 
 ## MNIST training replay: watch it learn
 
