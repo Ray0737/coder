@@ -36,25 +36,6 @@
   const getJSON = url => fetched[url] || (fetched[url] = fetch(url).then(r => r.json()));
   const failMsg = (el, title) => () => { el.innerHTML = `<p class="wgt">${title}</p><p class="wgcap">Could not load the data. Open the site over http, not as a plain file.</p>`; };
 
-  // generic stage-by-stage flow: boxes joined by arrows, pick or step through them, one explanation each
-  const flow = (title, nodes, tail) => el => {
-    const q = s => el.querySelector(s), st = { pos: 0 };
-    el.innerHTML = `<p class="wgt">${title}</p>
-      <div class="tb"><span>Stage</span>${chips('fl-c', nodes.map((n, i) => i + 1))}<span class="sp"></span>${btns('fl')}</div>
-      <div class="flow" id="fl-b"></div><p class="wgo" id="fl-n"></p>${tail ? `<p class="wgcap">${tail}</p>` : ''}`;
-    const draw = () => {
-      const i = Math.min(st.pos, nodes.length - 1);
-      q('#fl-b').innerHTML = nodes.map((n, k) => `${k ? '<span class="arr">→</span>' : ''}<div class="fb${k === i ? ' on' : ''}${k < i ? ' past' : ''}" data-i="${k}"><small>${k + 1}</small><b>${n.t}</b><span>${n.s}</span></div>`).join('');
-      q('#fl-n').innerHTML = `<b>${nodes[i].t}.</b> ${nodes[i].note}`;
-      q('#fl-c').querySelectorAll('button').forEach((b, k) => b.classList.toggle('on', k === i));
-    };
-    pickIn(q, '#fl-c', i => { st.pos = i; draw(); });
-    q('#fl-b').onclick = e => { const b = e.target.closest('.fb'); if (!b) return; st.pos = +b.dataset.i; draw(); };
-    const stop = wire(q, 'fl', st, nodes.length - 1, 1400, draw);
-    q('#fl-c').addEventListener('click', stop);
-    draw();
-  };
-
   window.moreWidgets = {
     // ---------- RNN / LSTM ----------
     // gradient left after t steps back: a plain RNN multiplies by w each step, an LSTM cell state multiplies by the forget gate f
@@ -360,17 +341,6 @@
       }).catch(failMsg(el, 'Try it: add noise, then remove it'));
     },
 
-    ganflow: flow('Try it: the counterfeiter and the detective', [
-      { t: 'Generate', s: 'G makes a fake from random noise', note: 'The generator turns random noise z into a fake image. At the start the fakes are just noise.' },
-      { t: 'Classify', s: 'D sees real + fake', note: 'The discriminator is shown a mix of real images and fakes and has to say real or fake for each.' },
-      { t: 'Feedback', s: 'both get a score', note: 'Both networks update: D learns from its mistakes, and G learns from how D reacted to its fake (the signal flows back through D).' },
-      { t: 'Repeat', s: 'until D cannot tell', note: 'Repeat thousands of times. A good run ends with fakes so good that D is right only about half the time.' }], 'There is no explicit probability model and no reconstruction loss: the only question is "can you fool the judge?".'),
-    sdpipe: flow('Try it: how Stable Diffusion makes an image', [
-      { t: 'Text prompt', s: '"a cat on Mars"', note: 'You describe the picture in words.' },
-      { t: 'Text encoder', s: 'CLIP', note: 'A text encoder turns the prompt into numbers (an embedding) that can steer the image.' },
-      { t: 'Noise', s: 'random latent', note: 'Generation starts from pure random noise, but in a small latent space (64×64), not the full 512×512 pixels.' },
-      { t: 'U-Net denoiser', s: '~50 steps', note: 'A U-Net removes noise step by step, guided by the text embedding. About 50 steps, not 1000.' },
-      { t: 'VAE decoder', s: '64×64 → 512×512', note: 'The decoder from a VAE expands the cleaned-up small latent into the full-size picture.' }], 'Stable Diffusion = VAE (compress) + diffusion (denoise in the small space) + CLIP (text steers it). Each piece solves one specific problem.'),
 
     // ---------- LLM / RL ----------
     // real tabular Q-learning on a 5x5 grid, trained live in the page: arrows show the greedy policy, shading shows the best Q-value, the plot shows reward per episode

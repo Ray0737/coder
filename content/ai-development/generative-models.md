@@ -23,9 +23,14 @@ A plain autoencoder's latent space can have gaps and dead zones: pick a random p
 
 > [!compare] Think of it like a forger and a detective improving by competing. A **generator** tries to produce fakes realistic enough to fool a **discriminator**, and the discriminator tries to tell real from fake. Each one getting better forces the other to improve too, and over many rounds the generator's fakes become hard to tell from the real thing.
 
-```widget
-ganflow
+```tgrid4
+1. Generate | G makes a fake from random noise. The generator turns random noise z into a fake image. At the start the fakes are just noise.
+2. Classify | D sees real and fake. The discriminator is shown a mix of real images and fakes and has to say real or fake for each.
+3. Feedback | Both get a score. Both networks update: D learns from its mistakes, and G learns from how D reacted to its fake (the signal flows back through D).
+4. Repeat | Until D cannot tell. Repeat thousands of times. A good run ends with fakes so good that D is right only about half the time.
 ```
+
+There is no explicit probability model and no reconstruction loss: the only question is "can you fool the judge?".
 
 Then watch a real one train. Drag the training step, or press Play: at step 0 the generator makes noise, and over a few thousand iterations the digits take shape while the two losses push against each other.
 
@@ -49,9 +54,15 @@ Scrub the slider from 0 to 20 and watch structure appear out of what started as 
 
 Modern image generators combine two ideas from this chapter: a VAE (compress to a small latent space) and diffusion (denoise inside it).
 
-```widget
-sdpipe
+```tgrid5
+1. Text prompt | "a cat on Mars". You describe the picture in words.
+2. Text encoder | CLIP. A text encoder turns the prompt into numbers (an embedding) that can steer the image.
+3. Noise | Random latent. Generation starts from pure random noise, but in a small latent space (64×64), not the full 512×512 pixels.
+4. U-Net denoiser | About 50 steps. A U-Net removes noise step by step, guided by the text embedding. About 50 steps, not 1000.
+5. VAE decoder | 64×64 to 512×512. The decoder from a VAE expands the cleaned-up small latent into the full-size picture.
 ```
+
+Stable Diffusion = VAE (compress) + diffusion (denoise in the small space) + CLIP (text steers it). Each piece solves one specific problem.
 
 ```cta
 flask | See it for yourself | Compare a VAE and a GAN side by side.

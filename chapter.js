@@ -2277,41 +2277,40 @@ const widgets = {
     };
     render();
   },
-  // RLHF made concrete: two candidate replies with reward-model scores, and a preference bar that nudges toward the higher-scoring one over a few steps
-  rlhfnudge(el) {
-    const prompt = 'A customer writes: "My order arrived broken."';
-    const respA = { text: 'So sorry about that! Here is a refund and a replacement on the way.', reward: 8.4 };
-    const respB = { text: 'Not my problem, try contacting someone else.', reward: 1.2 };
-    const maxT = 6;
-    let t = 0, timer = null;
-    const render = () => {
-      const target = respA.reward >= respB.reward ? 1 : 0;
-      const pA = 0.5 + (target === 1 ? 0.46 : -0.46) * (t / maxT);
-      const pB = 1 - pA;
-      $('#rl-bars').innerHTML = `<div class="wgbars">
-        <div class="wgbar"><i style="height:${pA * 100}%;background:var(--green)"></i><b>${(pA * 100).toFixed(0)}%</b><span>A: reward ${respA.reward}</span></div>
-        <div class="wgbar"><i style="height:${pB * 100}%;background:var(--red)"></i><b>${(pB * 100).toFixed(0)}%</b><span>B: reward ${respB.reward}</span></div>
-      </div>`;
-      $('#rl-say').textContent = t === 0 ? 'Before any RLHF nudging, the policy is split roughly evenly between the two candidate responses.'
-        : t >= maxT ? 'After enough nudges, the policy strongly favours response A, the one the reward model scored higher.'
-          : `Nudge ${t} of ${maxT}: the policy is shifting toward whichever response the reward model preferred.`;
+  // RLHF with a real dial: the best policy under a KL penalty is  pi(y) ~ pi_base(y) * exp(reward(y) / beta).  Rewards and base odds are made up; the formula is the standard one.
+  rlhfkl(el) {
+    const R = [
+      { k: 'A', text: 'So sorry about that! Here is a refund and a replacement on the way.', tag: 'really helpful', c: 'green', r: 8.4, p0: .30 },
+      { k: 'B', text: 'Not my problem, try contacting someone else.', tag: 'curt', c: 'red', r: 1.2, p0: .35 },
+      { k: 'C', text: 'Please contact our support team about your order.', tag: 'okay, but no help', c: 'yellow', r: 5.0, p0: .20 },
+      { k: 'D', text: 'What a wonderful order! You are so right to be upset, you are amazing!', tag: 'empty flattery', c: 'peach', r: 9.0, p0: .15 },
+    ];
+    const beta = v => 0.4 * Math.pow(50, v / 100);      // slider 0..100 -> 0.4 .. 20 on a log scale
+    el.innerHTML = `<p class="wgt">Try it: how far may the model move?</p>
+      <p class="wgcap">A customer writes: "My order arrived broken." The base model could reply in four ways. The reward model has a blind spot: it over-rates flattery.</p>
+      <div class="wgrow"><label>KL penalty (β) <input id="kl-b" type="range" min="0" max="100" value="55"></label><b id="kl-v"></b>
+        <button type="button" class="seg2" data-s="0">Free</button><button type="button" class="seg2" data-s="55">Balanced</button><button type="button" class="seg2" data-s="100">Tight</button></div>
+      <div class="klrows" id="kl-rows"></div>
+      <div class="afrow" id="kl-st"></div>
+      <p class="wgo" id="kl-say"></p>
+      <p class="wgcap">Bars: the model after RLHF. White tick: how likely the base model was to write that reply. Rewards and base odds are made up to show the idea. The formula behind the bars is the standard best answer to "maximise reward, but pay for drifting from the base model".</p>`;
+    const run = () => {
+      const s = +$('#kl-b').value, bt = beta(s);
+      const w = R.map(x => x.p0 * Math.exp(x.r / bt)), z = w.reduce((a, c) => a + c, 0), P = w.map(v => v / z);
+      const kl = P.reduce((a, p, i) => a + (p > 0 ? p * Math.log(p / R[i].p0) : 0), 0), er = P.reduce((a, p, i) => a + p * R[i].r, 0);
+      const pc = v => Math.round(v * 100) + '%';
+      $('#kl-v').textContent = bt.toFixed(1);
+      el.querySelectorAll('.seg2[data-s]').forEach(b => b.classList.toggle('on', Math.abs(+b.dataset.s - s) < 3));
+      $('#kl-rows').innerHTML = R.map((x, i) => `<div class="klr"><div class="klt"><b style="color:var(--${x.c})">${x.k}</b><span>${mdEsc(x.text)}<small>${x.tag} · reward score ${x.r}</small></span></div>
+        <div class="klb"><i style="width:${P[i] * 100}%;background:var(--${x.c})"></i><u style="left:${x.p0 * 100}%"></u></div><div class="kln"><b>${pc(P[i])}</b><small>base ${pc(x.p0)}</small></div></div>`).join('');
+      $('#kl-st').innerHTML = `<div><span>Average reward</span><small>what the reward model says</small><b>${er.toFixed(1)}</b></div><div><span>Drift from base model</span><small>KL, in nats</small><b>${kl.toFixed(2)}</b></div><div><span>Flattering reply D</span><small>chance the model writes it</small><b>${pc(P[3])}</b></div>`;
+      $('#kl-say').textContent = bt < 1.2 ? 'Penalty too weak: the model is free to chase the score, so it piles onto the replies the reward model loves most, including the flattery that does not help anyone. This is reward hacking.'
+        : bt < 7 ? 'Middle ground: reply A, the genuinely helpful one, gains the most and the curt reply B shrinks, but the flattery creeps up too, because the reward model likes it. A real system has to watch for that.'
+          : 'Penalty very strong: the model barely moves from the base model. Nothing goes wrong, but RLHF has also changed almost nothing.';
     };
-    el.innerHTML = `<p class="wgt">Try it: nudge the policy with RLHF</p>
-      <p class="wgcap">${mdEsc(prompt)}</p>
-      <div class="wgtable"><div><code>A: ${respA.text}</code><span class="ok">reward ${respA.reward}</span></div><div><code>B: ${respB.text}</code><span class="bad">reward ${respB.reward}</span></div></div>
-      <div id="rl-bars"></div>
-<div class="tb"><span class="sp"></span><button class="bt act" id="rl-play" type="button">Play</button><button class="bt" id="rl-step" type="button">Step</button><button class="bt" id="rl-reset" type="button">Reset</button></div>
-      <p class="wgcap" id="rl-say"></p>`;
-    const resetAll = () => { t = 0; if (timer) { clearInterval(timer); timer = null; } $('#rl-play').textContent = 'Play'; render(); };
-    $('#rl-step').onclick = () => { if (timer) { clearInterval(timer); timer = null; $('#rl-play').textContent = 'Play'; } t = Math.min(t + 1, maxT); render(); };
-    $('#rl-reset').onclick = resetAll;
-    $('#rl-play').onclick = () => {
-      if (timer) { clearInterval(timer); timer = null; $('#rl-play').textContent = 'Play'; return; }
-      if (t >= maxT) resetAll();
-      $('#rl-play').textContent = 'Pause';
-      timer = trackTimer(setInterval(() => { t++; if (t >= maxT) { t = maxT; render(); clearInterval(timer); timer = null; $('#rl-play').textContent = 'Play'; return; } render(); }, 500));
-    };
-    render();
+    $('#kl-b').oninput = run;
+    el.querySelectorAll('.seg2[data-s]').forEach(b => b.onclick = () => { $('#kl-b').value = b.dataset.s; run(); });
+    el._reset = () => { $('#kl-b').value = 55; run(); }; run();
   },
   // fill in the blanks of an f-string and watch the sentence change
   fstring(el) {
