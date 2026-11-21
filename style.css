@@ -1265,3 +1265,63 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 .mwl i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
 
 .lesson[data-cls="raspberry-pi-vision"] p:has(> b:first-child){margin-top:34px}
+
+.row:has(.groups){grid-template-columns:150px 1fr}
+.row:has(.groups) .meta{padding:18px 16px}
+.row .groups>div{padding:18px 20px}
+@media(max-width:760px){.row:has(.groups){grid-template-columns:1fr}}
+
+/* basic python widgets */
+.lrow{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}
+.lc{min-width:54px;padding:6px 10px;border-radius:8px;background:var(--crust);text-align:center;display:flex;flex-direction:column;gap:3px}
+.lc b{font-weight:400;color:var(--text)}
+.lc small{font-size:10px;color:var(--o1)}
+.ladder{display:flex;flex-direction:column;border-radius:8px;overflow:hidden;background:var(--crust)}
+.ladder>div{display:flex;justify-content:space-between;gap:12px;padding:7px 12px}
+.ladder>div+div{border-top:1px solid var(--s0)}
+.ladder code{background:none;padding:0}
+.ladder .no{color:var(--o1)}
+.ladder .skip{opacity:.4}
+.ladder .hit{background:color-mix(in srgb,var(--green) 16%,var(--crust));color:var(--green)}
+.fmach{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-top:6px}
+.fmach>div{padding:10px 12px;border-radius:8px;background:var(--crust);display:flex;flex-direction:column;gap:5px}
+.fmach small{font-size:10px;color:var(--mauve)}
+.fmach code{background:none;padding:0;white-space:pre-wrap;color:var(--text)}
+.bars{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.bars>div{display:grid;grid-template-columns:110px 1fr 40px;align-items:center;gap:10px}
+.bars span{color:var(--o1);font-size:12px}
+.bars i{display:block;height:8px;border-radius:4px;background:var(--crust);overflow:hidden}
+.bars u{display:block;height:100%;border-radius:4px;transition:width .2s}
+.bars b{font-weight:400;text-align:right;font-variant-numeric:tabular-nums}
+.cafe{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:10px}
+.cafe button{padding:12px 10px;border-radius:8px;background:var(--crust);display:flex;flex-direction:column;gap:3px;align-items:center;cursor:pointer;color:var(--text)}
+.cafe button:hover{background:var(--s0)}
+.cafe button small{color:var(--o1)}
+.cafe button span{color:var(--green);min-height:1.2em}
+.rcpt{margin:8px 0 0;padding:12px 14px;border-radius:8px;background:var(--crust);color:var(--text);white-space:pre-wrap;font:12px ui-monospace,SFMono-Regular,Consolas,monospace}
+.plist{display:flex;flex-direction:column;gap:4px;margin:4px 0 8px}
+.pr{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:8px;background:var(--crust);cursor:pointer}
+.pr:hover{background:var(--s0)}
+.pr u{width:9px;height:9px;border-radius:50%;flex:none;background:var(--text)}
+.pr.red u{background:var(--red)}
+.pr.yellow u{background:var(--yellow)}
+.pr span{flex:1}
+.pr small{color:var(--o1)}
+.pr.dn span{text-decoration:line-through;color:var(--o1)}
+.pr.dn small{color:var(--green)}
+.pr button{color:var(--o1);padding:0 6px;cursor:pointer}
+.pr button:hover{color:var(--red)}
+.seg2.pk{background:var(--mauve);color:var(--crust);font-weight:700}
+#w-pl-p .seg2.on:not(.pk){background:var(--mauve);color:var(--crust)}
+
+/* prep widgets: numpy grid, dataframe table */
+.agrid{display:grid;gap:4px;margin:4px 0 10px}
+.agrid i{font-style:normal;padding:6px 12px;min-width:46px;text-align:center;border-radius:6px;background:var(--crust);font-variant-numeric:tabular-nums}
+.agrid i.t{color:var(--green)}
+.agrid i.f{color:var(--red)}
+.dfw{overflow-x:auto;margin-top:8px}
+.dft{border-collapse:collapse;width:100%;font:12px ui-monospace,SFMono-Regular,Consolas,"Courier New",monospace;background:var(--crust);border-radius:8px}
+.dft th{color:var(--mauve);font-weight:400;text-align:right;padding:6px 12px;border-bottom:1px solid var(--s0)}
+.dft td{text-align:right;padding:5px 12px;color:var(--text)}
+.dft td.ix{color:var(--o1);text-align:left}
+

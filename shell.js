@@ -120,7 +120,7 @@ const FOOTER = `
     <button class="dev" id="dev" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="dev-pop"><svg class="i"><use href="#i-user-circle"/></svg><span class="t">Developer</span></button>
     <a class="bub" href="mailto:raphee.rattanamanoonporn@gmail.com" aria-label="Email the site developer" title="Email the site developer"><svg class="i"><use href="#i-envelope-simple"/></svg></a>
     <a class="bub" href="https://github.com/Ray0737" target="_blank" rel="noopener" aria-label="Site developer on GitHub" title="Site developer on GitHub"><svg class="i"><use href="#i-github-logo"/></svg></a>
-    <span>© 2026 Coder</span>
+    <span>ยฉ 2026 Coder</span>
   </footer>
 
   <div class="pop" id="dev-pop" role="dialog" aria-label="Developer" hidden>
@@ -138,11 +138,11 @@ const SETTINGS = `
 
 <h2 class="ph">Theme</h2>
 <div class="setlist"><div class="set"><span class="si"><svg class="i"><use href="#i-eye"/></svg></span><div class="st"><b>Colour theme</b><p>The four Catppuccin flavours. Mocha is the one in use.</p></div>
-<div class="seg" aria-disabled="true"><button class="on" disabled>Mocha</button><button disabled>Macchiato</button><button disabled>Frappé</button><button disabled>Latte</button></div></div></div>
+<div class="seg" aria-disabled="true"><button class="on" disabled>Mocha</button><button disabled>Macchiato</button><button disabled>Frappรฉ</button><button disabled>Latte</button></div></div></div>
 <div class="flavours" aria-hidden="true">
 <div class="flv on" style="--b:#1e1e2e;--t:#cdd6f4"><svg class="i ck"><use href="#i-check-circle"/></svg><span class="aa">Aa</span><span class="dots"><i style="background:#cba6f7"></i><i style="background:#89b4fa"></i><i style="background:#a6e3a1"></i></span><span class="nm">Mocha<span>In use</span></span></div>
 <div class="flv" style="--b:#24273a;--t:#cad3f5"><span class="aa">Aa</span><span class="dots"><i style="background:#c6a0f6"></i><i style="background:#8aadf4"></i><i style="background:#a6da95"></i></span><span class="nm">Macchiato<span>Soon</span></span></div>
-<div class="flv" style="--b:#303446;--t:#c6d0f5"><span class="aa">Aa</span><span class="dots"><i style="background:#ca9ee6"></i><i style="background:#8caaee"></i><i style="background:#a6d189"></i></span><span class="nm">Frappé<span>Soon</span></span></div>
+<div class="flv" style="--b:#303446;--t:#c6d0f5"><span class="aa">Aa</span><span class="dots"><i style="background:#ca9ee6"></i><i style="background:#8caaee"></i><i style="background:#a6d189"></i></span><span class="nm">Frappรฉ<span>Soon</span></span></div>
 <div class="flv" style="--b:#eff1f5;--t:#4c4f69"><span class="aa">Aa</span><span class="dots"><i style="background:#8839ef"></i><i style="background:#1e66f5"></i><i style="background:#40a02b"></i></span><span class="nm">Latte<span>Soon</span></span></div>
 </div>
 
@@ -168,7 +168,7 @@ const SETTINGS = `
 `;
 // ponytail: chapter list lives here until a data.js exists; chapter hrefs are placeholders.
 const notes = [
-  ['Basic Python','terminal-window','yellow',['# Core Python','Printing and getting input','Lists','Conditionals','Loops','Functions','Tuples and dicts','OOP','Tkinter GUI','Capstone: study planner','# Prep for AI Development','os: files and folders','sys: arguments','NumPy: arrays','Matplotlib: plots','Pandas: tables'],'M.4 Foundations'],
+  ['Basic Python','terminal-window','yellow',['# Core Python','Printing and getting input','Lists','Conditionals','Loops','Functions','Useful modules','Tuples and dicts','OOP','Tkinter GUI','# Prep for AI Development','os: files and folders','sys: arguments','NumPy: arrays','Matplotlib: plots','Pandas: tables'],'M.4 Foundations'],
   ['Circuits, Arduino & GPIO','cpu','peach',['# Circuit basics','Voltage, current and resistance','Series and parallel circuits','Circuit diagrams and measuring','# Get to know the hardware','The Arduino board','Pins: digital, PWM and I2C','Breadboard basics','# Software','Arduino IDE and the sketch','# Wire it up','The voltage divider','LED: blink and active levels','Button: pull-up and pull-down','LCD: wiring I2C','Ultrasonic sensor (HC-SR04)','Servo motor with PWM'],'M.4 Foundations'],
   ['Physics in Robotics','robot','green',['# Physics principles','Linear motion','Circular motion','Differential drive speeds','# Robot setup','Hardware: ESP32 and motors','# Code setup','Project setup','Motor protocol: Dynamixel 2.0','# CAD','Chassis design in Onshape','# Final mission','The final mission'],'M.4 Foundations'],
   ['LINE Chatbot','chat-text','teal',['# Chatbot basics','What a chatbot is','Rule-based NLP','# Dialogflow','Dialogflow intents','# LINE','LINE OA and Messaging API','# Backend','Webhook and database','# Replies and wrap-up','Rich replies: Flex Messages','End to end: check stock'],'M.4 Foundations'],
@@ -224,14 +224,14 @@ sview.className = 'view'; sview.id = 'sview'; sview.hidden = true; sview.innerHT
 main.append(sview);
 const stab = document.createElement('span');
 stab.className = 'tab on'; stab.id = 'stab';
-stab.innerHTML = icon('gear-six') + '<span>Settings</span><button class="x" type="button" aria-label="Close Settings">×</button>';
+stab.innerHTML = icon('gear-six') + '<span>Settings</span><button class="x" type="button" aria-label="Close Settings">ร—</button>';
 const gear = $('#gear'), crumbEl = $('.crumb');
 let crumb0 = '';
 function openSettings(){
   if (!sview.hidden) return;
   crumb0 = crumbEl.textContent;
   $('.tabs').append(stab); sview.hidden = false; main.classList.add('sopen'); gear.classList.add('on');
-  crumbEl.textContent = 'Coder › Settings'; sview.scrollTop = 0;
+  crumbEl.textContent = 'Coder โ€บ Settings'; sview.scrollTop = 0;
 }
 function closeSettings(){
   if (sview.hidden) return;
@@ -253,7 +253,7 @@ if (panes.length) {
     panes.forEach(p => p.hidden = p.id !== cur);
     if ($('#p-page')) showPanel('page');
     $$('.outline a').forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + cur));
-    crumb.textContent = base + ' › ' + $('#' + cur).dataset.tab;
+    crumb.textContent = base + ' โ€บ ' + $('#' + cur).dataset.tab;
     $('.view').scrollTop = 0;
   };
   const openTab = id => { closeSettings(); if (!panes.some(p => p.id === id)) id = panes[0].id; if (!opened.includes(id)) opened.push(id); show1(id); };
@@ -273,7 +273,7 @@ $('#tree').innerHTML = notes.map(([g,ic,c,ns,yr]) => {
   return head + `<button class="grp" style="--c:var(--${c})" aria-expanded="false" data-g="${esc(g)}">${icon('caret-right')}<svg class="i f"><use href="#i-${ic}"/></svg><span>${esc(g)}</span></button><ul class="tree">${ns.map(n=>n.startsWith('# ')?`<li class="sub">${esc(n.slice(2))}</li>`:item({g,c,n})).join('')}</ul>`;
 }).join('');
 const recent = $('#recent');
-if (recent) recent.innerHTML = (load('coder:recent') || ['basic-python/capstone-tkinter-study-planner','circuits-arduino-gpio/servo-motor-with-pwm','ai-development/how-training-works'])
+if (recent) recent.innerHTML = (load('coder:recent') || ['basic-python/printing-and-getting-input','circuits-arduino-gpio/servo-motor-with-pwm','ai-development/how-training-works'])
   .map(s => all.find(x => slug(x.g)+'/'+slug(x.n) === s)).filter(Boolean)
   .map(x => `<li><a href="${href(x.g,x.n)}">${esc(x.n)}</a><span class="dim">${esc(x.g)}</span></li>`).join('');
 $('#count').insertAdjacentText('beforeend', all.length + ' notes');

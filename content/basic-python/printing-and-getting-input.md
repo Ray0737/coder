@@ -11,7 +11,7 @@ Think of `print()` as the display board in a shop. You decide what goes on the b
 
 ```python
 print("Hello, world")
-print("My name is Mint")
+print("My favourite fruit is mango")
 ```
 
 Each `print()` starts a new line. Numbers do not need quotes.
@@ -39,7 +39,7 @@ A variable is a lunchbox with a label on the lid. The label is the **name** and 
 An f-string is a form letter: "Dear ____, you scored ____ points." The blanks are the `{ }`, and Python fills each one from the variable with that name. Put an `f` before the quote and wrap each variable in `{ }`.
 
 ```python
-name = "Mint"
+name = "Falcons"
 score = 95
 print(f"{name} scored {score} points")
 ```
@@ -58,13 +58,13 @@ Before f-strings, Python had two other ways to fill the blanks. You will meet th
 
 | Code | Fills the blank with | Example |
 |---|---|---|
-| `%s` | text (a string) | `"%s" % "Mint"` gives Mint |
+| `%s` | text (a string) | `"%s" % "Falcons"` gives Falcons |
 | `%d` | a whole number | `"%d" % 95` gives 95 |
 | `%f` | a decimal number | `"%f" % 3.5` gives 3.500000 |
 | `%.2f` | a decimal rounded to 2 places | `"%.2f" % 3.14159` gives 3.14 |
 
 ```python
-name = "Mint"
+name = "Falcons"
 score = 95
 print("%s scored %d points" % (name, score))
 print("Average: %.2f" % 87.456)      # Average: 87.46
@@ -134,6 +134,31 @@ value = int(value)
 print(type(value))            # <class 'int'>
 ```
 
+## The basic data types
+
+Every value has a **type**, and `type()` tells you which. These are the built-in single-value types:
+
+| Type | What it holds | Example |
+|---|---|---|
+| `int` | a whole number | `30`, `-4` |
+| `float` | a number with a decimal point | `3.14`, `1.75` |
+| `str` | text | `"Hello"` |
+| `bool` | `True` or `False` (capital first letter) | `is_student = True` |
+| `NoneType` | "nothing here yet", written `None` | `result = None` |
+| `complex` | a number with an imaginary part (rare) | `2 + 3j` |
+
+Switching a value from one type to another is called **casting**:
+
+```python
+print(float(10))      # 10.0
+print(int(3.9))       # 3, it cuts off the decimals and does not round
+print(int("123"))     # 123, text to number
+print(str(456))       # "456", number to text
+print(bool(0))        # False, 0 and "" count as False
+```
+
+> [!tip] Single values are only half the story. The types that hold **many** values, such as lists, tuples, dictionaries and sets, come in the next chapters, and the Tuples and dicts chapter compares them in one table.
+
 ## math: borrow a tool
 
 A **module** is a toolbox in the garage. You do not carry every tool around all day. You `import` the toolbox when you need it, and the `math` module has maths helpers.
@@ -148,6 +173,16 @@ print(f"Square root of 49 = {math.sqrt(49)}")
 ```
 
 `{area:.2f}` rounds to 2 decimal places. `**` means "to the power of".
+
+## Handy tips
+
+- **Control the line ending and the gap.** `print("a", "b", sep="-")` shows `a-b`, and `print("loading", end="...")` stays on the same line.
+- **Special characters.** `\n` starts a new line, `\t` is a tab, and `\"` puts a quote inside a quote. Three quotes, `"""like this"""`, let a string run over many lines.
+- **Format numbers inside an f-string.** `{price:.2f}` gives two decimals, `{n:,}` adds thousands commas (`1,234,567`), and `{name:>10}` pads to 10 characters, right aligned.
+- **Quick debugging.** `print(f"{score = }")` prints `score = 95`, so you see the name and the value together.
+- **Clean up the typed text.** `input().strip()` removes stray spaces at both ends, and `.lower()` makes `"Yes"` and `"yes"` match.
+- **Comments are for you.** Anything after `#` is ignored. Explain *why* you did something, not what the line plainly says.
+- **Read the last line of an error first.** Python prints the kind of error and the line number at the bottom, such as `NameError: name 'x' is not defined`. That line usually tells you the whole problem.
 
 ## Try it
 
@@ -165,4 +200,5 @@ print(f"Square root of 49 = {math.sqrt(49)}")
 | `input()` | a cashier asking and waiting | asks, and returns text |
 | `int()` / `float()` | reading ink as a number | text to number |
 | `type()` | the label on a parcel | tells you what you have |
+| `int` `float` `str` `bool` `None` | kinds of parcel | the basic types of a single value |
 | `import math` | a toolbox from the garage | gives you `math.pi`, `math.sqrt()` and more |

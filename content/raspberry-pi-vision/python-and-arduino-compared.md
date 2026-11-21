@@ -57,17 +57,26 @@ pwm.ChangeDutyCycle((brightness / 255) * 100)   # map 0-255 to 0-100 %
 ## LED (digital output): `GPIO18` through 220 ohm
 
 ```python
-GPIO.setup(18, GPIO.OUT)
+import RPi.GPIO as GPIO
+import time
+
+GPIO.setmode(GPIO.BCM)          # init: number pins by GPIO name
+GPIO.setup(18, GPIO.OUT)        # init: the pin is an output
 GPIO.output(18, GPIO.HIGH)      # on
 time.sleep(1)                   # seconds, not milliseconds
 GPIO.output(18, GPIO.LOW)       # off
+GPIO.cleanup()                  # release the pin when done
 ```
 
 ```cpp
-pinMode(18, OUTPUT);
-digitalWrite(18, HIGH);
-delay(1000);                    // milliseconds
-digitalWrite(18, LOW);
+void setup() {
+  pinMode(18, OUTPUT);          // init
+}
+void loop() {
+  digitalWrite(18, HIGH);
+  delay(1000);                  // milliseconds
+  digitalWrite(18, LOW);
+}
 ```
 
 ## LED brightness (PWM): `GPIO13` through 220 ohm
@@ -75,13 +84,17 @@ digitalWrite(18, LOW);
 On Arduino one call, `analogWrite`, does PWM. On the Pi you make a PWM object, start it, and change its duty cycle, which is 0 to 100 and not 0 to 255.
 
 ```python
-pwm = GPIO.PWM(13, 1000)        # pin, frequency in Hz
-pwm.start(0)
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(13, GPIO.OUT)        # init: the pin must be an output first
+pwm = GPIO.PWM(13, 1000)        # init: pin, frequency in Hz
+pwm.start(0)                    # init: start at 0% duty
 pwm.ChangeDutyCycle(50)         # 0-100 percent
+pwm.stop()                      # at the end, before GPIO.cleanup()
 ```
 
 ```cpp
-analogWrite(13, 128);           // 0-255 in one call
+pinMode(13, OUTPUT);            // init, in setup()
+analogWrite(13, 128);           // 0-255 in one call, no start or stop
 ```
 
 ## DC motor through the L298N: `IN1` `GPIO18`, `IN2` `GPIO12`, `ENA` `GPIO13`
@@ -124,15 +137,33 @@ motorwiring
 **The code.** The pins are the same as on Arduino. Only the PWM call differs.
 
 ```python
-GPIO.output(18, GPIO.HIGH)      # IN1
-GPIO.output(12, GPIO.LOW)       # IN2: forward
-pwm_motor.ChangeDutyCycle(40)   # ENA speed, 0-100
+IN1, IN2, ENA = 18, 12, 13
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)             # init: hide "channel already in use" warnings
+GPIO.setup([ENA, IN1, IN2], GPIO.OUT)   # init: all three are outputs
+pwm_motor = GPIO.PWM(ENA, 1000)     # init: speed pin at 1000 Hz
+pwm_motor.start(0)                  # init: start stopped
+
+GPIO.output(IN1, GPIO.HIGH)         # IN1
+GPIO.output(IN2, GPIO.LOW)          # IN2: forward
+pwm_motor.ChangeDutyCycle(40)       # ENA speed, 0-100
+
+# at the end: stop the motor first, then release the pins
+pwm_motor.stop()
+GPIO.cleanup()
 ```
 
 ```cpp
-digitalWrite(18, HIGH);         // IN1
-digitalWrite(12, LOW);          // IN2: forward
-analogWrite(13, 100);           // ENA speed, 0-255
+void setup() {
+  pinMode(18, OUTPUT);          // IN1
+  pinMode(12, OUTPUT);          // IN2
+  pinMode(13, OUTPUT);          // ENA
+}
+void loop() {
+  digitalWrite(18, HIGH);       // IN1
+  digitalWrite(12, LOW);        // IN2: forward
+  analogWrite(13, 100);         // ENA speed, 0-255
+}
 ```
 
 The course has two motor exercises. In `w5a.py` two buttons drive it: forward on `GPIO19` and backward on `GPIO26`, with the internal pull-up, and the motor stops when you let go. In `w5b.py` you type commands: `F` forward, `B` backward, `S` stop, and `+` or `-` to change the speed by 10%.
@@ -142,26 +173,40 @@ The course has two motor exercises. In `w5a.py` two buttons drive it: forward on
 Arduino's `Servo` library takes an angle. On the Pi you turn the angle into a duty cycle yourself.
 
 ```python
-servo = GPIO.PWM(18, 50)        # 50 Hz
-servo.start(0)
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(18, GPIO.OUT)        # init: the signal pin is an output
+servo = GPIO.PWM(18, 50)        # init: 50 Hz, the rate every hobby servo expects
+servo.start(0)                  # init: no pulses yet, so the arm does not jump
 servo.ChangeDutyCycle(2 + angle / 18.0)    # angle 0-180 -> duty 2-12 %
+servo.stop()                    # at the end, then GPIO.cleanup()
 ```
 
 ```cpp
-servo.attach(18);
-servo.write(angle);             // 0-180 directly
+#include <Servo.h>
+Servo servo;                    // create the object
+void setup() {
+  servo.attach(18);             // init: bind it to the pin
+}
+void loop() {
+  servo.write(angle);           // 0-180 directly
+}
 ```
 
 ## Push button: `GPIO23` to GND with the pull-up
 
 ```python
-GPIO.setup(23, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(23, GPIO.IN, pull_up_down=GPIO.PUD_UP)   # init: input with pull-up
 pressed = GPIO.input(23) == GPIO.LOW        # pressed reads LOW
 ```
 
 ```cpp
-pinMode(23, INPUT_PULLUP);
-bool pressed = digitalRead(23) == LOW;
+void setup() {
+  pinMode(23, INPUT_PULLUP);    // init
+}
+void loop() {
+  bool pressed = digitalRead(23) == LOW;
+}
 ```
 
 The pull-up works the same way in both. The difference is that the Pi sets it as an argument of `setup`.
@@ -176,6 +221,12 @@ This is where Python is more work. The sensor works in three steps: a 10 microse
 import RPi.GPIO as GPIO
 import time
 
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(23, GPIO.OUT)                                             # init: Trig is an output
+GPIO.setup(24, GPIO.IN)                                              # init: Echo is an input
+GPIO.output(23, False)                                               # init: Trig starts LOW
+time.sleep(0.5)                                                      # init: let the sensor settle
+
 GPIO.output(23, True); time.sleep(0.00001); GPIO.output(23, False)   # 10 microsecond ping
 while GPIO.input(24) == 0: pulse_start = time.time()                 # echo begins
 while GPIO.input(24) == 1: pulse_end = time.time()                   # echo ends
@@ -184,9 +235,15 @@ distance = (pulse_end - pulse_start) * speed_cm // 2                 # cm, halve
 ```
 
 ```cpp
-digitalWrite(23, HIGH); delayMicroseconds(10); digitalWrite(23, LOW);
-long duration = pulseIn(24, HIGH);          // times the echo for you, in microseconds
-float distance = duration * 0.0343 / 2;     // cm, 0.0343 cm per microsecond is about 20 degrees C
+void setup() {
+  pinMode(23, OUTPUT);                      // init: Trig
+  pinMode(24, INPUT);                       // init: Echo
+}
+void loop() {
+  digitalWrite(23, HIGH); delayMicroseconds(10); digitalWrite(23, LOW);
+  long duration = pulseIn(24, HIGH);        // times the echo for you, in microseconds
+  float distance = duration * 0.0343 / 2;   // cm, 0.0343 cm per microsecond is about 20 degrees C
+}
 ```
 
 > [!tip] **The room temperature changes the answer.** Sound travels faster in warm air and slower in cold air: about `331 + 0.6 x temperature` metres per second, with the temperature in degrees C. The course code uses 25 degrees C, which is 346 m/s. In a much colder or hotter room the distance will drift, so change the `25` to the real room temperature if you need accurate readings.
@@ -194,17 +251,32 @@ float distance = duration * 0.0343 / 2;     // cm, 0.0343 cm per microsecond is 
 ## 16x2 LCD over I2C: `SDA` `GPIO2`, `SCL` `GPIO3`
 
 ```python
-lcd = LCD()                     # from rpi_lcd
-lcd.text("Count: 5", 2)         # text, line number
+from rpi_lcd import LCD
+
+lcd = LCD()                     # init: I2C bus 1, address 0x27 by default
+lcd.text("Count: 5", 2)         # text, line number (starts at 1)
+lcd.clear()                     # at the end, blank the screen
 ```
+
+If `i2cdetect` shows a different address, or your screen is 16x2 and the text wraps oddly, pass the settings in: `LCD(address=0x3F, width=16, rows=2)`.
 
 The LCD needs a library that is not part of the `requirements.txt` set: install it inside the venv with `pip install rpi_lcd`, and switch on I2C first. The Environment chapter lists the package for every part.
 
 ```cpp
-LiquidCrystal_I2C lcd(0x27, 16, 2);
-lcd.setCursor(0, 1);            // column, row
-lcd.print("Count: 5");
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+LiquidCrystal_I2C lcd(0x27, 16, 2);   // address, columns, rows
+void setup() {
+  lcd.init();                   // init: start the screen
+  lcd.backlight();              // init: switch the light on
+}
+void loop() {
+  lcd.setCursor(0, 1);          // column, row (starts at 0)
+  lcd.print("Count: 5");
+}
 ```
+
+Note the counting: the Pi's `lcd.text` lines start at **1**, Arduino's `setCursor` rows start at **0**.
 
 ## Try it
 

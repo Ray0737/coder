@@ -1072,6 +1072,315 @@ const widgets = {
     $('#w-vm-tabs').onclick = e => { const b = e.target.closest('button'); if (b) run(b.dataset.k); };
     run('Normal');
   },
+  // a list you can change: append, insert, pop, sort and reverse, with the index (and negative index) under every item
+  listops(el) {
+    const pool = ['Moonlight', 'Neon', 'Harbor', 'Velvet', 'Atlas', 'Drift'];
+    let L, k, code;
+    const take = () => pool[k++ % pool.length];
+    const ops = {
+      'append': () => { const v = take(); L.push(v); return `playlist.append("${v}")`; },
+      'insert(1, ...)': () => { const v = take(); L.splice(1, 0, v); return `playlist.insert(1, "${v}")`; },
+      'pop()': () => L.length ? (L.pop(), 'playlist.pop()') : 'playlist.pop()   # IndexError: pop from empty list',
+      'pop(0)': () => L.length ? (L.shift(), 'playlist.pop(0)') : 'playlist.pop(0)   # IndexError: pop from empty list',
+      'sort()': () => { L.sort(); return 'playlist.sort()'; },
+      'reverse()': () => { L.reverse(); return 'playlist.reverse()'; },
+    };
+    el.innerHTML = `<p class="wgt">Try it: change the list</p>
+      <div class="wgrow" id="w-lo-b">${Object.keys(ops).map(n => `<button type="button" class="seg2" data-o="${n}">${n}</button>`).join('')}</div>
+      <div class="lrow" id="w-lo"></div>
+      <figure class="code"><figcaption>python</figcaption><pre><code id="w-lo-c"></code></pre></figure>`;
+    const draw = () => {
+      $('#w-lo').innerHTML = L.length ? L.map((v, i) => `<div class="lc"><small>${i}</small><b>${v}</b><small>${i - L.length}</small></div>`).join('') : '<p class="wgsay">The list is empty: []</p>';
+      $('#w-lo-c').innerHTML = mdCode(`${code}\nprint(playlist)        # [${L.map(v => `'${v}'`).join(', ')}]\nprint(len(playlist))   # ${L.length}`, 'python');
+    };
+    const start = () => { L = ['Blue', 'Sunrise', 'Tokyo', 'Echo']; k = 0; code = 'playlist = ["Blue", "Sunrise", "Tokyo", "Echo"]'; draw(); };
+    $('#w-lo-b').onclick = e => { const b = e.target.closest('button'); if (b) { code = ops[b.dataset.o](); draw(); } };
+    el._reset = start; start();
+  },
+  // drag a score and watch which branch of an if / elif ladder fires, and which ones are never checked
+  gradeladder(el) {
+    const R = [[80, '4'], [75, '3.5'], [70, '3'], [65, '2.5'], [60, '2'], [55, '1.5'], [50, '1']];
+    el.innerHTML = `<p class="wgt">Try it: drag the score</p>
+      <div class="wgrow"><label>score <input id="w-gl" type="range" min="0" max="100" value="68"></label><b id="w-gl-v"></b></div>
+      <div class="ladder" id="w-gl-r"></div>`;
+    const run = () => {
+      const s = +$('#w-gl').value; $('#w-gl-v').textContent = s;
+      let hit = R.findIndex(r => s >= r[0]); if (hit < 0) hit = R.length;
+      const row = (i, c, t) => `<div class="${i === hit ? 'hit' : i < hit ? 'no' : 'skip'}"><code>${c}</code><span>${i < hit ? 'False, keep going' : i === hit ? t : 'never checked'}</span></div>`;
+      $('#w-gl-r').innerHTML = R.map((r, i) => row(i, `${i ? 'elif' : 'if'} score >= ${r[0]}:`, `True: Grade ${r[1]}`)).join('') + row(R.length, 'else:', 'Grade 0');
+    };
+    $('#w-gl').oninput = run; el._reset = () => { $('#w-gl').value = 68; run(); }; run();
+  },
+  // type a start, stop and step and see exactly which numbers range() makes (stop is never included)
+  rangeviz(el) {
+    el.innerHTML = `<p class="wgt">Try it: build a range</p>
+      <div class="wgrow"><label>start <input id="w-rg-a" type="number" value="0"></label><label>stop <input id="w-rg-b" type="number" value="10"></label><label>step <input id="w-rg-c" type="number" value="2"></label></div>
+      <figure class="code"><figcaption>python</figcaption><pre><code id="w-rg-c0"></code></pre></figure>
+      <div class="lrow" id="w-rg"></div><p class="wgo" id="w-rg-n"></p>`;
+    const run = () => {
+      const a = parseInt($('#w-rg-a').value) || 0, b = parseInt($('#w-rg-b').value) || 0, c = parseInt($('#w-rg-c').value);
+      $('#w-rg-c0').innerHTML = mdCode(`for i in range(${a}, ${b}, ${isNaN(c) ? 1 : c}):\n    print(i)`, 'python');
+      if (!c) { $('#w-rg').innerHTML = ''; $('#w-rg-n').innerHTML = 'A step of 0 is not allowed: <b style="color:var(--red)">ValueError</b>'; return; }
+      const out = []; for (let i = a; c > 0 ? i < b : i > b; i += c) { out.push(i); if (out.length > 40) break; }
+      $('#w-rg').innerHTML = out.slice(0, 40).map(v => `<div class="lc"><b>${v}</b></div>`).join('') || '<p class="wgsay">Nothing: the loop body never runs.</p>';
+      $('#w-rg-n').innerHTML = `${out.length > 40 ? '40+' : out.length} numbers. <b>${b}</b> is where it stops, and it is not included.`;
+    };
+    el.addEventListener('input', run); el._reset = () => { $('#w-rg-a').value = 0; $('#w-rg-b').value = 10; $('#w-rg-c').value = 2; run(); }; run();
+  },
+  // a function as a machine: arguments go in, the body runs, a value comes out
+  funcmachine(el) {
+    el.innerHTML = `<p class="wgt">Try it: call bmi_calculator</p>
+      <div class="wgrow"><label>weight (kg) <input id="w-fm-w" type="number" value="60"></label><label>height (cm) <input id="w-fm-h" type="number" value="170"></label></div>
+      <div class="fmach"><div><small>call</small><code id="w-fm-1"></code></div><div><small>inside</small><code id="w-fm-2"></code></div><div><small>result</small><code id="w-fm-3"></code></div></div>`;
+    const run = () => {
+      const w = +$('#w-fm-w').value, h = +$('#w-fm-h').value;
+      $('#w-fm-1').textContent = `bmi_calculator(${w}, ${h})`;
+      if (!(h > 0) || w < 0) { $('#w-fm-2').textContent = 'height must be above 0'; $('#w-fm-3').textContent = 'error'; return; }
+      const m = h / 100, b = w / (m * m);
+      $('#w-fm-2').textContent = `h1 = ${m.toFixed(2)}\nbmi = ${w} / ${m.toFixed(2)}**2`;
+      $('#w-fm-3').textContent = `${b.toFixed(2)}  (${b < 18.5 ? 'under' : b < 25 ? 'normal' : b < 30 ? 'over' : 'obese'})`;
+    };
+    el.addEventListener('input', run); el._reset = () => { $('#w-fm-w').value = 60; $('#w-fm-h').value = 170; run(); }; run();
+  },
+  // look up a key in a menu dictionary: [] fails on a missing key, .get() gives None
+  dictlookup(el) {
+    const menu = { Burger: 250, Pizza: 199, Frenchfries: 299 };
+    el.innerHTML = `<p class="wgt">Try it: look up a key</p>
+      <figure class="code"><figcaption>python</figcaption><pre><code>${mdCode('menu = {"Burger": 250, "Pizza": 199, "Frenchfries": 299}', 'python')}</code></pre></figure>
+      <div class="wgrow" id="w-dl-b">${[...Object.keys(menu), 'Salad'].map((n, i) => `<button type="button" class="seg2${i ? '' : ' on'}" data-k="${n}">${n}</button>`).join('')}</div>
+      <div class="wgtable mono" id="w-dl"></div>`;
+    const run = k => {
+      $$('#w-dl-b button').forEach(b => b.classList.toggle('on', b.dataset.k === k));
+      const has = k in menu, row = (c, r, bad) => `<div><code>${c}</code><span class="${bad ? 'bad' : 'ok'}">${r}</span></div>`;
+      $('#w-dl').innerHTML = row(`menu["${k}"]`, has ? menu[k] : `KeyError: '${k}'`, !has) + row(`menu.get("${k}")`, has ? menu[k] : 'None', !has) + row(`"${k}" in menu`, has ? 'True' : 'False', !has);
+    };
+    $('#w-dl-b').onclick = e => { const b = e.target.closest('button'); if (b) run(b.dataset.k); };
+    el._reset = () => run('Burger'); run('Burger');
+  },
+  // an object holds its own data (attributes) and changes it through methods: the Businessman class
+  objectviz(el) {
+    let s;
+    const acts = { work: [-10, 10, -20], sleep: [20, -10, 10], play: [-10, -10, 20] };
+    el.innerHTML = `<p class="wgt">Try it: call a method</p>
+      <figure class="code"><figcaption>python</figcaption><pre><code>${mdCode('man1 = Businessman(100, 100, 100)', 'python')}</code></pre></figure>
+      <div class="wgrow" id="w-ob-b">${Object.keys(acts).map(n => `<button type="button" class="seg2" data-a="${n}">man1.${n}()</button>`).join('')}</div>
+      <div class="bars" id="w-ob"></div>`;
+    const draw = () => {
+      $('#w-ob').innerHTML = [['hp', 'var(--red)'], ['money', 'var(--yellow)'], ['happiness', 'var(--green)']].map(([n, c], i) => `<div><span>self.${n}</span><i><u style="width:${Math.max(0, Math.min(100, s[i] / 2))}%;background:${c}"></u></i><b>${s[i]}</b></div>`).join('');
+    };
+    $('#w-ob-b').onclick = e => { const b = e.target.closest('button'); if (b) { acts[b.dataset.a].forEach((d, i) => s[i] += d); draw(); } };
+    el._reset = () => { s = [100, 100, 100]; draw(); }; el._reset();
+  },
+  // the cafe order screen: tap an item to count it, submit to get a receipt (the same logic as the Tkinter exercise)
+  cafeorder(el) {
+    const price = { 'Thai Tea': 40, 'Milk Tea': 35, 'Matcha': 60, 'Drip Coffee': 30 };
+    let cnt, que = 0, rec = '';
+    el.innerHTML = `<p class="wgt">Try it: take an order</p>
+      <div class="cafe" id="w-cf-b">${Object.keys(price).map(n => `<button type="button" data-n="${n}"><b>${n}</b><small>${price[n]} THB</small><span></span></button>`).join('')}</div>
+      <div class="wgrow"><button type="button" class="seg2 on" id="w-cf-s">Submit Order</button><button type="button" class="seg2" id="w-cf-c">Clear Order</button></div>
+      <figure class="code"><figcaption>python</figcaption><pre><code id="w-cf-d"></code></pre></figure>
+      <pre class="rcpt" id="w-cf-r" hidden></pre>`;
+    const draw = () => {
+      $$('#w-cf-b button').forEach(b => { b.querySelector('span').textContent = cnt[b.dataset.n] ? 'x ' + cnt[b.dataset.n] : ' '; });
+      $('#w-cf-d').innerHTML = mdCode('count = {' + Object.keys(cnt).map(n => `"${n}": ${cnt[n]}`).join(', ') + '}', 'python');
+      $('#w-cf-r').hidden = !rec; $('#w-cf-r').textContent = rec;
+    };
+    const clear = () => { cnt = Object.fromEntries(Object.keys(price).map(n => [n, 0])); rec = ''; draw(); };
+    $('#w-cf-b').onclick = e => { const b = e.target.closest('button'); if (b) { cnt[b.dataset.n]++; rec = ''; draw(); } };
+    $('#w-cf-c').onclick = clear;
+    $('#w-cf-s').onclick = () => {
+      let tot = 0, r = `--- Your Order (${++que}) ---\n`;
+      for (const n in cnt) if (cnt[n]) { r += `${n}: ${cnt[n]} x ${price[n]} THB = ${cnt[n] * price[n]} THB\n`; tot += cnt[n] * price[n]; }
+      clear(); rec = r + `--- Total: ${tot} THB ---`; draw();
+    };
+    el._reset = () => { que = 0; clear(); }; el._reset();
+  },
+  // a tiny study planner: add tasks with a priority colour, click one to complete it, and see the JSON that gets saved
+  plannerviz(el) {
+    const P = { 'Red: Critical': 'red', 'Yellow: Caution': 'yellow', 'White: Regular': 'white' };
+    let T, pr;
+    el.innerHTML = `<p class="wgt">Try it: a tiny planner</p>
+      <div class="wgrow"><label>task <input id="w-pl-t" maxlength="24" placeholder="Physics worksheet"></label></div>
+      <div class="wgrow" id="w-pl-p">${Object.keys(P).map(n => `<button type="button" class="seg2" data-p="${n}">${n}</button>`).join('')}<button type="button" class="seg2 on" id="w-pl-a">Add task</button></div>
+      <div class="plist" id="w-pl"></div>
+      <figure class="code"><figcaption>saved as JSON</figcaption><pre><code id="w-pl-j"></code></pre></figure>`;
+    const draw = () => {
+      $$('#w-pl-p [data-p]').forEach(b => b.classList.toggle('pk', b.dataset.p === pr));
+      $('#w-pl').innerHTML = T.length ? T.map((t, i) => `<div class="pr ${P[t.priority]}${t.done ? ' dn' : ''}" data-i="${i}"><u></u><span>${mdEsc(t.task)}</span><small>${t.done ? 'Completed' : 'Not Started'}</small><button type="button" data-x="${i}" title="Delete">x</button></div>`).join('') : '<p class="wgsay">No tasks yet.</p>';
+      $('#w-pl-j').textContent = JSON.stringify({ tasks: T.map(t => ({ task: t.task, status: t.done ? 'Completed' : 'Not Started', priority: t.priority })) }, null, 2);
+    };
+    $('#w-pl-p').onclick = e => { const b = e.target.closest('[data-p]'); if (b) { pr = b.dataset.p; draw(); } };
+    $('#w-pl-a').onclick = () => { const v = $('#w-pl-t').value.trim(); if (!v) { $('#w-pl-t').focus(); return; } T.push({ task: v, priority: pr, done: false }); $('#w-pl-t').value = ''; draw(); };
+    $('#w-pl').onclick = e => { const x = e.target.closest('[data-x]'), r = e.target.closest('.pr'); if (x) T.splice(+x.dataset.x, 1); else if (r) T[+r.dataset.i].done = !T[+r.dataset.i].done; draw(); };
+    el._reset = () => { T = [{ task: 'Python quiz', priority: 'Red: Critical', done: false }, { task: 'Read chapter 4', priority: 'White: Regular', done: false }]; pr = 'White: Regular'; $('#w-pl-t').value = ''; draw(); }; el._reset();
+  },
+  // type a strftime pattern and see today's date written that way
+  timefmt(el) {
+    const D = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const M = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const pad = (n, l = 2) => String(n).padStart(l, '0');
+    const F = {
+      Y: d => d.getFullYear(), y: d => pad(d.getFullYear() % 100), m: d => pad(d.getMonth() + 1), d: d => pad(d.getDate()),
+      H: d => pad(d.getHours()), I: d => pad(d.getHours() % 12 || 12), M: d => pad(d.getMinutes()), S: d => pad(d.getSeconds()),
+      p: d => d.getHours() < 12 ? 'AM' : 'PM', A: d => D[d.getDay()], a: d => D[d.getDay()].slice(0, 3), B: d => M[d.getMonth()], b: d => M[d.getMonth()].slice(0, 3),
+      j: d => pad(Math.round((d - new Date(d.getFullYear(), 0, 0)) / 864e5), 3), '%': () => '%',
+    };
+    const presets = ['%Y-%m-%d %H:%M:%S', '%d/%m/%y', '%A %d %B %Y', '%I:%M %p', '%b %d'];
+    el.innerHTML = `<p class="wgt">Try it: write a date format</p>
+      <div class="wgrow"><label>format <input id="w-tf" value="${presets[0]}" maxlength="40" style="width:260px"></label></div>
+      <div class="wgrow" id="w-tf-p">${presets.map(x => `<button type="button" class="seg2" data-f="${x}">${x}</button>`).join('')}</div>
+      <figure class="code"><figcaption>python</figcaption><pre><code id="w-tf-c"></code></pre></figure>
+      <p class="wgo">Prints: <b id="w-tf-o"></b></p>`;
+    const run = () => {
+      const f = $('#w-tf').value, now = new Date();
+      $('#w-tf-c').innerHTML = mdCode(`from datetime import datetime\nprint(datetime.now().strftime("${f.replace(/"/g, '\\"')}"))`, 'python');
+      $('#w-tf-o').textContent = f.replace(/%(.)/g, (m, c) => F[c] ? F[c](now) : m);
+    };
+    $('#w-tf').oninput = run;
+    $('#w-tf-p').onclick = e => { const b = e.target.closest('button'); if (b) { $('#w-tf').value = b.dataset.f; run(); } };
+    el._reset = () => { $('#w-tf').value = presets[0]; run(); }; run();
+  },
+  // type a path and see what os.path makes of it
+  pathviz(el) {
+    el.innerHTML = `<p class="wgt">Try it: split a path</p>
+      <div class="wgrow"><label>path <input id="w-pv" value="data/images/cat01.png" maxlength="60" style="width:300px"></label></div>
+      <div class="wgtable mono" id="w-pv-r"></div>`;
+    const run = () => {
+      const p = $('#w-pv').value, i = p.lastIndexOf('/'), base = p.slice(i + 1), dir = i < 0 ? '' : p.slice(0, i);
+      const d = base.lastIndexOf('.'), root = d > 0 ? base.slice(0, d) : base, ext = d > 0 ? base.slice(d) : '';
+      const row = (c, r) => `<div><code>${mdEsc(c)}</code><span class="ok">${mdEsc(r)}</span></div>`;
+      $('#w-pv-r').innerHTML = row('os.path.basename(path)', `'${base}'`) + row('os.path.dirname(path)', `'${dir}'`)
+        + row('os.path.splitext(path)', `('${dir ? dir + '/' : ''}${root}', '${ext}')`) + row('os.path.isabs(path)', /^\//.test(p) || /^[A-Za-z]:[\\/]/.test(p) ? 'True' : 'False');
+    };
+    $('#w-pv').oninput = run; el._reset = () => { $('#w-pv').value = 'data/images/cat01.png'; run(); }; run();
+  },
+  // type a command line and see the list sys.argv that the script receives
+  argvviz(el) {
+    el.innerHTML = `<p class="wgt">Try it: run a script</p>
+      <div class="wgrow"><label>terminal <input id="w-av" value='python train.py --epochs 10 "my data.csv"' maxlength="80" style="width:360px"></label></div>
+      <div class="wgtable mono" id="w-av-r"></div>`;
+    const run = () => {
+      const t = [...$('#w-av').value.matchAll(/"([^"]*)"|'([^']*)'|(\S+)/g)].map(m => m[1] ?? m[2] ?? m[3]);
+      const a = /^(python3?|py)$/.test(t[0] || '') ? t.slice(1) : t;
+      const row = (c, r, bad) => `<div><code>${mdEsc(c)}</code><span class="${bad ? 'bad' : 'ok'}">${mdEsc(r)}</span></div>`;
+      $('#w-av-r').innerHTML = row('sys.argv', '[' + a.map(x => `'${x}'`).join(', ') + ']') + row('len(sys.argv)', String(a.length))
+        + (a.length ? row('sys.argv[0]', `'${a[0]}'  (the script itself)`) + row('sys.argv[1:]', '[' + a.slice(1).map(x => `'${x}'`).join(', ') + ']') : '')
+        + row(`sys.argv[${a.length}]`, 'IndexError: list index out of range', true);
+    };
+    $('#w-av').oninput = run; el._reset = () => { $('#w-av').value = 'python train.py --epochs 10 "my data.csv"'; run(); }; run();
+  },
+  // a 3 x 4 NumPy array and what each common operation does to it
+  arrayviz(el) {
+    const A = [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]], add = [10, 20, 30, 40];
+    const sum = r => r.reduce((x, y) => x + y, 0);
+    const ops = [
+      ['a * 2', () => ({ g: A.map(r => r.map(v => v * 2)) })],
+      ['a + [10, 20, 30, 40]', () => ({ g: A.map(r => r.map((v, j) => v + add[j])) })],
+      ['a > 6', () => ({ g: A.map(r => r.map(v => v > 6)), b: 1 })],
+      ['a[a > 6]', () => ({ row: A.flat().filter(v => v > 6) })],
+      ['a[1, 2]', () => ({ val: A[1][2] })],
+      ['a[:, 1]', () => ({ row: A.map(r => r[1]) })],
+      ['a.sum()', () => ({ val: sum(A.flat()) })],
+      ['a.sum(axis=0)', () => ({ row: add.map((_, j) => A.reduce((s, r) => s + r[j], 0)) })],
+      ['a.sum(axis=1)', () => ({ row: A.map(sum) })],
+      ['a.mean()', () => ({ val: sum(A.flat()) / 12 })],
+      ['a.T', () => ({ g: add.map((_, j) => A.map(r => r[j])) })],
+      ['a.shape', () => ({ val: '(3, 4)' })],
+    ];
+    const grid = (g, b) => `<div class="agrid" style="grid-template-columns:repeat(${g[0].length},auto)">${g.flat().map(v => `<i${b ? ` class="${v ? 't' : 'f'}"` : ''}>${b ? (v ? 'True' : 'False') : v}</i>`).join('')}</div>`;
+    el.innerHTML = `<p class="wgt">Try it: do maths on an array</p>
+      <figure class="code"><figcaption>python</figcaption><pre><code>${mdCode('a = np.arange(1, 13).reshape(3, 4)', 'python')}</code></pre></figure>
+      <p class="wgsay">a is</p>${grid(A)}
+      <div class="wgrow" id="w-ar-b">${ops.map((o, i) => `<button type="button" class="seg2${i ? '' : ' on'}" data-i="${i}">${mdEsc(o[0])}</button>`).join('')}</div>
+      <p class="wgsay" id="w-ar-c"></p><div id="w-ar-o"></div>`;
+    const run = i => {
+      $$('#w-ar-b button').forEach(b => b.classList.toggle('on', +b.dataset.i === i));
+      const r = ops[i][1]();
+      $('#w-ar-c').innerHTML = `<code>${mdEsc(ops[i][0])}</code> gives`;
+      $('#w-ar-o').innerHTML = r.g ? grid(r.g, r.b) : r.row ? `<div class="agrid" style="grid-template-columns:repeat(${r.row.length},auto)">${r.row.map(v => `<i>${v}</i>`).join('')}</div>` : `<div class="agrid"><i>${r.val}</i></div>`;
+    };
+    $('#w-ar-b').onclick = e => { const b = e.target.closest('button'); if (b) run(+b.dataset.i); };
+    el._reset = () => run(0); run(0);
+  },
+  // a small DataFrame (iris-style) and what filter, sort and groupby do to it
+  dfviz(el) {
+    const H = ['sepal_length', 'petal_length', 'species'];
+    const R = [[5.1, 1.4, 'setosa'], [4.9, 1.4, 'setosa'], [4.7, 1.3, 'setosa'], [7.0, 4.7, 'versicolor'], [6.4, 4.5, 'versicolor'], [6.9, 4.9, 'versicolor'], [6.3, 6.0, 'virginica'], [5.8, 5.1, 'virginica'], [7.1, 5.9, 'virginica']];
+    const full = idx => idx.map(i => [i, R[i][0].toFixed(1), R[i][1].toFixed(1), R[i][2]]);
+    const all = R.map((_, i) => i), sp = ['setosa', 'versicolor', 'virginica'];
+    const ops = [
+      ['df', () => ({ h: ['', ...H], r: full(all) })],
+      ['df["species"]', () => ({ h: ['', 'species'], r: all.map(i => [i, R[i][2]]) })],
+      ['df[df["petal_length"] > 4.5]', () => ({ h: ['', ...H], r: full(all.filter(i => R[i][1] > 4.5)) })],
+      ['df.sort_values("petal_length", ascending=False)', () => ({ h: ['', ...H], r: full([...all].sort((a, b) => R[b][1] - R[a][1])) })],
+      ['df.groupby("species").mean()', () => ({ h: ['species', 'sepal_length', 'petal_length'], r: sp.map(s => { const g = R.filter(x => x[2] === s); return [s, (g.reduce((t, x) => t + x[0], 0) / g.length).toFixed(6), (g.reduce((t, x) => t + x[1], 0) / g.length).toFixed(6)]; }) })],
+      ['df["species"].value_counts()', () => ({ h: ['species', 'count'], r: sp.map(s => [s, R.filter(x => x[2] === s).length]) })],
+    ];
+    el.innerHTML = `<p class="wgt">Try it: ask the table a question</p>
+      <figure class="code"><figcaption>python</figcaption><pre><code>${mdCode('import pandas as pd\ndf = pd.read_csv("iris_small.csv")', 'python')}</code></pre></figure>
+      <div class="tpj" id="w-df-b">${ops.map((o, i) => `<button type="button" class="tpb${i ? '' : ' on'}" data-i="${i}">${mdEsc(o[0])}</button>`).join('')}</div>
+      <div class="dfw"><table class="dft" id="w-df"></table></div>`;
+    const run = i => {
+      $$('#w-df-b button').forEach(b => b.classList.toggle('on', +b.dataset.i === i));
+      const o = ops[i][1]();
+      $('#w-df').innerHTML = `<tr>${o.h.map(x => `<th>${x}</th>`).join('')}</tr>` + o.r.map(r => `<tr>${r.map((v, k) => `<td${k ? '' : ' class="ix"'}>${v}</td>`).join('')}</tr>`).join('');
+    };
+    $('#w-df-b').onclick = e => { const b = e.target.closest('button'); if (b) run(+b.dataset.i); };
+    el._reset = () => run(0); run(0);
+  },
+  // the same data drawn as a line, bars, dots or a histogram, in the same clean style as the MLP diagrams, with the data table and the matplotlib code
+  plotbuilder(el) {
+    const X = [1, 2, 3, 4, 5, 6], Y = [52, 58, 65, 70, 78, 85];
+    const S = [48, 52, 55, 58, 60, 62, 64, 65, 66, 68, 70, 71, 73, 75, 78, 80, 84, 88, 90, 95];
+    let kind = 'plot', lab = true, grid = true;
+    const names = { plot: 'Line', bar: 'Bar', scatter: 'Scatter', hist: 'Histogram' };
+    el.innerHTML = `<p class="wgt">Try it: pick a plot</p>
+      <div class="wgrow" id="w-pb-k">${Object.keys(names).map(k => `<button type="button" class="seg2${k === 'plot' ? ' on' : ''}" data-k="${k}">${names[k]}</button>`).join('')}<button type="button" class="seg2 on" data-t="lab">Title and labels</button><button type="button" class="seg2 on" data-t="grid">Grid</button></div>
+      <div class="nndiag" id="w-pb-s"></div>
+      <div class="afrow" id="w-pb-t"></div>
+      <figure class="code"><figcaption>python</figcaption><pre><code id="w-pb-o"></code></pre></figure>`;
+    const draw = () => {
+      const w = 480, h = 230, padL = 46, padR = 18, padT = lab ? 30 : 14, padB = lab ? 40 : 26;
+      const x0 = padL, x1 = w - padR, y0 = h - padB, y1 = padT, hist = kind === 'hist';
+      let xmin = 0.5, xmax = 6.5, ymax = 100, bins = [], lo = 0, bw = 0;
+      if (hist) {
+        lo = Math.min(...S); const hi = Math.max(...S); bw = (hi - lo) / 5; bins = Array(5).fill(0);
+        S.forEach(v => bins[Math.min(4, Math.floor((v - lo) / bw))]++);
+        xmin = lo; xmax = hi; ymax = Math.max(...bins) + 1;
+      }
+      const xAt = v => x0 + (v - xmin) / (xmax - xmin) * (x1 - x0), yAt = v => y0 - v / ymax * (y0 - y1);
+      const yT = hist ? [...Array(ymax + 1).keys()].filter(v => v % 2 === 0) : [0, 20, 40, 60, 80, 100];
+      const xT = hist ? [0, 1, 2, 3, 4, 5].map(i => +(lo + i * bw).toFixed(1)) : X;
+      const gridL = grid ? xT.map(t => `<line x1="${xAt(t)}" y1="${y1}" x2="${xAt(t)}" y2="${y0}" stroke="var(--s0)"/>`).join('') + yT.map(t => `<line x1="${x0}" y1="${yAt(t)}" x2="${x1}" y2="${yAt(t)}" stroke="var(--s0)"/>`).join('') : '';
+      const xl = xT.map(t => `<text x="${xAt(t)}" y="${y0 + 14}" text-anchor="middle" font-size="9" fill="var(--o0)">${t}</text>`).join('');
+      const yl = yT.map(t => `<text x="${x0 - 8}" y="${yAt(t) + 3}" text-anchor="end" font-size="9" fill="var(--o0)">${t}</text>`).join('');
+      let mark = '';
+      if (kind === 'plot') mark = `<polyline points="${X.map((x, i) => `${xAt(x)},${yAt(Y[i])}`).join(' ')}" fill="none" stroke="var(--mauve)" stroke-width="1.5"/>`;
+      if (kind === 'bar') mark = X.map((x, i) => `<rect x="${xAt(x - 0.4)}" y="${yAt(Y[i])}" width="${xAt(x + 0.4) - xAt(x - 0.4)}" height="${y0 - yAt(Y[i])}" fill="var(--mauve)" opacity=".85"/>`).join('');
+      if (kind === 'scatter') mark = X.map((x, i) => `<circle cx="${xAt(x)}" cy="${yAt(Y[i])}" r="3.5" fill="var(--mauve)"/>`).join('');
+      if (hist) mark = bins.map((n, i) => `<rect x="${xAt(lo + i * bw) + 1}" y="${yAt(n)}" width="${xAt(lo + (i + 1) * bw) - xAt(lo + i * bw) - 2}" height="${y0 - yAt(n)}" fill="var(--mauve)" opacity=".85"/>`).join('');
+      const T = hist ? 'Spread of scores' : 'Score vs study hours', XL = hist ? 'Score' : 'Hours studied', YL = hist ? 'Students' : 'Score';
+      const labels = lab ? `<text x="${(x0 + x1) / 2}" y="14" text-anchor="middle" font-size="11" fill="var(--text)">${T}</text>
+        <text x="${(x0 + x1) / 2}" y="${h - 4}" text-anchor="middle" font-size="10" fill="var(--o1)">${XL}</text>
+        <text x="12" y="${(y0 + y1) / 2}" text-anchor="middle" font-size="10" fill="var(--o1)" transform="rotate(-90 12 ${(y0 + y1) / 2})">${YL}</text>` : '';
+      $('#w-pb-s').innerHTML = `<svg viewBox="0 0 ${w} ${h}" width="100%" height="${h}">${gridL}
+        <line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y0}" stroke="var(--s1)"/><line x1="${x0}" y1="${y1}" x2="${x0}" y2="${y0}" stroke="var(--s1)"/>
+        ${mark}${xl}${yl}${labels}</svg>`;
+      $('#w-pb-t').innerHTML = hist
+        ? bins.map((n, i) => `<div><span>${(lo + i * bw).toFixed(1)} to ${(lo + (i + 1) * bw).toFixed(1)}</span><small>students</small><b>${n}</b></div>`).join('')
+        : X.map((x, i) => `<div><span>${x} ${x === 1 ? 'hour' : 'hours'}</span><small>score</small><b>${Y[i]}</b></div>`).join('');
+      const data = hist ? 'scores = [48, 52, 55, ..., 95]    # 20 test scores' : 'x = [1, 2, 3, 4, 5, 6]\ny = [52, 58, 65, 70, 78, 85]';
+      const call = hist ? 'plt.hist(scores, bins=5)' : `plt.${kind}(x, y)`;
+      $('#w-pb-o').innerHTML = mdCode(`import matplotlib.pyplot as plt\n\n${data}\n\n${call}` + (lab ? `\nplt.title("${T}")\nplt.xlabel("${XL}")\nplt.ylabel("${YL}")` : '') + (grid ? '\nplt.grid(True)' : '') + '\nplt.show()', 'python');
+    };
+    $('#w-pb-k').onclick = e => {
+      const b = e.target.closest('button'); if (!b) return;
+      if (b.dataset.k) { kind = b.dataset.k; $$('#w-pb-k [data-k]').forEach(x => x.classList.toggle('on', x === b)); }
+      else if (b.dataset.t === 'lab') { lab = !lab; b.classList.toggle('on', lab); } else { grid = !grid; b.classList.toggle('on', grid); }
+      draw();
+    };
+    el._reset = () => { kind = 'plot'; lab = grid = true; $$('#w-pb-k button').forEach(x => x.classList.toggle('on', x.dataset.k === 'plot' || !!x.dataset.t)); draw(); }; draw();
+  },
   // pick the error message you are seeing, get the cause and the fix
   errorfix(el) {
     const E = [
@@ -2007,7 +2316,7 @@ const widgets = {
   // fill in the blanks of an f-string and watch the sentence change
   fstring(el) {
     el.innerHTML = `<p class="wgt">Try it: fill in the blanks</p>
-      <div class="wgrow"><label>name <input id="w-name" value="Mint" maxlength="14"></label><label>score <input id="w-score" type="number" value="95"></label></div>
+      <div class="wgrow"><label>name <input id="w-name" value="Falcons" maxlength="14"></label><label>score <input id="w-score" type="number" value="95"></label></div>
       <figure class="code"><figcaption>python</figcaption><pre><code id="w-code"></code></pre></figure>
       <p class="wgo">Screen shows: <b id="w-out"></b></p>`;
     const run = () => {
