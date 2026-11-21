@@ -85,6 +85,18 @@ A tree with no depth limit can keep splitting until every training example has i
 
 **K-nearest neighbours** has no training step at all. To classify a new point it finds the K closest training points (K = 5 in the diagram) and goes with the majority vote. The data itself is the model. That makes it easy to understand but slow on big datasets, and sensitive to noisy points sitting near the boundary.
 
+## Several classes at once: progress bars or a pie?
+
+When there are more than two classes, the output layer has to turn its raw scores into answers, and there are two common ways.
+
+> [!compare] **Sigmoid is a row of separate progress bars.** Every class gets its own 0 to 100% bar. "Cat" can be 90% full and "Dog" 85% full at the same time, and neither steals from the other. **Softmax is one pie chart.** There is a fixed 100% to share, so if "Cat" takes 80%, "Dog" and "Bird" have to split the remaining 20%.
+
+Use separate sigmoids when an example can belong to several classes at once (a photo tagged both "beach" and "dog"). Use softmax when exactly one class is right (this digit is a 7, not a 7 and a 1).
+
+### Why classifiers use cross-entropy, not squared error
+
+Squared error works for predicting numbers, but pair it with a sigmoid output and a trap appears: when the neuron is confidently *wrong*, it sits on the flat tail of the sigmoid, where the slope is almost zero, so the weight updates are tiny and learning crawls exactly when it most needs to hurry. **Cross-entropy** is a loss designed so that slope cancels out: the more wrong the neuron is, the bigger the correction. It is the default loss for classification for that reason.
+
 ## Try it
 
 1. In the first diagram pick "Two clusters" and cycle through all four classifiers. Which ones draw nearly the same boundary? Why?
@@ -93,6 +105,7 @@ A tree with no depth limit can keep splitting until every training example has i
 4. In the logistic regression diagram, drag the threshold to 0.9. Which examples flip from "pass" to "fail"? For a fraud detector where missing fraud is costly, would you raise or lower the threshold?
 5. In the SVM diagram, shrink the margin to 0. Does the separating line itself move?
 6. In the tree diagram, trace the path for someone aged 35 with an income of 40k. What is the prediction, and why would an unlimited-depth tree eventually reach 100% training accuracy?
+7. A model reads a photo and must name the one animal in it: cat, dog or bird. Would you end it with separate sigmoids or a softmax, and why? What if the photo can contain several animals at once?
 
 ## Quick recap
 

@@ -11,6 +11,10 @@ summary: Recurrent networks, long short-term memory and gated recurrent units: a
 
 At every timestep, an RNN takes the current input **and** its own previous hidden state, and produces a new hidden state. The same small set of weights is reused at every step, that is what "recurrent" means.
 
+Why are loops allowed here when the MLP chapter banned them? Because of time. A neuron whose output fed its own input at the *same* instant would have no answer. In an RNN, an output only affects the input at a *later* step, never instantly, so a loop is perfectly fine.
+
+**When to reach for one:** whenever each step brings new information that depends on what just happened: live sensor readings, audio waveforms, stock prices, the words of a sentence. Feeding the previous hidden state forward is the short-term memory that links one timestamp to the next.
+
 ## Watching memory fade: the vanishing gradient problem
 
 ```widget

@@ -46,6 +46,10 @@ const SPRITE = `
 <symbol id="i-arrow-up-right" viewBox="0 0 256 256"><path d="M200,64V168a8,8,0,0,1-16,0V83.31L69.66,197.66a8,8,0,0,1-11.32-11.32L172.69,72H88a8,8,0,0,1,0-16H192A8,8,0,0,1,200,64Z"/></symbol>
 <symbol id="i-buildings" viewBox="0 0 256 256"><path d="M240,208H224V96a16,16,0,0,0-16-16H144V32a16,16,0,0,0-24.88-13.32L39.12,72A16,16,0,0,0,32,85.34V208H16a8,8,0,0,0,0,16H240a8,8,0,0,0,0-16ZM208,96V208H144V96ZM48,85.34,128,32V208H48ZM112,112v16a8,8,0,0,1-16,0V112a8,8,0,1,1,16,0Zm-32,0v16a8,8,0,0,1-16,0V112a8,8,0,1,1,16,0Zm0,56v16a8,8,0,0,1-16,0V168a8,8,0,0,1,16,0Zm32,0v16a8,8,0,0,1-16,0V168a8,8,0,0,1,16,0Z"/></symbol>
 <symbol id="i-lightning" viewBox="0 0 256 256"><path d="M215.79,118.17a8,8,0,0,0-5-5.66L153.18,90.9l14.66-73.33a8,8,0,0,0-13.69-7l-112,120a8,8,0,0,0,3,13l57.63,21.61L88.16,238.43a8,8,0,0,0,13.69,7l112-120A8,8,0,0,0,215.79,118.17ZM109.37,214l10.47-52.38a8,8,0,0,0-5-9.06L62,132.71l84.62-90.66L136.16,94.43a8,8,0,0,0,5,9.06l52.8,19.8Z"/></symbol>
+<symbol id="i-play" viewBox="0 0 256 256"><path d="M72,36 L224,128 L72,220Z" stroke="currentColor" stroke-width="16" stroke-linejoin="round"/></symbol>
+<symbol id="i-pause" viewBox="0 0 256 256"><path d="M56,40h56v176H56zM144,40h56v176h-56z" stroke="currentColor" stroke-width="12" stroke-linejoin="round"/></symbol>
+<symbol id="i-skip-forward" viewBox="0 0 256 256"><path d="M48,40 L176,128 L48,216Z" stroke="currentColor" stroke-width="12" stroke-linejoin="round"/><path d="M196,40h24v176h-24z"/></symbol>
+<symbol id="i-reset" viewBox="0 0 256 256"><path fill="none" stroke="currentColor" stroke-width="22" stroke-linecap="round" d="M72,100 A64,64 0 1 1 72,156"/><path d="M28,108h84L70,44Z"/></symbol>
 <symbol id="i-flask" viewBox="0 0 256 256"><path d="M221.69,199.77,160,96.92V40h8a8,8,0,0,0,0-16H88a8,8,0,0,0,0,16h8V96.92L34.31,199.77A16,16,0,0,0,48,224H208a16,16,0,0,0,13.72-24.23ZM110.86,103.25A7.93,7.93,0,0,0,112,99.14V40h32V99.14a7.93,7.93,0,0,0,1.14,4.11L183.36,167c-12,2.37-29.07,1.37-51.75-10.11-15.91-8.05-31.05-12.32-45.22-12.81ZM48,208l28.54-47.58c14.25-1.74,30.31,1.85,47.82,10.72,19,9.61,35,12.88,48,12.88a69.89,69.89,0,0,0,19.55-2.7L208,208Z"/></symbol>
 <symbol id="i-heart" viewBox="0 0 256 256"><path d="M178,40c-20.65,0-38.73,8.88-50,23.89C116.73,48.88,98.65,40,78,40a62.07,62.07,0,0,0-62,62c0,70,103.79,126.66,108.21,129a8,8,0,0,0,7.58,0C136.21,228.66,240,172,240,102A62.07,62.07,0,0,0,178,40ZM128,214.8C109.74,204.16,32,155.69,32,102A46.06,46.06,0,0,1,78,56c19.45,0,35.78,10.36,42.6,27a8,8,0,0,0,14.8,0c6.82-16.67,23.15-27,42.6-27a46.06,46.06,0,0,1,46,46C224,155.61,146.24,204.15,128,214.8Z"/></symbol>
 <symbol id="i-gear-six" viewBox="0 0 256 256"><path d="M128,80a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Zm109.94-52.79a8,8,0,0,0-3.89-5.4l-29.83-17-.12-33.62a8,8,0,0,0-2.83-6.08,111.91,111.91,0,0,0-36.72-20.67,8,8,0,0,0-6.46.59L128,41.85,97.88,25a8,8,0,0,0-6.47-.6A112.1,112.1,0,0,0,54.73,45.15a8,8,0,0,0-2.83,6.07l-.15,33.65-29.83,17a8,8,0,0,0-3.89,5.4,106.47,106.47,0,0,0,0,41.56,8,8,0,0,0,3.89,5.4l29.83,17,.12,33.62a8,8,0,0,0,2.83,6.08,111.91,111.91,0,0,0,36.72,20.67,8,8,0,0,0,6.46-.59L128,214.15,158.12,231a7.91,7.91,0,0,0,3.9,1,8.09,8.09,0,0,0,2.57-.42,112.1,112.1,0,0,0,36.68-20.73,8,8,0,0,0,2.83-6.07l.15-33.65,29.83-17a8,8,0,0,0,3.89-5.4A106.47,106.47,0,0,0,237.94,107.21Zm-15,34.91-28.57,16.25a8,8,0,0,0-3,3c-.58,1-1.19,2.06-1.81,3.06a7.94,7.94,0,0,0-1.22,4.21l-.15,32.25a95.89,95.89,0,0,1-25.37,14.3L134,199.13a8,8,0,0,0-3.91-1h-.19c-1.21,0-2.43,0-3.64,0a8.08,8.08,0,0,0-4.1,1l-28.84,16.1A96,96,0,0,1,67.88,201l-.11-32.2a8,8,0,0,0-1.22-4.22c-.62-1-1.23-2-1.8-3.06a8.09,8.09,0,0,0-3-3.06l-28.6-16.29a90.49,90.49,0,0,1,0-28.26L61.67,97.63a8,8,0,0,0,3-3c.58-1,1.19-2.06,1.81-3.06a7.94,7.94,0,0,0,1.22-4.21l.15-32.25a95.89,95.89,0,0,1,25.37-14.3L122,56.87a8,8,0,0,0,4.1,1c1.21,0,2.43,0,3.64,0a8.08,8.08,0,0,0,4.1-1l28.84-16.1A96,96,0,0,1,188.12,55l.11,32.2a8,8,0,0,0,1.22,4.22c.62,1,1.23,2,1.8,3.06a8.09,8.09,0,0,0,3,3.06l28.6,16.29A90.49,90.49,0,0,1,222.9,142.12Z"/></symbol>
@@ -64,6 +68,7 @@ const HEADER = `
       <a href="work.html">Work</a>
       <a href="roadmap.html">Roadmap</a>
       <a href="tools.html">Tools</a>
+      <a href="playground.html">Playground</a>
       <a href="about.html">About</a>
       <a href="about.html#changelog">Changelog</a>
     </nav>
@@ -85,6 +90,7 @@ const ACT_REST = `
     <a href="work.html" title="Work" aria-label="Work"><svg class="i"><use href="#i-toolbox"/></svg></a>
     <a href="roadmap.html" title="Roadmap" aria-label="Roadmap"><svg class="i"><use href="#i-map-trifold"/></svg></a>
     <a href="tools.html" title="Tools" aria-label="Tools"><svg class="i"><use href="#i-wrench"/></svg></a>
+    <a href="playground.html" title="Playground" aria-label="Playground"><svg class="i"><use href="#i-flask"/></svg></a>
     <span class="gap"></span>
     <a href="major.html" title="About the major" aria-label="About the major"><svg class="i"><use href="#i-graduation-cap"/></svg></a>
     <a href="projects.html" title="Projects" aria-label="Projects"><svg class="i"><use href="#i-cube"/></svg></a>
@@ -179,7 +185,7 @@ const notes = [
   ['Research','lightbulb','sapphire',['Coming soon'],'M.6 Capstone'],
   ['Final Project','sparkle','flamingo',['Coming soon'],'M.6 Capstone'],
 ];
-const pages = [['Home','index.html','house'],['Tools','tools.html','wrench'],['Work','work.html','toolbox'],['Roadmap','roadmap.html','map-trifold'],['About Coder','about.html','info'],['About the major','major.html','graduation-cap'],['Projects','projects.html','cube'],['Materials','materials.html','books'],['Changelog','about.html#changelog','clock']];
+const pages = [['Home','index.html','house'],['Tools','tools.html','wrench'],['Playground','playground.html','flask'],['Work','work.html','toolbox'],['Roadmap','roadmap.html','map-trifold'],['About Coder','about.html','info'],['About the major','major.html','graduation-cap'],['Projects','projects.html','cube'],['Materials','materials.html','books'],['Changelog','about.html#changelog','clock']];
 const $ = s => document.querySelector(s), $$ = s => document.querySelectorAll(s);
 const esc = s => s.replace(/&/g,'&amp;');
 const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');

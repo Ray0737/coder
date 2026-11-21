@@ -35,7 +35,7 @@ Each layer refines the representation. Generating a paragraph means running this
 tokenplay
 ```
 
-Every candidate next word gets a score (a **logit**), and those scores get turned into probabilities. The **temperature** slider controls how sharply the model commits to its favourite: low temperature almost always picks the top word, high temperature flattens the odds so less likely words get a real chance. Press "Generate" a few times at different temperatures and watch the kind of sentence that builds up.
+Every candidate next word gets a score (a **logit**), and those scores get turned into probabilities by **softmax**, the "one pie to share" function from the Classification chapter: every candidate word gets a slice, and the slices always add up to 100%. The **temperature** slider controls how sharply the model commits to its favourite: low temperature almost always picks the top word, high temperature flattens the odds so less likely words get a real chance. Press "Generate" a few times at different temperatures and watch the kind of sentence that builds up.
 
 ## Fine-tuning and RLHF
 

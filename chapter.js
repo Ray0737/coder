@@ -1108,14 +1108,6 @@ ntoggle.onclick = () => {
   }
   paintToggle();
 };
-// the "Open note" button in the card at the end of a chapter: show the note panel (or slide it in) and start typing
-function openNote() {
-  if (chap.classList.contains('narrow')) chap.classList.add('drawer');
-  else chap.classList.remove('nonote');
-  paintToggle();
-  const mn = $('#mn');
-  if (mn && !mn.hidden) mn.focus();
-}
 new ResizeObserver(fit).observe(cview);
 fit();
 
@@ -1153,13 +1145,11 @@ async function loadChapter() {
     <div class="cta">
       <div class="ctat"><b>Finished this chapter?</b><span>Jot it down, tick it off, then keep going.</span></div>
       <div class="ctab">
-        ${prev ? `<a class="btn ghost prevbtn" href="${to(prev)}">${icon('caret-left')}Previous: ${esc(prev.n)}</a>` : ''}
-        <button class="btn ghost" id="opennote" type="button">${icon('notebook')}Open note</button>
+        ${prev ? `<a class="btn danger prevbtn" href="${to(prev)}">${icon('caret-left')}Previous: ${esc(prev.n)}</a>` : ''}
         <button class="btn ghost" id="mark" type="button"></button>
         ${next ? `<a class="btn" href="${to(next)}"><span>Next: ${esc(next.n)}</span>${icon('caret-right')}</a>` : `<a class="btn" href="roadmap.html"><span>Roadmap</span>${icon('caret-right')}</a>`}
       </div>
     </div>`;
-  $('#opennote').onclick = openNote;
   Object.assign(widgets, window.moreWidgets || {});
   $$('[data-widget]').forEach(el => widgets[el.dataset.widget] && widgets[el.dataset.widget](el));
   const mark = $('#mark'), topmark = $('#topmark');

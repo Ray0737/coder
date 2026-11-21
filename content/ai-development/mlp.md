@@ -19,6 +19,12 @@ z = w₁x₁ + w₂x₂ + w₃x₃ + bias
 perceptron
 ```
 
+### Bias: how easy it is to fire
+
+Think of the bias as how eager the neuron is to say yes. A big positive bias and it fires on almost any evidence. A very negative bias and it needs overwhelming evidence before it fires. It is the old "is the sum above some threshold?" rule with the threshold moved to the other side: `w·x > threshold` becomes `w·x + b > 0`, with `b = −threshold`.
+
+**Fun fact:** the perceptron comes from the late 1950s, when Frank Rosenblatt built on the 1943 artificial neuron of McCulloch and Pitts. One perceptron can already act as a logic gate (AND, OR, NAND, the building blocks of every computer). But it can only draw a single straight line, so it cannot learn XOR ("one or the other, but not both"), a limit famously pointed out in 1969 by Minsky and Papert. Stacking neurons into layers is the way out.
+
 ## Multi-layer perceptron: input, hidden, output
 
 "Multi-layer" just means several of these voting booths, arranged in columns. Data flows one way, left to right.
@@ -34,6 +40,15 @@ mlpdiagram
 ```
 
 Every line in that picture is one weight. A small network like this already has dozens of them, which is why training is just "adjust every line a little, many times."
+
+### Which way does the data flow?
+
+| Type | Loops? | Good for |
+|---|---|---|
+| Feedforward (this chapter) | None. Information only moves forward, never back. | Fixed-size inputs: a row of numbers, the pixels of one image |
+| Recurrent (RNN) | Yes. An output is fed back in, one step later. | Ordered data: audio, sensor readings, words in a sentence |
+
+A loop within a single instant would have no answer, because a neuron's input would depend on its own output. A recurrent network gets away with it because the feedback only arrives at the *next* time step. The RNN chapter picks this up.
 
 ## Deep learning is part of ML
 
@@ -59,6 +74,14 @@ activationfunctions
 - **tanh** is Sigmoid shifted to −1…1, so it can push a signal down as well as up.
 - **ReLU** is the lazy one: negative becomes 0, positive passes straight through. It is cheap to compute and the default choice in most hidden layers today.
 
+### Why the smooth ones won
+
+With a hard step, a tiny nudge to one weight can flip a neuron from 0 to 1, and that flip can change how the whole network treats every *other* example. You fix your "9" and quietly break the "4"s. A sigmoid is a smoothed-out step: a tiny nudge to a weight makes a tiny change to the output, so training can improve a little at a time.
+
+> [!aha] Learning needs "small nudge in, small change out". A hard step breaks that rule. The smooth curves, and ReLU, which bends but never jumps, keep it.
+
+Two name traps worth knowing, since papers use them freely: the sigmoid is also called the **logistic function** (so a "logistic neuron" is a sigmoid neuron), and a network of many layers is still called an MLP even though most of its neurons are no longer true perceptrons.
+
 ## Training: backpropagation, in one line
 
 > [!aha] Backpropagation is grading a group project from the end backwards: the final answer was wrong, so you ask "which step contributed most to that?", walk back through the layers, and nudge every weight that played a part.
@@ -70,6 +93,23 @@ activationfunctions
 5. Repeat, for every example, for many **epochs**.
 
 That nudge is controlled by the **learning rate**: too big and training overshoots and never settles, too small and it crawls.
+
+**Fun fact:** the idea of backpropagation was around in the 1970s, but nobody paid much attention until a 1986 paper by Rumelhart, Hinton and Williams showed it made multi-layer networks learn far faster than earlier methods, and let them solve problems that had been out of reach. It is still the workhorse of neural-network learning today.
+
+### Math level: the four steps with symbols
+
+Here `a` is a layer's output, `z` is its weighted sum, `δ` is "how much this layer is to blame", and `σ′` is the slope of the activation.
+
+```
+1. Input:        set the first layer's a to the data
+2. Feedforward:  for each layer,  z = w · a(previous) + b,  then  a = σ(z)
+3. Output error: δ(last)  = (how wrong the output is) × σ′(z)
+4. Go backwards: δ(layer) = (next layer's weights, flipped) · δ(next layer) × σ′(z)
+
+Result:  gradient of a weight = a(previous) × δ      gradient of a bias = δ
+```
+
+In words: the blame at the end is pushed backwards through the very same weights the answer travelled forwards through, and each weight's share of the blame is how active its input was times the blame at its output.
 
 ## The rest of the toolbox
 
@@ -90,6 +130,8 @@ MNIST is a set of 70,000 small handwritten digits, 0–9, the "hello world" of d
 mnisttrainingreplay
 ```
 
+How big is this network at the edges? Each image is 28 × 28 = 784 pixels, each a greyscale value between 0 and 1, so the input layer has **784 neurons**. The output layer has **10**, one per digit. To read the answer you do not compare against a 0.5 threshold, you simply take the output neuron with the highest activation (`argmax`). The 0.5 rule is for a single yes/no output, like "is this a 9, or not?". A 64 × 64 image would need 4,096 input neurons.
+
 Three ways to look at the same run:
 
 - **Bird's Eye**: the loss curve. Train loss (solid) always falls. Validation loss (dashed) falls too, then creeps back up late: the network is starting to memorise instead of generalise. That is **overfitting**, from the earlier chapter, happening live.
@@ -102,6 +144,10 @@ Three ways to look at the same run:
 2. In the activation widget, compare Sigmoid and ReLU for the Dubai score (8). Which one keeps almost all of that score, and which one squashes it down?
 3. Scrub the MNIST replay to epoch 1, then epoch 100. Describe in one sentence what changed on each of the three views.
 4. Scrub past epoch 55 on Bird's Eye. Why does the validation line rise even while the train line keeps falling?
+5. You want a network to read 32 × 32 greyscale images of the 26 letters A to Z. How many input neurons and how many output neurons does it need?
+6. A step neuron and a sigmoid neuron both get a tiny nudge to one weight. Which output could jump from 0 to 1, and why does that make the step neuron hard to train?
+
+*Further reading: Michael Nielsen's free book [Neural Networks and Deep Learning](http://neuralnetworksanddeeplearning.com/) is the source of several ideas on this page.*
 
 ## Quick recap
 
