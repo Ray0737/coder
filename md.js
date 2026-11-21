@@ -30,6 +30,8 @@ const CALLOUTS = { aha: ['lightbulb', 'Aha!'], compare: ['puzzle-piece', 'Think 
 
 const tableCells = l => l.trim().replace(/^\||\|$/g, '').split('|').map(c => c.trim());
 
+// '@compare#MLP,CNN' means the site page compare (with a hash): /compare on the live site, compare.html when opened locally
+const pg = u => { if (u[0] !== '@') return u; const [p, h] = u.slice(1).split('#'); return (typeof pretty !== 'undefined' && pretty ? '/' + p : p + '.html') + (h ? '#' + h : ''); };
 function mdParse(src) {
   const meta = {};
   const fm = src.match(/^---\r?\n([\s\S]*?)\r?\n---\r?\n?/);
@@ -49,7 +51,7 @@ function mdParse(src) {
       i++;
       const lang = m[2].toLowerCase();
       if (lang === 'cta') { const rows = buf.filter(x => x.trim()).map(x => x.split('|').map(v => v.trim())), [ic, t, d] = rows[0];
-        out.push(`<div class="ctac"><span class="tmi">${icon(ic)}</span><div><b>${mdInline(t)}</b><p>${mdInline(d)}</p><div class="ctal">${rows.slice(1).map(([l, u, sub]) => `<a href="${mdEsc(u)}" target="_blank" rel="noopener"><span><b>${mdInline(l)}</b>${sub ? `<small>${mdInline(sub)}</small>` : ''}</span>${icon('arrow-up-right')}</a>`).join('')}</div></div></div>`); }
+        out.push(`<div class="ctac"><span class="tmi">${icon(ic)}</span><div><b>${mdInline(t)}</b><p>${mdInline(d)}</p><div class="ctal">${rows.slice(1).map(([l, u, sub]) => `<a href="${mdEsc(pg(u))}"${u[0] === '@' ? '' : ' target="_blank" rel="noopener"'}><span><b>${mdInline(l)}</b>${sub ? `<small>${mdInline(sub)}</small>` : ''}</span>${icon('arrow-up-right')}</a>`).join('')}</div></div></div>`); }
       else if (lang === 'terms') out.push(`<div class="tms">${buf.filter(x => x.trim()).map(x => { const i = x.indexOf('|'); return `<div class="tm"><b>${mdInline(x.slice(0, i).trim())}</b><span>${mdInline(x.slice(i + 1).trim())}</span></div>`; }).join('')}</div>`);
       else if (lang === 'cards') out.push(`<div class="pcs">${buf.filter(x => x.trim()).map(x => { const [n, f, d, p, c] = x.split('|').map(s => s.trim()); return `<div class="pc"><b class="pn">${mdInline(n)}</b><code>${mdInline(f)}</code><p>${mdInline(d)}</p><p class="pcl"><span class="pro"><em>Pros:</em> ${mdInline(p)}</span><span class="con"><em>Cons:</em> ${mdInline(c)}</span></p></div>`; }).join('')}</div>`);
       else if (lang === 'widget') out.push(`<div class="wg" data-widget="${mdEsc(buf.join('').trim())}"></div>`);

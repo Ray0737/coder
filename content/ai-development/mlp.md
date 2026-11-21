@@ -159,6 +159,12 @@ Three ways to look at the same run:
 - **Neuron Level**: ten sample digits with the model's current guess and confidence, plus a peek at 16 of the first hidden layer's neurons. Early on their weights look like static. By the later epochs, patterns appear: some neurons specialise in a stroke, a loop, a corner.
 - **Math Level**: the same formulas from this chapter (`z`, the activation, the loss, the gradient step), with this epoch's real numbers dropped in.
 
+```cta
+flask | See it for yourself | Train a small network in your browser, or put an MLP next to a CNN and compare them.
+Neural network playground | @neural-playground | Pick data, layers and settings, and watch it learn
+Neural network comparison | @compare#MLP,CNN | MLP next to a CNN
+```
+
 ## Try it
 
 1. In the perceptron widget, set all three weights to 0. What does `z` become, no matter the bias? What does that tell you about a neuron with zero weights?

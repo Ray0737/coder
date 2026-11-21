@@ -81,6 +81,11 @@ crossvalfolds
 
 Every example is in the test set exactly once, so the final score reflects the whole dataset, not one lucky or unlucky slice. The cost: the model is trained K times, once per fold. That is why cross validation is mostly used to **compare** models or settings fairly, not as the final production training run.
 
+```cta
+flask | Watch overfitting happen | Add noise, switch regularization on and off, and compare the training and test loss on a live network.
+Neural network playground | @neural-playground | Pick data, layers and settings, and watch it learn
+```
+
 ## Try it
 
 1. Drag complexity all the way to 1. Is this underfitting or overfitting? How do you know from the two numbers shown?

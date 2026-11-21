@@ -70,6 +70,11 @@ autogen
 
 Step through it and notice that word 2 isn't chosen until word 1 already exists: every step re-reads the *entire* sentence so far before adding one more word.
 
+```cta
+flask | See it for yourself | Put a Transformer next to an LSTM and compare how they work and how they score.
+Neural network comparison | @compare#LSTM,Transformer | LSTM next to a Transformer
+```
+
 ## Try it
 
 1. Click through each token as the query in the attention widget. Which word has the most spread-out attention (closest to equal weight on everything), and which has the most concentrated attention on just one other word?

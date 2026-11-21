@@ -97,6 +97,11 @@ Use separate sigmoids when an example can belong to several classes at once (a p
 
 Squared error works for predicting numbers, but pair it with a sigmoid output and a trap appears: when the neuron is confidently *wrong*, it sits on the flat tail of the sigmoid, where the slope is almost zero, so the weight updates are tiny and learning crawls exactly when it most needs to hurry. **Cross-entropy** is a loss designed so that slope cancels out: the more wrong the neuron is, the bigger the correction. It is the default loss for classification for that reason.
 
+```cta
+flask | See it for yourself | Compare classifiers, from logistic regression to an MLP, side by side on MNIST.
+Neural network comparison | @compare#Logistic%20Regression,SVM | Logistic regression next to an SVM
+```
+
 ## Try it
 
 1. In the first diagram pick "Two clusters" and cycle through all four classifiers. Which ones draw nearly the same boundary? Why?

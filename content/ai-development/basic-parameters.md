@@ -37,6 +37,11 @@ With two weights you could draw that landscape. A real network has millions, so 
 
 > [!tip] **Loss**, **cost** and **objective** function are three names for the same thing: the single number training tries to push down. Books and papers use all three.
 
+```cta
+flask | Try the settings yourself | Change the learning rate, the activation and the batch size on a live network and watch what happens to the loss.
+Neural network playground | @neural-playground | Pick data, layers and settings, and watch it learn
+```
+
 ## Try it
 
 1. If an epoch takes 1,000 examples and the batch size is 100, how many weight updates happen in one epoch?

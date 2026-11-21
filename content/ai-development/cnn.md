@@ -68,6 +68,11 @@ A real CNN runs many kernels per layer, so one layer's input of 1 image becomes 
 | Transfer learning | Hiring someone who already knows how to read, then teaching them your subject | Start from a network already trained on millions of images, and only retrain the last layer or two on your smaller dataset |
 | Data augmentation | Practicing the same move from different angles | Randomly flips, rotates, crops or recolors training images, so the network can't just memorise exact pixels |
 
+```cta
+flask | See it for yourself | Put a CNN side by side with an MLP and compare size, speed and accuracy on MNIST.
+Neural network comparison | @compare#MLP,CNN | MLP next to a CNN
+```
+
 ## Try it
 
 1. In the convolution widget, switch between "Vertical edge" and "Horizontal edge" on the same input. Why does one preset light up strongly and the other barely react, given the input is a vertical edge?

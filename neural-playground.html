@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Neural network playground · Coder</title>
+<meta name="description" content="Train a small neural network in your browser and watch it learn: pick data, features, layers and settings.">
+<meta name="theme-color" content="#11111b">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="canonical" href="https://learnc0de.vercel.app/neural-playground">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Coder">
+<meta property="og:title" content="Neural network playground · Coder">
+<meta property="og:description" content="Train a small neural network in your browser and watch it learn.">
+<meta property="og:url" content="https://learnc0de.vercel.app/neural-playground">
+<link rel="preload" href="assets/fonts/lineseedsansth_rg.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-page="playground">
+
+  <main class="ed">
+    <div class="tabs" role="tablist"><div class="tab on" role="tab" aria-selected="true"><svg class="i"><use href="#i-flask"/></svg>Neural network</div></div>
+    <div class="crumb">Coder › <a href="playground.html">Playground</a> › Neural network</div>
+    <div class="view">
+      <div class="welcome wide pg">
+        <a class="pback" href="playground.html"><svg class="i"><use href="#i-caret-left"/></svg>Playground</a>
+        <h1>Neural network playground</h1>
+        <p class="lead">Train a small neural network and watch it learn. Orange is negative, blue is positive.</p>
+
+        <div class="pgbar">
+          <div class="pgbtns"><button class="pgb" id="pg-reset" title="Reset" aria-label="Reset"><svg class="i"><use href="#i-reset"/></svg></button>
+          <button class="pgb big" id="pg-play" title="Play" aria-label="Play or pause"><svg class="i"><use href="#i-play"/></svg></button>
+          <button class="pgb" id="pg-step" title="Step one epoch" aria-label="Step"><svg class="i"><use href="#i-skip-forward"/></svg></button></div>
+          <div class="pgf ep"><span>Epoch</span><b id="pg-iter">000,000</b><small id="pg-lim">no limit</small></div>
+          <label class="pgf"><span>Stop at epoch</span><input id="pg-max" class="pgn" type="number" min="0" step="100" inputmode="numeric" placeholder="No limit"></label>
+          <label class="pgf"><span>Speed</span><select id="pg-speed"></select></label>
+          <label class="pgf"><span>Learning rate</span><select id="pg-lr"></select></label>
+          <label class="pgf"><span>Activation</span><select id="pg-act"></select></label>
+          <label class="pgf"><span>Regularization</span><select id="pg-reg"></select></label>
+          <label class="pgf"><span>Reg. rate</span><select id="pg-rr"></select></label>
+        </div>
+
+        <div class="pggrid">
+          <section class="pgc">
+            <h3>Data</h3>
+            <label class="pgf"><span>Problem</span><select id="pg-prob"></select></label>
+            <div class="pgsets" id="pg-sets"></div>
+            <label class="pgr"><span>Ratio of training to test <b><output id="pg-train-v"></output>%</b></span><input type="range" id="pg-train" min="10" max="90" step="10"></label>
+            <label class="pgr"><span>Noise <b><output id="pg-noise-v"></output></b></span><input type="range" id="pg-noise" min="0" max="50" step="5"></label>
+            <label class="pgr"><span>Batch size <b><output id="pg-batch-v"></output></b></span><input type="range" id="pg-batch" min="1" max="30" step="1"></label>
+            <button class="pgtxt" id="pg-regen"><svg class="i"><use href="#i-reset"/></svg>Regenerate data</button>
+          </section>
+
+          <section class="pgc pgnet">
+            <h3>Network<span class="sp"></span><span class="dim">Hidden layers</span>
+              <button class="pgs" id="pg-lminus" aria-label="Remove a hidden layer">−</button>
+              <b id="pg-layers">2</b>
+              <button class="pgs" id="pg-lplus" aria-label="Add a hidden layer">+</button>
+            </h3>
+            <div id="pg-net" class="pgnetbox"></div>
+            <div class="pgkey">
+              <span>Weight <i class="bar"></i> <em>negative to positive</em></span>
+              <span><i class="thin"></i><i class="thick"></i> Thicker line means a larger weight</span>
+              <span><i class="sq"></i> Small square is the neuron's bias</span>
+            </div>
+            <div class="pgtip" id="pg-tip" hidden></div>
+            <div class="pgedit" id="pg-edit" hidden><input type="text" inputmode="decimal" aria-label="Weight"></div>
+          </section>
+
+          <section class="pgc">
+            <h3>Output</h3>
+            <div class="pgloss"><span>Test loss <b id="pg-le">0.000</b></span><span>Training loss <b id="pg-lt">0.000</b></span></div>
+            <canvas id="pg-main" width="400" height="442"></canvas>
+            <div class="pgchk">
+              <label><input type="checkbox" id="pg-test">Show test data</label>
+              <label><input type="checkbox" id="pg-disc">Discretize output</label>
+              <label><input type="checkbox" id="pg-wv" checked>Show weight values on lines</label>
+            </div>
+            <div class="pgleg"><span><i style="background:#89b4fa"></i>Training loss</span><span><i style="background:#fab387"></i>Test loss</span></div>
+            <canvas id="pg-chart" width="640" height="340"></canvas>
+          </section>
+        </div>
+
+        <p class="note wide pgcredit">Hover a neuron to see what it detects on the big picture. Click a feature to turn it on or off. Click a line to type in a weight. Simulation based on <a href="https://github.com/tensorflow/playground" target="_blank" rel="noopener">TensorFlow Playground</a> by Daniel Smilkov and Shan Carter, Apache 2.0.</p>
+      </div>
+    </div>
+  </main>
+
+<script src="shell.js"></script>
+<script src="playground.js"></script>
+</body>
+</html>

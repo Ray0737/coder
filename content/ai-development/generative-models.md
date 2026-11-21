@@ -53,6 +53,11 @@ Modern image generators combine two ideas from this chapter: a VAE (compress to 
 sdpipe
 ```
 
+```cta
+flask | See it for yourself | Compare a VAE and a GAN side by side.
+Neural network comparison | @compare#VAE,GAN | VAE next to a GAN
+```
+
 ## Try it
 
 1. In the diffusion widget, press Play and watch it run start to finish. At roughly what step does the shape become recognisable, versus still looking mostly like noise? Try a second target shape and compare.

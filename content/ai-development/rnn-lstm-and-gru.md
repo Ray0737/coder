@@ -60,6 +60,11 @@ seq2seqdemo
 
 Step through it: three input words go in, the encoder compresses them into a single context cell, then the decoder reads only that context and emits two output words, a different length, built entirely from the one summary vector.
 
+```cta
+flask | See it for yourself | Compare a simple RNN, an LSTM and a GRU side by side.
+Neural network comparison | @compare#Simple%20RNN,LSTM | RNN next to an LSTM
+```
+
 ## Try it
 
 1. In "Plain RNN" mode, note the hidden state value after the first step, then after the last step. How much smaller is it?
