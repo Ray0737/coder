@@ -56,7 +56,7 @@ with HandLandmarker.create_from_options(options) as landmarker:
             cv.circle(frame, (x, y), 4, (0, 255, 0), -1)
 ```
 
-`result.hand_landmarks[0]` is a list of 21 points for the first hand. Each has `x` and `y` as fractions from 0 to 1 of the frame size, so multiply by the width and height to get pixels. The model file `hand_landmarker.task` has to sit next to your script. The Raspberry Pi chapter shows the full version that also drives a servo.
+`result.hand_landmarks[0]` is a list of 21 points for the first hand. Each has `x` and `y` as fractions from 0 to 1 of the frame size, so multiply by the width and height to get pixels. The model file `hand_landmarker.task` has to sit next to your script.
 
 > [!warn] Like every OpenCV-to-other-library handover, the colour order matters. OpenCV gives BGR and MediaPipe expects RGB, so convert with `cv.COLOR_BGR2RGB` before you pass the frame in.
 

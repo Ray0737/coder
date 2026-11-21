@@ -906,6 +906,223 @@ const widgets = {
     $('#w-tp-jobs').onclick = e => { const b = e.target.closest('button'); if (b) run(+b.dataset.i); };
     el._reset = () => run(-1); run(-1);
   },
+  // bird's-eye view: the Pi in the middle and every part of the lab kit around it, with pins and wires
+  hwmap(el) {
+    const parts = [
+      { id: 'cam', name: 'USB webcam', side: 'L', y: 18, line: 'USB', c: 'mauve', what: 'A USB (UVC) camera. It shows up as /dev/video0 and OpenCV opens it with cv.VideoCapture(0).', pins: [['Connection', 'Any USB port (no GPIO pins)'], ['Power', 'Taken from the USB port']], used: 'w6.py hand tracking, w7b.py YOLO detection', note: 'If the camera will not open, another program may already hold it. fuser /dev/video0 shows which.' },
+      { id: 'led', name: 'LEDs + 220 ohm resistor', side: 'L', y: 100, line: 'GPIO 18 / 13 / 5, 6, 19, 26', c: 'blue', what: 'Light-emitting diodes. Each one needs a resistor in series so the pin does not push too much current through it.', pins: [['Single LED', 'GPIO18 > 220 ohm > LED anode (+), cathode (-) > GND'], ['PWM fade LED', 'GPIO13 (a hardware PWM pin)'], ['Row of 5 LEDs', 'GPIO5, 6, 13, 19, 26, each with its own 220 ohm resistor']], used: 'w2a, w2b, w3a, w3b, w4b', note: 'An LED only works one way round: the longer leg is the anode (+).' },
+      { id: 'btn', name: 'Push buttons', side: 'L', y: 182, line: 'GPIO 23, 24 / 19, 26', c: 'blue', what: 'A switch that joins two legs while pressed. One leg goes to a GPIO pin, the other to GND, and the Pi\'s internal pull-up keeps the pin HIGH until you press.', pins: [['w3a, w3b', 'GPIO23 and GPIO24 (to GND, internal pull-up)'], ['w5a motor buttons', 'GPIO19 (forward) and GPIO26 (backward)']], used: 'w3a, w3b, w5a', note: 'With a pull-up, pressed reads LOW (0) and released reads HIGH (1): the opposite of what you might expect.' },
+      { id: 'us', name: 'HC-SR04 ultrasonic', side: 'L', y: 264, line: 'GPIO 23 Trig, 24 Echo', c: 'teal', what: 'Sends a short ultrasonic ping and times how long the echo takes to come back. Distance = time x speed of sound / 2 (halved because the sound travels there and back). The speed of sound depends on the air temperature: the course code uses 331 + 0.6 x 25 = 346 m/s, which assumes a room temperature of 25 degrees C.', pins: [['VCC', '5V'], ['GND', 'GND'], ['Trig', 'GPIO23 (a 10 microsecond pulse starts a ping)'], ['Echo', 'GPIO24']], used: 'w4a, w4b', note: 'The Echo pin outputs 5V but Pi GPIO pins are 3.3V. Use a voltage divider on Echo to protect the pin.' },
+      { id: 'lcd', name: '16x2 I2C LCD (PCF8574)', side: 'R', y: 18, line: 'I2C: GPIO2 SDA, GPIO3 SCL', c: 'teal', what: 'A 16 column, 2 row text screen with a PCF8574 I2C backpack, so it needs only two data wires.', pins: [['VCC', '5V'], ['GND', 'GND'], ['SDA', 'GPIO2 (physical pin 3), fixed by hardware'], ['SCL', 'GPIO3 (physical pin 5), fixed by hardware'], ['Address', 'usually 0x27, sometimes 0x3f (check with sudo i2cdetect -y 1)']], used: 'w7a, w7b', note: 'Turn on I2C once: sudo raspi-config, Interface Options, I2C, then reboot.' },
+      { id: 'srv', name: 'SG90 servo', side: 'R', y: 100, line: 'GPIO 18 (PWM)', c: 'peach', what: 'A small motor that turns its arm to a set angle from 0 to 180 degrees, set by the width of a repeating pulse.', pins: [['Signal (orange or yellow)', 'GPIO18'], ['Power (red)', '5V, from an external supply if it draws too much for the Pi'], ['Ground (brown or black)', 'GND']], used: 'w6.py hand-tracking servo pointer', note: 'duty cycle = 2 + angle / 18, at 50 Hz.' },
+      { id: 'mot', name: 'DC motor + L298N driver', side: 'R', y: 182, line: 'GPIO 13 ENA, 18 IN1, 12 IN2', c: 'red', what: 'A driver board that lets the Pi\'s weak pins control a motor on its own power supply. Two inputs pick the direction and one enable pin sets the speed.', pins: [['ENA (speed, PWM)', 'GPIO13'], ['IN1', 'GPIO18'], ['IN2', 'GPIO12'], ['Driver GND', 'Pi GND (shared ground)'], ['Motor power', 'A separate motor supply, NOT the Pi\'s 5V pin']], used: 'w5a, w5b', note: 'Always join the grounds, and never power the motor from the Pi.' },
+    ];
+    // icon, signal kind and the y centre of each box (left side then right side)
+    const X = { cam: ['camera', 'USB input', 60], led: ['lightbulb', 'Digital and PWM output', 140], btn: ['check-circle', 'Digital input', 220], us: ['ruler', 'Digital out (Trig) and in (Echo)', 300],
+      lcd: ['desktop', 'I2C bus', 80], srv: ['gear-six', 'PWM output', 180], mot: ['wrench', 'Digital and PWM output, through a driver', 280] };
+    el.innerHTML = `<p class="wgt">Try it: click a part</p>
+      <svg id="w-hw" viewBox="0 0 640 360" width="100%"></svg><div class="hwd" id="w-hwd"></div>`;
+    let at = 'led';
+    const draw = () => {
+      let h = `<rect x="250" y="14" width="140" height="332" rx="14" fill="var(--crust)" stroke="var(--o0)" stroke-width="2"/>`;
+      for (let r = 0; r < 8; r++) for (let c = 0; c < 2; c++) h += `<circle cx="${302 + c * 18}" cy="${34 + r * 10}" r="2.6" fill="var(--o0)"/>`;
+      h += `<text x="320" y="124" text-anchor="middle" font-size="10" fill="var(--o1)">40-pin GPIO header</text><line x1="268" y1="138" x2="372" y2="138" stroke="var(--s1)"/><svg x="307" y="156" width="26" height="26" class="i" style="color:var(--mauve)"><use href="#i-circuitry"/></svg><text x="320" y="208" text-anchor="middle" font-size="15" fill="var(--text)">Raspberry Pi 4</text><text x="320" y="226" text-anchor="middle" font-size="10" fill="var(--o1)">Broadcom BCM2711</text><text x="320" y="241" text-anchor="middle" font-size="10" fill="var(--o1)">Debian, Python 3.11</text><line x1="268" y1="290" x2="372" y2="290" stroke="var(--s1)"/><text x="320" y="310" text-anchor="middle" font-size="9" fill="var(--o1)">USB · Wi-Fi</text><text x="320" y="324" text-anchor="middle" font-size="9" fill="var(--o1)">HDMI · microSD</text>`;
+      parts.forEach(q => {
+        const on = q.id === at, [ic, , cy] = X[q.id], left = q.side === 'L', bx = left ? 6 : 444, ex = left ? 196 : 444, px = left ? 250 : 390;
+        h += `<line x1="${ex}" y1="${cy}" x2="${px}" y2="${cy}" stroke="var(--${on ? 'mauve' : 's1'})" stroke-width="${on ? 3 : 2}"/><circle cx="${px}" cy="${cy}" r="${on ? 5 : 3.5}" fill="var(--${on ? 'mauve' : 'o0'})"/>
+          <g data-id="${q.id}" style="cursor:pointer"><rect x="${bx}" y="${cy - 28}" width="190" height="56" rx="10" fill="${on ? 'var(--mauve)' : 'var(--base)'}" stroke="var(--${on ? 'mauve' : 's1'})" stroke-width="1.5"/>
+          <circle cx="${bx + 25}" cy="${cy}" r="14" fill="${on ? 'var(--crust)' : 'var(--s0)'}"/><svg x="${bx + 17}" y="${cy - 8}" width="16" height="16" class="i" style="color:${on ? 'var(--mauve)' : 'var(--text)'}"><use href="#i-${ic}"/></svg>
+          <text x="${bx + 48}" y="${cy - 2}" font-size="11" fill="${on ? 'var(--crust)' : 'var(--text)'}" font-weight="${on ? 700 : 400}">${q.name}</text><text x="${bx + 48}" y="${cy + 13}" font-size="9" fill="${on ? 'var(--crust)' : 'var(--o1)'}">${q.line}</text></g>`;
+      });
+      $('#w-hw').innerHTML = h;
+      const q = parts.find(z => z.id === at);
+      $('#w-hwd').innerHTML = `<b>${q.name}</b><span class="hwk">${X[q.id][1]}</span><p>${q.what}</p><div class="hwt">${q.pins.map(r => `<div><span>${r[0]}</span><b>${r[1]}</b></div>`).join('')}</div><p class="hwn"><b>Used in:</b> ${q.used}. ${q.note}</p>`;
+    };
+    $('#w-hw').onclick = e => { const g = e.target.closest('g[data-id]'); if (g) { at = g.dataset.id; draw(); } };
+    el._reset = () => { at = 'led'; draw(); }; draw();
+  },
+  // a detailed top view of the Pi 4 board: the real parts, the 40 pins one by one, and what each does
+  piboard(el) {
+    const W = 560, H = 366;
+    const kind = n => [1, 17].includes(n) ? 'peach' : [2, 4].includes(n) ? 'red' : [6, 9, 14, 20, 25, 30, 34, 39].includes(n) ? 'o0' : [3, 5].includes(n) ? 'teal' : [12, 32, 33, 35].includes(n) ? 'mauve' : 'blue';
+    const Z = {
+      gpio: ["40-pin GPIO header", "Two rows of 20 pins along the top edge, each coloured by its job: orange is 3.3 V, red is 5 V, grey is ground, blue is a general GPIO pin, mauve can make hardware PWM and teal is I2C. The next chapters wire LEDs, buttons, sensors, a motor and the LCD to it."],
+      poe: ["PoE header", "A four-pin header near the GPIO header, made for the optional Power over Ethernet HAT, which lets the Pi take its power through the network cable. Nothing in this course uses it."],
+      eth: ["Gigabit Ethernet", "A wired network port. The Pi 4 moved it to sit next to the GPIO header, compared with the older Pi 3. Two small LEDs beside it show the connection and the activity."],
+      usb3: ["2 x USB 3.0 (blue)", "The two blue ports are the fast USB 3.0 ones. They suit a webcam or a fast drive, where speed matters, so they are good places to plug in the camera for the vision work."],
+      usb2: ["2 x USB 2.0 (black)", "The two black ports are the slower USB 2.0 ones. They are fine for a keyboard, a mouse or other small devices that do not need much speed."],
+      vl805: ["VL805 USB controller", "A small black chip behind the USB ports. It is the USB controller: it manages the traffic for all four USB ports, so the main chip does not have to handle each device itself."],
+      soc: ["BCM2711 system on a chip", "The main chip: four 64-bit ARM Cortex-A72 cores and the graphics, all in one package. On the Pi 4 it sits under a metal heat spreader, and it does the work of running your Python and the vision models."],
+      ram: ["LPDDR4 RAM", "The working memory, low-power DDR4. It holds your running program, the camera frames and the model. How much you have, for example 2, 4 or 8 GB, depends on the model you bought."],
+      wifi: ["Wi-Fi and Bluetooth module", "A radio module under a metal shield. It gives the Pi dual-band Wi-Fi and Bluetooth 5.0, so it can join a network and talk to wireless devices without any cable."],
+      sd: ["microSD slot (underside)", "The microSD card slot is on the underside of the board. The card is the Pi's drive: it holds the operating system and all your files, so flashing the OS means writing to this card."],
+      usbc: ["USB-C power in", "Power comes in here at 5 volts. Use a proper power supply, because a weak one makes the Pi slow itself down or even reboot, usually while you are running a heavy program."],
+      hdmi: ["2 x micro-HDMI (HDMI0, HDMI1)", "Two video outputs, labelled HDMI0 and HDMI1. They are micro-HDMI, so you need micro-HDMI to HDMI cables, and together they can drive two screens at once."],
+      audio: ["3.5 mm AV jack", "A 4-pole 3.5 mm jack. It carries stereo audio for headphones or speakers, and the same jack can also send composite video to an old TV."],
+      csi: ["CSI camera port", "A 2-lane flat-ribbon connector, labelled CAMERA, for the Raspberry Pi camera module. A USB webcam does not use it, because it plugs into one of the USB ports instead."],
+      dsi: ["DSI display port", "A 2-lane flat-ribbon connector, labelled DISPLAY, for the official Raspberry Pi touchscreen. A normal monitor does not use it, because it connects through the HDMI ports."],
+      leds: ["Status LEDs", "Two small status lights on the board: a power LED and an activity LED. If the power one is off, the Pi has no power. The activity one flickers while the Pi reads the card."],
+    };
+    let at = 'gpio';
+    const draw = () => {
+      const faint = 'color-mix(in srgb,var(--lavender) 28%,var(--crust))';
+      const on = id => at === id;
+      const g = (id, inner) => `<g data-id="${id}" style="cursor:pointer">${inner}</g>`;
+      // one simple box style: dark fill, thin soft border, a thin lavender border when selected
+      const ICON = { soc: 'cpu', ram: 'cube', wifi: 'globe', vl805: 'circuitry', sd: 'hard-drives', eth: 'path', usb3: 'puzzle-piece', usb2: 'puzzle-piece', usbc: 'lightning', poe: 'lightning', audio: 'play', csi: 'camera', hdmi: 'desktop', dsi: 'desktop' };
+      const ic = (id, cx, y) => `<svg x="${cx - 6}" y="${y}" width="12" height="12" class="i" style="color:${on(id) ? 'var(--lavender)' : 'var(--o0)'}"><use href="#i-${ICON[id]}"/></svg>`;
+      const box = (id, x, y, w, h, label, sub, dash) => {
+        const cx = x + w / 2, big = h >= 60, iy = big ? y + h / 2 - 26 : y + (sub ? 3 : 4), ly = big ? y + h / 2 + 4 : y + h - (sub ? 14 : 8), sy = big ? y + h / 2 + 15 : y + h - 5;
+        return g(id, `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="6" fill="var(--crust)" stroke="${on(id) ? 'var(--lavender)' : faint}" stroke-width="${on(id) ? 1.5 : 1}" ${dash ? 'stroke-dasharray="5 4"' : ''}/>${ic(id, cx, iy)}<text x="${cx}" y="${ly}" text-anchor="middle" font-size="9" fill="var(--text)">${label}</text>${sub ? `<text x="${cx}" y="${sy}" text-anchor="middle" font-size="7" fill="var(--o1)">${sub}</text>` : ''}`);
+      };
+      let h = `<rect x="14" y="8" width="532" height="350" rx="18" fill="var(--mantle)" stroke="${faint}" stroke-width="1.5"/>`;
+      [[41, 31], [395, 31], [41, 335], [395, 335]].forEach(([x, y]) => { h += `<circle cx="${x}" cy="${y}" r="7" fill="var(--crust)" stroke="${faint}"/>`; });
+      // the 40-pin strip: odd pins on the inner row, pin 1 at the left end
+      let pins = `<rect x="64" y="26" width="320" height="36" rx="6" fill="var(--crust)" stroke="${on('gpio') ? 'var(--lavender)' : faint}" stroke-width="${on('gpio') ? 1.5 : 1}"/>`;
+      for (let n = 1; n <= 40; n++) { const c = Math.floor((n - 1) / 2), x = 74 + c * 15.5, y = n % 2 ? 52 : 36; pins += `<circle cx="${x}" cy="${y}" r="4.2" fill="var(--${kind(n)})"/>`; }
+      pins += `<text x="74" y="76" text-anchor="middle" font-size="8" fill="var(--o1)">1</text><text x="74" y="22" text-anchor="middle" font-size="8" fill="var(--o1)">2</text><text x="369" y="76" text-anchor="middle" font-size="8" fill="var(--o1)">39</text><text x="369" y="22" text-anchor="middle" font-size="8" fill="var(--o1)">40</text>`;
+      h += g('gpio', pins);
+      h += box('poe', 414, 28, 30, 30, 'PoE');
+      h += box('wifi', 70, 104, 80, 42, 'Wi-Fi + BT');
+      h += box('soc', 166, 110, 104, 88, 'BCM2711', 'SoC');
+      h += box('ram', 286, 120, 62, 68, 'RAM', 'LPDDR4');
+      h += box('vl805', 366, 210, 70, 46, 'VL805', 'USB controller');
+      h += box('sd', 56, 214, 88, 84, 'microSD', 'underneath', true);
+      h += g('dsi', `<rect x="22" y="130" width="22" height="64" rx="5" fill="var(--crust)" stroke="${on('dsi') ? 'var(--lavender)' : faint}" stroke-width="${on('dsi') ? 1.5 : 1}"/>${ic('dsi', 33, 136)}<text x="33" y="190" font-size="7" fill="var(--text)" transform="rotate(-90 33 190)">DISPLAY</text>`);
+      h += box('eth', 450, 56, 92, 110, 'Ethernet');
+      h += box('usb3', 450, 172, 92, 84, 'USB 3.0', '2 ports');
+      h += box('usb2', 450, 262, 92, 84, 'USB 2.0', '2 ports');
+      h += box('usbc', 160, 320, 52, 34, 'USB-C');
+      h += g('hdmi', [0, 1].map(i => `<rect x="${224 + i * 56}" y="320" width="46" height="34" rx="6" fill="var(--crust)" stroke="${on('hdmi') ? 'var(--lavender)' : faint}" stroke-width="${on('hdmi') ? 1.5 : 1}"/>${ic('hdmi', 247 + i * 56, 324)}<text x="${247 + i * 56}" y="346" text-anchor="middle" font-size="8" fill="var(--text)">HDMI${i}</text>`).join(''));
+      h += box('audio', 338, 320, 40, 34, 'AV');
+      h += box('csi', 386, 320, 54, 34, 'CAMERA');
+      h += g('leds', `<rect x="76" y="318" width="40" height="30" rx="6" fill="var(--crust)" stroke="${on('leds') ? 'var(--lavender)' : faint}" stroke-width="${on('leds') ? 1.5 : 1}"/><circle cx="88" cy="330" r="3.5" fill="var(--red)"/><circle cx="104" cy="330" r="3.5" fill="var(--green)"/><text x="96" y="343" text-anchor="middle" font-size="6.5" fill="var(--o1)">PWR  ACT</text>`);
+      $('#w-pb').innerHTML = h;
+      const z = Z[at];
+      $('#w-pbd').innerHTML = `<b>${z[0]}</b><p>${z[1]}</p>`;
+    };
+    el.innerHTML = `<p class="wgt">Try it: click a part of the board</p>
+      <svg id="w-pb" viewBox="0 0 ${W} ${H}" width="100%"></svg><div class="hwd" id="w-pbd"></div>`;
+    $('#w-pb').onclick = e => { const g = e.target.closest('g[data-id]'); if (g) { at = g.dataset.id; draw(); } };
+    el._reset = () => { at = 'gpio'; draw(); }; draw();
+  },
+  // the 40-pin GPIO header: hover or click a pin for its job; pins used in this course are outlined
+  gpiopins(el) {
+    const L = { 1: ['3V3', 'pwr3'], 2: ['5V', 'pwr5'], 3: ['GPIO2', 'i2c', 'I2C1 SDA'], 4: ['5V', 'pwr5'], 5: ['GPIO3', 'i2c', 'I2C1 SCL'], 6: ['GND', 'gnd'], 7: ['GPIO4', 'gpio'], 8: ['GPIO14', 'gpio', 'UART TXD'], 9: ['GND', 'gnd'], 10: ['GPIO15', 'gpio', 'UART RXD'], 11: ['GPIO17', 'gpio'], 12: ['GPIO18', 'pwm', 'hardware PWM'], 13: ['GPIO27', 'gpio'], 14: ['GND', 'gnd'], 15: ['GPIO22', 'gpio'], 16: ['GPIO23', 'gpio'], 17: ['3V3', 'pwr3'], 18: ['GPIO24', 'gpio'], 19: ['GPIO10', 'gpio', 'SPI MOSI'], 20: ['GND', 'gnd'], 21: ['GPIO9', 'gpio', 'SPI MISO'], 22: ['GPIO25', 'gpio'], 23: ['GPIO11', 'gpio', 'SPI SCLK'], 24: ['GPIO8', 'gpio', 'SPI CE0'], 25: ['GND', 'gnd'], 26: ['GPIO7', 'gpio', 'SPI CE1'], 27: ['GPIO0', 'gpio', 'ID EEPROM'], 28: ['GPIO1', 'gpio', 'ID EEPROM'], 29: ['GPIO5', 'gpio'], 30: ['GND', 'gnd'], 31: ['GPIO6', 'gpio'], 32: ['GPIO12', 'pwm', 'hardware PWM'], 33: ['GPIO13', 'pwm', 'hardware PWM'], 34: ['GND', 'gnd'], 35: ['GPIO19', 'pwm', 'hardware PWM'], 36: ['GPIO16', 'gpio'], 37: ['GPIO26', 'gpio'], 38: ['GPIO20', 'gpio'], 39: ['GND', 'gnd'], 40: ['GPIO21', 'gpio'] };
+    const used = { 2: '5V for the servo, HC-SR04 and LCD', 4: '5V (a second 5V pin)', 3: 'LCD SDA (w7a, w7b)', 5: 'LCD SCL (w7a, w7b)', 6: 'a ground for sensors and the LCD', 12: 'LED (w2a, w3a), motor IN1 (w5), servo signal (w6)', 33: 'PWM LED (w2b), motor ENA (w5), one of the 5 LEDs', 32: 'motor IN2 (w5)', 16: 'button 1 (w3), HC-SR04 Trig (w4)', 18: 'button 2 (w3), HC-SR04 Echo (w4)', 29: 'LED chain (w3b, w4b)', 31: 'LED chain (w3b, w4b)', 35: 'LED chain (w3b, w4b), forward button (w5a)', 37: 'LED chain (w3b, w4b), backward button (w5a)' };
+    const col = { pwr3: 'peach', pwr5: 'red', gnd: 'o0', gpio: 'blue', pwm: 'mauve', i2c: 'teal' };
+    el.innerHTML = `<p class="wgt">Try it: click a pin</p>
+      <div class="wgrow" id="w-gp-tabs">${['All', 'Used in the course', 'Power and ground', 'Special'].map((n, i) => `<button type="button" class="seg2${i ? '' : ' on'}" data-k="${n}">${n}</button>`).join('')}</div>
+      <div class="gph"><div class="gpl" id="w-gp"></div><div class="gpd" id="w-gp-d"></div></div>`;
+    let at = 12, tab = 'All';
+    const draw = () => {
+      $$('#w-gp-tabs button').forEach(b => b.classList.toggle('on', b.dataset.k === tab));
+      const show = n => { const t = L[n][1]; return tab === 'All' || (tab === 'Used in the course' && used[n]) || (tab === 'Power and ground' && /pwr|gnd/.test(t)) || (tab === 'Special' && /pwm|i2c/.test(t) || (tab === 'Special' && L[n][2])); };
+      const cell = n => `<button type="button" class="gpp${n === at ? ' sel' : ''}${used[n] ? ' used' : ''}" data-n="${n}" style="--c:var(--${col[L[n][1]]});opacity:${show(n) ? 1 : .22}"><i>${n}</i>${L[n][0]}</button>`;
+      let h = ''; for (let n = 1; n < 40; n += 2) h += cell(n) + cell(n + 1);
+      $('#w-gp').innerHTML = h;
+      const [name, t, fn] = L[at];
+      const GI = { pwr3: 'lightning', pwr5: 'lightning', gnd: 'caret-down', gpio: 'circuitry', pwm: 'gear-six', i2c: 'chat-text' };
+      const KIND = { pwr3: 'Power, 3.3 volts', pwr5: 'Power, 5 volts', gnd: 'Ground, 0 volts', gpio: 'General input / output', pwm: 'General input / output', i2c: 'I2C bus (fixed, not general GPIO)' };
+      const DESC = { pwr3: 'A 3.3 volt power pin.', pwr5: 'A 5 volt power pin, straight from the supply.', gnd: 'Ground. Connect the grounds of all parts together.', gpio: 'You can set it HIGH or LOW, or read it.', pwm: 'You can set it HIGH or LOW, or read it, and it can also make hardware PWM.', i2c: 'The two wires of the I2C bus, used by the LCD.' };
+      const isGpio = /GPIO/.test(name), row = (k, v) => `<div><span>${k}</span><b>${v}</b></div>`;
+      $('#w-gp-d').innerHTML = `<div class="gh"><b>${name}</b></div><p>${DESC[t]}</p>
+        <div class="hwt">${row('Physical pin', at)}${isGpio ? row('BCM number', name.slice(4)) : ''}${row('Kind', KIND[t])}${isGpio ? row('Hardware PWM', t === 'pwm' ? '<em class="yes">Yes</em>' : 'No') : ''}${fn && fn !== 'hardware PWM' ? row('Also used for', fn) : ''}${row('In this course', used[at] || 'Not used by the course scripts')}</div>
+        <p class="hwn">${icon('info')}Hardware PWM pins: GPIO12, GPIO13, GPIO18 and GPIO19 (physical pins 32, 33, 12 and 35). They are the mauve ones.</p>`;
+    };
+    $('#w-gp').onclick = e => { const b = e.target.closest('.gpp'); if (b) { at = +b.dataset.n; draw(); } };
+    $('#w-gp-tabs').onclick = e => { const b = e.target.closest('button'); if (b) { tab = b.dataset.k; draw(); } };
+    el._reset = () => { at = 12; tab = 'All'; draw(); }; draw();
+  },
+  // H-bridge: two direction inputs and one enable pin decide what the motor does
+  hbridge(el) {
+    el.innerHTML = `<p class="wgt">Try it: set the pins</p>
+      <div class="wgrow"><button type="button" class="seg2" id="w-hb-1" data-v="1">IN1 = LOW</button><button type="button" class="seg2" id="w-hb-2" data-v="1">IN2 = LOW</button><label>ENA duty <input id="w-hb-e" type="range" min="0" max="100" value="40"></label><b id="w-hb-ev">40%</b></div>
+      <svg id="w-hb" viewBox="0 0 300 130" width="100%" style="max-width:340px"></svg><p class="wgsay" id="w-hb-say"></p><p class="wgsay"><code id="w-hb-code"></code></p>`;
+    let i1 = 0, i2 = 0;
+    const run = () => {
+      const d = +$('#w-hb-e').value; $('#w-hb-ev').textContent = d + '%';
+      $('#w-hb-1').textContent = `IN1 = ${i1 ? 'HIGH' : 'LOW'}`; $('#w-hb-2').textContent = `IN2 = ${i2 ? 'HIGH' : 'LOW'}`;
+      $('#w-hb-1').classList.toggle('on', !!i1); $('#w-hb-2').classList.toggle('on', !!i2);
+      let state, col = '#a6adc8', arrow = '';
+      if (d === 0) state = 'Enable is 0%, so the driver is switched off. The motor is not driven and just coasts to a stop.';
+      else if (i1 && !i2) { state = `Forward at ${d}% speed.`; col = '#a6e3a1'; arrow = '\u21bb'; }
+      else if (!i1 && i2) { state = `Backward at ${d}% speed.`; col = '#89b4fa'; arrow = '\u21ba'; }
+      else if (i1 && i2) state = 'Both inputs HIGH: the driver shorts the motor terminals together, which is a fast stop (brake).';
+      else state = 'Both inputs LOW with the enable on: the motor is held stopped (brake). In the course code this is the "stop" state.';
+      $('#w-hb').innerHTML = `<rect x="10" y="30" width="86" height="70" rx="8" fill="var(--crust)" stroke="var(--mauve)"/><text x="53" y="52" text-anchor="middle" font-size="10" fill="var(--text)">L298N driver</text><text x="53" y="70" text-anchor="middle" font-size="9" fill="var(--o1)">IN1 ${i1} IN2 ${i2}</text><text x="53" y="86" text-anchor="middle" font-size="9" fill="var(--o1)">ENA ${d}%</text><line x1="96" y1="65" x2="170" y2="65" stroke="${col}" stroke-width="3"/><circle cx="215" cy="65" r="40" fill="var(--crust)" stroke="${col}" stroke-width="3"/><text x="215" y="76" text-anchor="middle" font-size="34" fill="${col}">${arrow || 'M'}</text><rect x="170" y="116" width="${Math.max(2, 90 * d / 100)}" height="6" rx="3" fill="${col}"/>`;
+      $('#w-hb-say').textContent = state;
+      $('#w-hb-code').textContent = `GPIO.output(IN1, ${i1 ? 'HIGH' : 'LOW'}); GPIO.output(IN2, ${i2 ? 'HIGH' : 'LOW'}); pwm_motor.ChangeDutyCycle(${d})`;
+    };
+    $('#w-hb-1').onclick = () => { i1 ^= 1; run(); }; $('#w-hb-2').onclick = () => { i2 ^= 1; run(); };
+    $('#w-hb-e').oninput = run;
+    el._reset = () => { i1 = i2 = 0; $('#w-hb-e').value = 40; run(); }; run();
+  },
+  // the vim modes, with the keys that matter in each
+  vimmodes(el) {
+    const modes = {
+      Normal: ['Where vim starts. Keys are commands, not letters.', [['i', 'enter Insert mode, before the cursor'], ['a', 'enter Insert mode, after the cursor'], ['dd', 'delete the whole line'], ['yy', 'copy the line'], ['p', 'paste'], ['u', 'undo'], ['/word', 'search for "word", n for the next match'], ['gg / G', 'jump to the top / bottom of the file']]],
+      Insert: ['Where you type text, like a normal editor.', [['Esc', 'go back to Normal mode'], ['(any key)', 'types that character']]],
+      Command: ['Press : from Normal mode, type a command, then Enter.', [[':w', 'save'], [':q', 'quit'], [':wq', 'save and quit'], [':q!', 'quit and throw away changes'], [':set number', 'show line numbers']]],
+    };
+    el.innerHTML = `<p class="wgt">Try it: pick a mode</p>
+      <div class="wgrow" id="w-vm-tabs">${Object.keys(modes).map((n, i) => `<button type="button" class="seg2${i ? '' : ' on'}" data-k="${n}">${n}</button>`).join('')}</div>
+      <p class="wgsay" id="w-vm-say"></p><div class="hwt" id="w-vm"></div>`;
+    const run = k => { $$('#w-vm-tabs button').forEach(b => b.classList.toggle('on', b.dataset.k === k)); $('#w-vm-say').textContent = modes[k][0]; $('#w-vm').innerHTML = modes[k][1].map(r => `<div><span><code>${r[0]}</code></span><b>${r[1]}</b></div>`).join(''); };
+    $('#w-vm-tabs').onclick = e => { const b = e.target.closest('button'); if (b) run(b.dataset.k); };
+    run('Normal');
+  },
+  // pick the error message you are seeing, get the cause and the fix
+  errorfix(el) {
+    const E = [
+      ['No module named cv2 / mediapipe', 'The active Python environment has no packages installed.', 'Activate the project venv, then pip install opencv-python mediapipe==0.10.9 numpy.'],
+      ['qt.qpa.xcb: could not connect to display', 'No DISPLAY is set, which is typical over SSH or a VS Code Remote terminal.', 'Run with DISPLAY=:0 and keep a screen-share (Pi Connect) or VNC session open. Or remove the cv.imshow calls to run headless.'],
+      ['Aborted (core dumped) after a Qt error', 'The same display problem. Qt cannot find a screen, so the whole process aborts.', 'Fix the display first (DISPLAY=:0 plus an open screen session). It is not a separate bug.'],
+      ['Could not open camera device at index 0', 'There is no /dev/video0: no camera is plugged in, or another program already has it open.', 'Check lsusb and ls /dev/video*. fuser /dev/video0 shows the process holding it, and kill <pid> frees it.'],
+      ['No cameras available (rpicam-hello)', 'No CSI ribbon camera and no USB webcam were detected.', 'Plug in a USB webcam (lsusb should list a UVC device) or reseat the CSI ribbon cable.'],
+      ['externally-managed-environment', 'Debian 12 and later blocks pip install into the system Python (PEP 668).', 'Activate the venv (or pyenv local 3.11.9) and pip install there. Only use --break-system-packages if you really mean to change the system Python.'],
+      ['fatal error: Python.h: No such file', 'pip found no prebuilt wheel for your Python and tried to compile from source.', 'Usually the Python version is wrong: stay on 3.11.x for mediapipe==0.10.9. If you must build, sudo apt install python3-dev first.'],
+      ['i2cdetect shows an empty grid', 'I2C is switched off, the bus number is wrong, or the LCD wiring or power is bad.', 'sudo raspi-config, Interface Options, I2C, Enable, reboot. Check ls /dev/i2c*, then the SDA, SCL and power wires.'],
+      ['Servo drifts after the script ends', 'servo.stop() and GPIO.cleanup() stop the PWM pulses, so nothing drives the horn.', 'Expected with GPIO.PWM. Remove the final stop and cleanup if you want it to hold its last position.'],
+      ['cv2 underlined red in VS Code', 'VS Code points at a different Python interpreter than the one with your packages.', 'Ctrl+Shift+P, Python: Select Interpreter, and pick the venv you installed into.'],
+    ];
+    el.innerHTML = `<p class="wgt">Try it: pick the error you see</p>
+      <div class="tpj" id="w-ef-l">${E.map((e, i) => `<button type="button" class="tpb" data-i="${i}">${e[0]}</button>`).join('')}</div>
+      <div class="tpres" id="w-ef"></div>`;
+    const run = i => { $$('#w-ef-l button').forEach(b => b.classList.toggle('on', +b.dataset.i === i)); $('#w-ef').innerHTML = i < 0 ? '<p class="wgsay">Choose an error above.</p>' : `<b>Cause</b><p>${E[i][1]}</p><b>Fix</b><p>${E[i][2]}</p>`; };
+    $('#w-ef-l').onclick = e => { const b = e.target.closest('button'); if (b) run(+b.dataset.i); };
+    el._reset = () => run(-1); run(-1);
+  },
+  // wiring diagram: a bird's-eye view of the L298N board, with the Pi, the battery and the motor wired to it
+  motorwiring(el) {
+    const W = (d, c) => `<path d="${d}" fill="none" stroke="var(--${c})" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>`;
+    const D = (x, y, c) => `<circle cx="${x}" cy="${y}" r="3.6" fill="var(--${c})"/>`;
+    const T = (x, y, t, c = 'var(--text)', s = 8, a = 'middle') => `<text x="${x}" y="${y}" text-anchor="${a}" font-size="${s}" fill="${c}">${t}</text>`;
+    const edge = 'color-mix(in srgb,var(--lavender) 28%,var(--crust))', faint = 'color-mix(in srgb,var(--lavender) 22%,var(--crust))';
+    const box = (x, y, w, h, r = 6, f = 'var(--crust)', s = edge) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}" fill="${f}" stroke="${s}"/>`;
+    const screw = (x, y, c) => `<circle cx="${x}" cy="${y}" r="7" fill="var(--mantle)" stroke="var(--${c})" stroke-width="1.4"/><line x1="${x - 4}" y1="${y}" x2="${x + 4}" y2="${y}" stroke="var(--${c})"/>`;
+    const hx = [286, 312, 338, 364, 390, 416];
+    const svg = `<svg viewBox="0 0 640 400" width="100%">
+      ${box(150, 8, 300, 50, 10)}${T(300, 25, 'Raspberry Pi', 'var(--text)', 10)}${T(262, 46, 'GPIO', 'var(--o1)', 7, 'end')}${T(286, 46, '13', 'var(--text)', 8)}${T(312, 46, '18', 'var(--text)', 8)}${T(338, 46, '12', 'var(--text)', 8)}${T(430, 46, 'GND', 'var(--o1)', 7)}
+      ${box(470, 8, 150, 50, 10)}${T(545, 25, '2-cell lithium pack', 'var(--text)', 9)}${T(545, 38, '7.4 V (8.4 V full)', 'var(--o1)', 7)}
+      ${box(180, 100, 380, 280, 14, 'var(--crust)', edge)}
+      ${box(192, 112, 34, 46, 5)}${screw(209, 124, 'peach')}${screw(209, 146, 'peach')}${T(209, 172, 'OUT1', 'var(--text)', 7)}${T(209, 181, 'OUT2', 'var(--text)', 7)}${T(209, 191, 'motor A', 'var(--o1)', 6)}
+      ${box(262, 108, 190, 18, 4)}${hx.map((x, i) => D(x, 117, i < 3 ? ['mauve', 'blue', 'teal'][i] : 'o0') + T(x, 140, ['ENA', 'IN1', 'IN2', 'IN3', 'IN4', 'ENB'][i], i < 3 ? 'var(--text)' : 'var(--o1)', 7)).join('')}
+      ${box(470, 112, 82, 46, 5)}${screw(486, 124, 'o0')}${screw(512, 124, 'lavender')}${screw(538, 124, 'red')}${T(486, 172, '+5V', 'var(--o1)', 7)}${T(512, 172, 'GND', 'var(--text)', 7)}${T(538, 172, '+12V', 'var(--text)', 7)}
+      ${box(520, 214, 32, 54, 5, 'var(--crust)', faint)}${screw(536, 228, 'o0')}${screw(536, 252, 'o0')}${T(536, 282, 'OUT3 OUT4', 'var(--o1)', 6)}
+      ${[0, 1, 2, 3].map(i => box(194, 214 + i * 14, 18, 9, 2, 'var(--mantle)', faint) + box(528, 300 + i * 14, 18, 9, 2, 'var(--mantle)', faint)).join('')}
+      ${box(250, 290, 130, 76, 6, 'var(--mantle)', edge)}${[0, 1, 2, 3, 4, 5, 6].map(i => `<line x1="${262 + i * 18}" y1="298" x2="${262 + i * 18}" y2="358" stroke="${faint}" stroke-width="3"/>`).join('')}${T(315, 332, 'L298N chip', 'var(--text)', 9)}${T(315, 344, 'on a heatsink', 'var(--o1)', 7)}
+      ${W('M286 58 V117', 'mauve')}${W('M312 58 V117', 'blue')}${W('M338 58 V117', 'teal')}
+      ${W('M430 58 V84 H512 V124', 'lavender')}
+      ${W('M512 58 V124', 'lavender')}${D(512, 84, 'lavender')}
+      ${W('M538 58 V124', 'red')}${box(520, 66, 36, 18, 5, 'var(--mantle)', 'var(--red)')}${T(538, 78, 'fuse', 'var(--red)', 7)}
+      ${D(512, 58, 'lavender')}${D(538, 58, 'red')}${T(500, 54, '-', 'var(--text)', 11)}${T(550, 54, '+', 'var(--text)', 11)}
+      <circle cx="78" cy="135" r="36" fill="var(--crust)" stroke="var(--peach)" stroke-width="2.4"/>${T(78, 146, 'M', 'var(--text)', 28)}${T(78, 187, 'DC motor', 'var(--o1)', 8)}
+      ${W('M192 124 H112', 'peach')}${W('M192 146 H112', 'peach')}
+    </svg>`;
+    el.innerHTML = `<p class="wgt">Wiring diagram: the L298N from above</p>${svg}
+      <div class="mwl"><span><i style="background:var(--red)"></i>battery + to +12V</span><span><i style="background:var(--lavender)"></i>battery - and Pi GND to GND</span><span><i style="background:var(--mauve)"></i>ENA (GPIO13)</span><span><i style="background:var(--blue)"></i>IN1 (GPIO18)</span><span><i style="background:var(--teal)"></i>IN2 (GPIO12)</span><span><i style="background:var(--peach)"></i>motor to OUT1, OUT2</span></div>`;
+  },
   // dropout: the same small network with and without random neurons switched off
   dropoutdiagram(el) {
     const layers = [3, 5, 2], W = 280, H = 190;
@@ -1909,6 +2126,7 @@ async function loadChapter() {
   setTitle(title, entry);
   const prev = all[idx - 1], next = all[idx + 1];
   const to = x => href(x.g, x.n) + `" data-ch="${slug(x.g)}/${slug(x.n)}`;
+  lessonEl.dataset.cls = slug(entry.g);
   lessonEl.innerHTML = `<h1>${esc(title)}</h1>${meta.summary ? `<p class="sum">${mdEsc(meta.summary)}</p>` : ''}${html}
     <div class="cta">
       <div class="ctat"><b>Finished this chapter?</b><span>Jot it down, tick it off, then keep going.</span></div>

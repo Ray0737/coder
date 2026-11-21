@@ -84,7 +84,7 @@ model.train(data='vehicles-openimages/data.yaml', epochs=30, imgsz=640, batch=4)
 
 `data` points to a `data.yaml` that lists the training and validation image folders and the class names. A Roboflow export in "YOLOv11" format works directly. `epochs` is how many full passes over the data, `imgsz` is the training resolution (bigger is more accurate but slower) and `batch` is how many images per step, limited by your memory. Training ends by writing `runs/detect/train/weights/best.pt`, the file you load for detection.
 
-The Raspberry Pi Vision course runs the same idea on the Pi, with a box dataset and an LCD readout. Your folder's `train_vehicle_detector.py` does exactly this for vehicles. The dataset is too big to ship with the code, so export it from Roboflow into a `vehicles-openimages/` folder next to the script first.
+Your folder's `train_vehicle_detector.py` does exactly this for vehicles. The dataset is too big to ship with the code, so export it from Roboflow into a `vehicles-openimages/` folder next to the script first.
 
 ## Try it
 
