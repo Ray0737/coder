@@ -131,7 +131,7 @@ const FOOTER = `
   </div>
 `;
 const SETTINGS = `
-<div class="welcome wide">
+<div class="welcome wide narrow">
 <h1>Settings</h1>
 <p class="lead">Theme, language, sizing and a few other options</p>
 <p class="note wide">These are view-only for now. Changing them will work in a later version.</p>
@@ -173,7 +173,7 @@ const notes = [
   ['Physics in Robotics','robot','green',['# Physics principles','Linear motion','Circular motion','Differential drive speeds','# Robot setup','Hardware: ESP32 and motors','# Code setup','Project setup','Motor protocol: Dynamixel 2.0','# CAD','Chassis design in Onshape','# Final mission','The final mission'],'M.4 Foundations'],
   ['LINE Chatbot','chat-text','teal',['# Chatbot basics','What a chatbot is','Rule-based NLP','# Dialogflow','Dialogflow intents','# LINE','LINE OA and Messaging API','# Backend','Webhook and database','# Replies and wrap-up','Rich replies: Flex Messages','End to end: check stock'],'M.4 Foundations'],
   ['Raspberry Pi Vision','circuitry','red',['# Know the board','The board and its ports','# Boot and connect','Flashing the OS','HDMI, SSH and VS Code','# Linux on the Pi','Terminal cheatsheet','Environment','Editing with vim and nano','# GPIO, a quick recap','What GPIO connects to','Driving a motor with L298N','# Vision','Hand tracking with MediaPipe','YOLOv8 object detection','Running lightweight','# Wrap-up','Problems we faced'],'M.5 Applied AI'],
-  ['Computer Vision','eye','sky',['# Introduction','Basic definition','# OpenCV basics','Reading and displaying','Mouse events','Crop, flip and resize','Color spaces','Thresholding and edges','Contours','Bitwise ops and masking','# Detection','Haar cascades','Face recognition','Feature matching (ORB)','Trained detection (YOLO)','# Beyond OpenCV','Hand tracking and servo'],'M.5 Applied AI'],
+  ['Computer Vision','eye','sky',['# Introduction','Basic definition','# OpenCV basics','Reading and displaying','Mouse events','Crop, flip and resize','Color spaces','Thresholding and edges','Contours','Bitwise ops and masking','# Detection','Object detection','Movement detection','Haar cascades','Face recognition','Trained detection (YOLO)','MediaPipe'],'M.5 Applied AI'],
   ['AI Development','brain','mauve',['# AI, ML and DL','AI, ML and DL',
     '# ML: Data and training','Data handling','Basic parameters',
     '# ML: Supervised','Linear regression','Classification',

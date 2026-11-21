@@ -75,6 +75,37 @@ function scatterSVG(points, opts = {}) {
 }
 
 // ---- live widgets: a fenced block with the language "widget" and a name inside draws one of these
+// a clickable step-by-step workflow: boxes in a row, a description and a code line for the chosen step
+const flowWidget = (el, title, steps) => {
+  el.innerHTML = `<p class="wgt">${title}</p><div class="flow"></div><div class="flowd"></div><div class="wgrow"><button type="button" class="seg2 fnext">Next step</button></div>`;
+  let at = 0;
+  const go = i => {
+    at = i;
+    el.querySelector('.flow').innerHTML = steps.map((s, k) => `<button type="button" class="fstep${k === at ? ' on' : ''}${k < at ? ' done' : ''}" data-i="${k}"><small>${k + 1}</small>${s.t}</button>`).join('');
+    const s = steps[at];
+    el.querySelector('.flowd').innerHTML = `<b>${s.t}</b><p>${s.d}</p>${s.code ? `<code>${s.code}</code>` : ''}`;
+  };
+  el.querySelector('.flow').onclick = e => { const b = e.target.closest('.fstep'); if (b) go(+b.dataset.i); };
+  el.querySelector('.fnext').onclick = () => go((at + 1) % steps.length);
+  el._reset = () => go(0);
+  go(0);
+};
+
+// every widget with controls gets a Reset button that puts sliders and tabs back to how they started
+const addReset = el => {
+  const t = el.querySelector('.wgt');
+  const tabs = '.seg2[data-k],.seg2[data-f],.seg2[data-v]';
+  if (!t || [...el.querySelectorAll('button')].some(b => /^reset$/i.test(b.textContent.trim()))) return;
+  if (!el._reset && !el.querySelector('input,' + tabs)) return;
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'seg2 rst'; b.textContent = 'Reset';
+  b.onclick = () => {
+    if (el._reset) return el._reset();
+    el.querySelectorAll('input').forEach(i => { i.value = i.defaultValue; i.dispatchEvent(new Event('input', { bubbles: true })); });
+    el.querySelectorAll('.wgrow,.mntabs').forEach(r => { const f = r.querySelector(tabs); if (f && r.querySelectorAll(tabs).length > 1) f.click(); });
+  };
+  t.append(b);
+};
+
 const widgets = {
   // one neuron: three inputs, a weight on each, a bias, and the weighted sum it produces
   perceptron(el) {
@@ -279,6 +310,601 @@ const widgets = {
     $('#w-rg-tabs').onclick = e => { const b = e.target.closest('button'); if (b) { kind = b.dataset.k; paint(); } };
     $('#w-rg-lam').oninput = paint;
     paint();
+  },
+  // an 8 x 8 greyscale image as a grid of numbers: click a pixel to change its brightness
+  pixelgrid(el) {
+    const art = ['00111100', '01000010', '10100101', '10000001', '10100101', '10011001', '01000010', '00111100'];
+    const px = art.flatMap(r => [...r].map(c => (c === '1' ? 0 : 255)));
+    el.innerHTML = `<p class="wgt">Try it: click a pixel to change its number</p>
+      <div class="wgrow"><button type="button" class="seg2" id="w-px-r">Reset</button></div>
+      <div class="pxg" id="w-px"></div><p class="wgsay" id="w-px-say"></p>`;
+    const paint = () => {
+      $('#w-px').innerHTML = px.map((v, i) => `<button type="button" class="pxc" data-i="${i}" style="background:rgb(${v},${v},${v});color:${v > 127 ? '#111' : '#eee'}">${v}</button>`).join('');
+      $('#w-px-say').innerHTML = `This picture is <b>8 × 8 = 64 numbers</b>: <code>img.shape = (8, 8)</code>. 0 is black, 255 is white. A colour picture of the same size needs 3 numbers per pixel, <code>(8, 8, 3)</code>, which is 192.`;
+    };
+    $('#w-px').onclick = e => { const b = e.target.closest('.pxc'); if (b) { const i = +b.dataset.i; px[i] = px[i] >= 255 ? 0 : Math.min(255, px[i] + 64); paint(); } };
+    $('#w-px-r').onclick = () => { art.flatMap(r => [...r].map(c => (c === '1' ? 0 : 255))).forEach((v, i) => px[i] = v); paint(); };
+    paint();
+  },
+  // OpenCV stores colour as (B, G, R); show what a mix means and what you get if the order is mixed up
+  bgrmix(el) {
+    el.innerHTML = `<p class="wgt">Try it: mix a colour the OpenCV way</p>
+      <div class="wgrow"><label>B <input id="w-bg-b" type="range" min="0" max="255" value="40"></label><label>G <input id="w-bg-g" type="range" min="0" max="255" value="160"></label><label>R <input id="w-bg-r" type="range" min="0" max="255" value="240"></label></div>
+      <div class="dropviz"><figure><figcaption>What <code id="w-bg-t"></code> means in OpenCV</figcaption><div class="sw" id="w-bg-1"></div></figure>
+      <figure><figcaption>What you see if you hand it to matplotlib without converting</figcaption><div class="sw" id="w-bg-2"></div></figure></div>
+      <p class="wgsay">Red and blue trade places in the second box. That is the "blue skin" bug: <code>cv.cvtColor(img, cv.COLOR_BGR2RGB)</code> fixes it.</p>`;
+    const run = () => {
+      const b = +$('#w-bg-b').value, g = +$('#w-bg-g').value, r = +$('#w-bg-r').value;
+      $('#w-bg-t').textContent = `(${b}, ${g}, ${r})`;
+      $('#w-bg-1').style.background = `rgb(${r},${g},${b})`;
+      $('#w-bg-2').style.background = `rgb(${b},${g},${r})`;
+    };
+    el.addEventListener('input', run); run();
+  },
+  // crop / flip / resize on a drawn scene, with pixel coordinates on both pictures
+  cropflip(el) {
+    const W = 240, H = 160, OX = 36, OY = 24, CW = W + OX + 12, CH = H + OY + 14;
+    const scene = ctx => {
+      ctx.fillStyle = '#8fc7f2'; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = '#6fbf73'; ctx.fillRect(0, 115, W, 45);
+      ctx.fillStyle = '#f7d154'; ctx.beginPath(); ctx.arc(195, 35, 18, 0, 7); ctx.fill();
+      ctx.fillStyle = '#d9534f'; ctx.fillRect(40, 70, 70, 55);
+      ctx.fillStyle = '#7a4a2b'; ctx.beginPath(); ctx.moveTo(32, 72); ctx.lineTo(75, 38); ctx.lineTo(118, 72); ctx.fill();
+      ctx.fillStyle = '#fff'; ctx.fillRect(66, 92, 18, 33);
+      ctx.font = '700 12px sans-serif'; ctx.fillStyle = '#111'; ctx.fillText('CV', 150, 100);
+    };
+    // pixel numbers along the top (x) and left (y) edges of a picture w x h, and a green dot on its (0, 0)
+    const axes = (g, w, h) => {
+      g.font = '10px sans-serif'; g.fillStyle = '#a6adc8'; g.strokeStyle = '#585b70'; g.lineWidth = 1;
+      const xs = [0, w / 2, w].map(Math.round), ys = [0, h / 2, h].map(Math.round);
+      xs.forEach((x, i) => { g.textAlign = i === 0 ? 'left' : i === 2 ? 'right' : 'center'; g.fillText(x, OX + x, OY - 8); g.beginPath(); g.moveTo(OX + x + .5, OY - 5); g.lineTo(OX + x + .5, OY); g.stroke(); });
+      g.textAlign = 'right';
+      ys.forEach(y => { g.fillText(y, OX - 8, OY + y + 3); g.beginPath(); g.moveTo(OX - 5, OY + y + .5); g.lineTo(OX, OY + y + .5); g.stroke(); });
+      g.fillStyle = '#a6e3a1'; g.beginPath(); g.arc(OX, OY, 3.5, 0, 7); g.fill();
+      g.fillStyle = '#89b4fa'; g.textAlign = 'left'; g.fillText('x', OX + w + 6, OY - 8); g.fillStyle = '#f38ba8'; g.textAlign = 'right'; g.fillText('y', OX - 8, OY + h + 16);
+    };
+    el.innerHTML = `<p class="wgt">Try it: pick an operation</p>
+      <div class="wgrow" id="w-cf-tabs">${['Crop', 'Flip 0', 'Flip 1', 'Flip -1', 'Resize'].map((n, i) => `<button type="button" class="seg2${i ? '' : ' on'}" data-k="${n}">${n}</button>`).join('')}</div>
+      <div class="wgrow" id="w-cf-sl"><label>y1 <input id="w-cf-y1" type="range" min="0" max="${H - 10}" value="30"></label><label>y2 <input id="w-cf-y2" type="range" min="10" max="${H}" value="130"></label><label>x1 <input id="w-cf-x1" type="range" min="0" max="${W - 10}" value="30"></label><label>x2 <input id="w-cf-x2" type="range" min="10" max="${W}" value="130"></label></div>
+      <div class="dropviz"><figure><figcaption>Original (${W} × ${H}), with its pixel coordinates</figcaption><canvas id="w-cf-a" width="${CW}" height="${CH}"></canvas></figure><figure><figcaption id="w-cf-cap">Result</figcaption><canvas id="w-cf-b" width="${CW}" height="${CH}"></canvas></figure></div>
+      <p class="wgsay"><code id="w-cf-code"></code></p>`;
+    let k = 'Crop';
+    const run = () => {
+      const a = $('#w-cf-a').getContext('2d'), b = $('#w-cf-b').getContext('2d');
+      let y1 = +$('#w-cf-y1').value, y2 = +$('#w-cf-y2').value, x1 = +$('#w-cf-x1').value, x2 = +$('#w-cf-x2').value;
+      if (y2 <= y1) y2 = y1 + 1; if (x2 <= x1) x2 = x1 + 1;
+      $$('#w-cf-tabs button').forEach(bt => bt.classList.toggle('on', bt.dataset.k === k));
+      $('#w-cf-sl').hidden = k !== 'Crop';
+      const tmp = document.createElement('canvas'); tmp.width = W; tmp.height = H; scene(tmp.getContext('2d'));
+      a.setTransform(1, 0, 0, 1, 0, 0); a.fillStyle = '#11111b'; a.fillRect(0, 0, CW, CH); a.drawImage(tmp, OX, OY); axes(a, W, H);
+      if (k === 'Crop') {
+        a.strokeStyle = '#e64553'; a.lineWidth = 2; a.strokeRect(OX + x1, OY + y1, x2 - x1, y2 - y1);
+        a.font = '700 10px sans-serif'; a.fillStyle = 'rgba(17,17,27,.85)'; a.fillRect(OX + x1, OY + y1 - 12 < OY ? OY + y1 : OY + y1 - 12, 52, 12); a.fillRect(OX + x2 - 52, OY + y2 + 12 > OY + H ? OY + y2 - 12 : OY + y2, 52, 12);
+        a.fillStyle = '#f38ba8'; a.textAlign = 'left'; a.fillText(`(${x1}, ${y1})`, OX + x1 + 3, (OY + y1 - 12 < OY ? OY + y1 : OY + y1 - 12) + 10);
+        a.textAlign = 'right'; a.fillText(`(${x2}, ${y2})`, OX + x2 - 3, (OY + y2 + 12 > OY + H ? OY + y2 - 12 : OY + y2) + 10);
+      }
+      b.setTransform(1, 0, 0, 1, 0, 0); b.fillStyle = '#11111b'; b.fillRect(0, 0, CW, CH);
+      let code, cap, rw = W, rh = H;
+      if (k === 'Crop') { rw = x2 - x1; rh = y2 - y1; b.drawImage(tmp, x1, y1, rw, rh, OX, OY, rw, rh); code = `cropped = img[${y1}:${y2}, ${x1}:${x2}]   # [y1:y2, x1:x2] -> ${rh} tall, ${rw} wide`; cap = `Cropped (${rw} × ${rh}): its own (0, 0) is the old (${x1}, ${y1})`; }
+      else if (k === 'Resize') { rw = W / 2; rh = H / 2; b.drawImage(tmp, OX, OY, rw, rh); code = `cv.resize(img, (${rw}, ${rh}), interpolation=cv.INTER_AREA)   # dsize is (width, height)`; cap = `Resized (${rw} × ${rh})`; }
+      else { const c = +k.split(' ')[1]; b.setTransform(c === 0 ? 1 : -1, 0, 0, c === 1 ? 1 : -1, c === 0 ? OX : OX + W, c === 1 ? OY : OY + H); if (c === 0) b.setTransform(1, 0, 0, -1, OX, OY + H); b.drawImage(tmp, 0, 0); b.setTransform(1, 0, 0, 1, 0, 0); code = `cv.flip(img, ${c})   # ${c === 0 ? 'upside down' : c === 1 ? 'mirror left-right' : 'both axes'}`; cap = 'Flipped (still the same size)'; }
+      b.setTransform(1, 0, 0, 1, 0, 0); axes(b, rw, rh);
+      $('#w-cf-cap').textContent = cap; $('#w-cf-code').textContent = code;
+    };
+    $('#w-cf-tabs').onclick = e => { const bt = e.target.closest('button'); if (bt) { k = bt.dataset.k; run(); } };
+    el.addEventListener('input', run); run();
+  },
+  // HSV colour mask: choose a hue range and see which pixels survive, like cv.inRange
+  hsvmask(el) {
+    const W = 240, H = 130;
+    const cols = [[0, 'red'], [15, 'orange'], [30, 'yellow'], [60, 'green'], [90, 'cyan'], [120, 'blue'], [150, 'purple'], [0, 'white']];
+    const hsv2rgb = (h, s, v) => { const c = v * s, x = c * (1 - Math.abs((h / 60) % 2 - 1)), m = v - c; const [r, g, b] = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x] : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x]; return [(r + m) * 255, (g + m) * 255, (b + m) * 255].map(Math.round); };
+    // build the picture once as HSV (OpenCV scale: H 0-179, S and V 0-255)
+    const img = []; const cx = i => 32 + (i % 4) * 58, cy = i => 34 + Math.floor(i / 4) * 62;
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      let px = [0, 0, 40];
+      cols.forEach(([h], i) => { if ((x - cx(i)) ** 2 + (y - cy(i)) ** 2 < 24 * 24) px = i === 7 ? [0, 12, 245] : [h, 230, 235]; });
+      img.push(px);
+    }
+    el.innerHTML = `<p class="wgt">Try it: keep only some colours</p>
+      <div class="hbar" id="w-hs-bar"></div>
+      <div class="wgrow"><label>H low <input id="w-hs-l" type="range" min="0" max="179" value="35"></label><label>H high <input id="w-hs-h" type="range" min="0" max="179" value="85"></label><label>S min <input id="w-hs-s" type="range" min="0" max="255" value="50"></label><label>V min <input id="w-hs-v" type="range" min="0" max="255" value="50"></label></div>
+      <div class="dropviz"><figure><figcaption>Original</figcaption><canvas id="w-hs-a" width="${W}" height="${H}"></canvas></figure><figure><figcaption>Mask (white = kept)</figcaption><canvas id="w-hs-b" width="${W}" height="${H}"></canvas></figure><figure><figcaption>Result</figcaption><canvas id="w-hs-c" width="${W}" height="${H}"></canvas></figure></div>
+      <p class="wgsay"><code id="w-hs-code"></code></p>`;
+    $('#w-hs-bar').style.background = `linear-gradient(90deg,${Array.from({ length: 13 }, (_, i) => `rgb(${hsv2rgb(i * 15, 1, 1)})`).join(',')})`;
+    const run = () => {
+      const lo = +$('#w-hs-l').value, hi = +$('#w-hs-h').value, sm = +$('#w-hs-s').value, vm = +$('#w-hs-v').value;
+      const A = $('#w-hs-a').getContext('2d'), B = $('#w-hs-b').getContext('2d'), C = $('#w-hs-c').getContext('2d');
+      const da = A.createImageData(W, H), db = B.createImageData(W, H), dc = C.createImageData(W, H);
+      img.forEach(([h, s, v], i) => {
+        const rgb = hsv2rgb(h * 2, s / 255, v / 255), on = h >= lo && h <= hi && s >= sm && v >= vm;
+        [0, 1, 2].forEach(k => { da.data[i * 4 + k] = rgb[k]; db.data[i * 4 + k] = on ? 255 : 0; dc.data[i * 4 + k] = on ? rgb[k] : 0; });
+        da.data[i * 4 + 3] = db.data[i * 4 + 3] = dc.data[i * 4 + 3] = 255;
+      });
+      A.putImageData(da, 0, 0); B.putImageData(db, 0, 0); C.putImageData(dc, 0, 0);
+      $('#w-hs-code').textContent = `mask = cv.inRange(hsv, np.array([${lo}, ${sm}, ${vm}]), np.array([${hi}, 255, 255]))`;
+    };
+    el.addEventListener('input', run); run();
+  },
+  // mouse events: move and click over a canvas, see the (event, x, y) a callback would get
+  mouseclick(el) {
+    const W = 320, H = 170;
+    el.innerHTML = `<p class="wgt">Try it: move and click on the picture</p>
+      <canvas id="w-mc" width="${W}" height="${H}" style="cursor:crosshair"></canvas>
+      <p class="wgsay"><code id="w-mc-now">cv.EVENT_MOUSEMOVE  x, y = ...</code></p>
+      <div class="evlog" id="w-mc-log"></div>`;
+    const cv = $('#w-mc'), g = cv.getContext('2d'), dots = [], log = [];
+    const draw = () => {
+      g.fillStyle = '#181825'; g.fillRect(0, 0, W, H); g.strokeStyle = '#313244'; g.lineWidth = 1;
+      for (let x = 0; x <= W; x += 40) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); }
+      for (let y = 0; y <= H; y += 40) { g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke(); }
+      g.fillStyle = '#585b70'; g.font = '10px sans-serif'; g.fillText('(0, 0) top-left', 6, 12);
+      dots.forEach(d => { g.fillStyle = d.c; g.beginPath(); g.arc(d.x, d.y, 6, 0, 7); g.fill(); });
+    };
+    const pos = e => { const r = cv.getBoundingClientRect(); return [Math.round((e.clientX - r.left) * W / r.width), Math.round((e.clientY - r.top) * H / r.height)]; };
+    const add = t => { log.unshift(t); log.length = Math.min(log.length, 5); $('#w-mc-log').innerHTML = log.map(l => `<div>${l}</div>`).join(''); };
+    cv.onmousemove = e => { const [x, y] = pos(e); $('#w-mc-now').textContent = `cv.EVENT_MOUSEMOVE   x, y = ${x}, ${y}`; };
+    cv.onmousedown = e => { const [x, y] = pos(e), right = e.button === 2; dots.push({ x, y, c: right ? '#f38ba8' : '#a6e3a1' }); draw(); add(`${right ? 'EVENT_RBUTTONDOWN' : 'EVENT_LBUTTONDOWN'} at (${x}, ${y})  -> circle drawn`); };
+    cv.oncontextmenu = e => e.preventDefault();
+    cv.onmouseup = e => { const [x, y] = pos(e); add(`${e.button === 2 ? 'EVENT_RBUTTONUP' : 'EVENT_LBUTTONUP'} at (${x}, ${y})`); };
+    el._reset = () => { dots.length = 0; log.length = 0; draw(); add('waiting for the mouse...'); };
+    draw(); add('waiting for the mouse...');
+  },
+  // threshold: every pixel is compared with one cut-off value
+  threshold(el) {
+    const W = 240, H = 140, types = ['BINARY', 'BINARY_INV', 'TRUNC', 'TOZERO', 'TOZERO_INV'];
+    const gray = new Uint8Array(W * H);
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      let v = Math.round(x / W * 200 + 20);
+      if ((x - 70) ** 2 + (y - 70) ** 2 < 40 * 40) v = 90;
+      if (x > 120 && x < 190 && y > 25 && y < 115) v = 175;
+      if (x > 200 && y > 100) v = 245;
+      gray[y * W + x] = v;
+    }
+    const apply = (v, t, k) => { const hi = v > t; return k === 'BINARY' ? (hi ? 255 : 0) : k === 'BINARY_INV' ? (hi ? 0 : 255) : k === 'TRUNC' ? (hi ? t : v) : k === 'TOZERO' ? (hi ? v : 0) : (hi ? 0 : v); };
+    el.innerHTML = `<p class="wgt">Try it: pick a rule and a cut-off</p>
+      <div class="wgrow" id="w-th-tabs">${types.map((n, i) => `<button type="button" class="seg2${i ? '' : ' on'}" data-k="${n}">${n}</button>`).join('')}</div>
+      <div class="wgrow"><label>thresh <input id="w-th-t" type="range" min="0" max="255" value="150"></label><b id="w-th-v">150</b></div>
+      <div class="dropviz"><figure><figcaption>Grayscale image</figcaption><canvas id="w-th-a" width="${W}" height="${H}"></canvas></figure><figure><figcaption>Result</figcaption><canvas id="w-th-b" width="${W}" height="${H}"></canvas></figure></div>
+      <p class="wgsay"><code id="w-th-code"></code></p><p class="wgsay" id="w-th-say"></p>`;
+    let k = 'BINARY';
+    const run = () => {
+      const t = +$('#w-th-t').value; $('#w-th-v').textContent = t;
+      $$('#w-th-tabs button').forEach(b => b.classList.toggle('on', b.dataset.k === k));
+      const A = $('#w-th-a').getContext('2d'), B = $('#w-th-b').getContext('2d'), da = A.createImageData(W, H), db = B.createImageData(W, H);
+      gray.forEach((v, i) => { const r = apply(v, t, k); [0, 1, 2].forEach(c => { da.data[i * 4 + c] = v; db.data[i * 4 + c] = r; }); da.data[i * 4 + 3] = db.data[i * 4 + 3] = 255; });
+      A.putImageData(da, 0, 0); B.putImageData(db, 0, 0);
+      $('#w-th-code').textContent = `ret, dst = cv.threshold(gray, ${t}, 255, cv.THRESH_${k})`;
+      $('#w-th-say').innerHTML = 'Pixel by pixel: ' + [10, 90, 150, 151, 200, 255].map(v => `${v} &rarr; <b>${apply(v, t, k)}</b>`).join(', ');
+    };
+    $('#w-th-tabs').onclick = e => { const b = e.target.closest('button'); if (b) { k = b.dataset.k; run(); } };
+    $('#w-th-t').oninput = run; run();
+  },
+  // edges: gradient strength (like Sobel/Canny), with and without a blur first
+  edgeviz(el) {
+    const W = 200, H = 130; let seed = 3; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    const base = new Float32Array(W * H);
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      let v = 60; if ((x - 60) ** 2 + (y - 65) ** 2 < 38 * 38) v = 200; if (x > 110 && x < 175 && y > 25 && y < 100) v = 140;
+      base[y * W + x] = v + (rnd() - 0.5) * 70;
+    }
+    const blurred = (src) => { const o = new Float32Array(W * H); for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { let s = 0, n = 0; for (let j = -2; j <= 2; j++) for (let i = -2; i <= 2; i++) { const xx = x + i, yy = y + j; if (xx >= 0 && yy >= 0 && xx < W && yy < H) { s += src[yy * W + xx]; n++; } } o[y * W + x] = s / n; } return o; };
+    const soft = blurred(base);
+    el.innerHTML = `<p class="wgt">Try it: find the edges</p>
+      <div class="wgrow" id="w-ed-tabs"><button type="button" class="seg2 on" data-k="0">No blur</button><button type="button" class="seg2" data-k="1">Blur first</button></div>
+      <div class="wgrow"><label>Edge strength cut-off <input id="w-ed-t" type="range" min="20" max="400" value="140"></label><b id="w-ed-v">140</b></div>
+      <div class="dropviz"><figure><figcaption>Grayscale (a little noise)</figcaption><canvas id="w-ed-a" width="${W}" height="${H}"></canvas></figure><figure><figcaption>Edges found</figcaption><canvas id="w-ed-b" width="${W}" height="${H}"></canvas></figure></div>
+      <p class="wgsay" id="w-ed-say"></p>`;
+    let on = 0;
+    const run = () => {
+      const t = +$('#w-ed-t').value; $('#w-ed-v').textContent = t;
+      $$('#w-ed-tabs button').forEach(b => b.classList.toggle('on', +b.dataset.k === on));
+      const src = on ? soft : base, A = $('#w-ed-a').getContext('2d'), B = $('#w-ed-b').getContext('2d'), da = A.createImageData(W, H), db = B.createImageData(W, H);
+      let n = 0;
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+        const i = y * W + x, v = Math.max(0, Math.min(255, src[i]));
+        let m = 0;
+        if (x > 0 && y > 0 && x < W - 1 && y < H - 1) {
+          const gx = -src[i - W - 1] - 2 * src[i - 1] - src[i + W - 1] + src[i - W + 1] + 2 * src[i + 1] + src[i + W + 1];
+          const gy = -src[i - W - 1] - 2 * src[i - W] - src[i - W + 1] + src[i + W - 1] + 2 * src[i + W] + src[i + W + 1];
+          m = Math.hypot(gx, gy);
+        }
+        const e = m > t ? 255 : 0; n += e ? 1 : 0;
+        [0, 1, 2].forEach(c => { da.data[i * 4 + c] = v; db.data[i * 4 + c] = e; }); da.data[i * 4 + 3] = db.data[i * 4 + 3] = 255;
+      }
+      A.putImageData(da, 0, 0); B.putImageData(db, 0, 0);
+      $('#w-ed-say').innerHTML = `${n} edge pixels. ${on ? 'The blur smoothed the noise away, so mostly the real outlines are left.' : 'Without a blur, the noise makes lots of tiny fake edges. Raise the cut-off, or turn the blur on.'}`;
+    };
+    $('#w-ed-tabs').onclick = e => { const b = e.target.closest('button'); if (b) { on = +b.dataset.k; run(); } };
+    $('#w-ed-t').oninput = run; run();
+  },
+  // contours: trace the outline of each white shape; RETR_EXTERNAL vs RETR_LIST on a shape with a hole
+  contourviz(el) {
+    const W = 100, H = 64, S = 3, fg = new Uint8Array(W * H);
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+      const donut = (x - 28) ** 2 + (y - 32) ** 2 < 22 * 22 && (x - 28) ** 2 + (y - 32) ** 2 > 10 * 10;
+      const rect = x > 58 && x < 90 && y > 8 && y < 30;
+      const dot = (x - 74) ** 2 + (y - 48) ** 2 < 9 * 9;
+      fg[y * W + x] = donut || rect || dot ? 1 : 0;
+    }
+    const lab = (val, diag) => { const L = new Int32Array(W * H).fill(-1); let n = 0; for (let s = 0; s < W * H; s++) { if (fg[s] !== val || L[s] >= 0) continue; const st = [s]; L[s] = n; while (st.length) { const c = st.pop(), cx = c % W, cy = (c / W) | 0; for (let j = -1; j <= 1; j++) for (let i = -1; i <= 1; i++) { if (!(i || j) || (!diag && i && j)) continue; const xx = cx + i, yy = cy + j; if (xx < 0 || yy < 0 || xx >= W || yy >= H) continue; const q = yy * W + xx; if (fg[q] === val && L[q] < 0) { L[q] = n; st.push(q); } } } n++; } return [L, n]; };
+    const [FL, nf] = lab(1, true), [BL, nb] = lab(0, false), outside = BL[0];
+    el.innerHTML = `<p class="wgt">Try it: how many contours?</p>
+      <div class="wgrow" id="w-ct-tabs"><button type="button" class="seg2 on" data-k="EXTERNAL">RETR_EXTERNAL</button><button type="button" class="seg2" data-k="LIST">RETR_LIST</button></div>
+      <div class="dropviz"><figure><figcaption>Binary image (white shapes)</figcaption><canvas id="w-ct-a" width="${W * S}" height="${H * S}"></canvas></figure><figure><figcaption>Contours drawn</figcaption><canvas id="w-ct-b" width="${W * S}" height="${H * S}"></canvas></figure></div>
+      <p class="wgsay"><code id="w-ct-code"></code></p><p class="wgsay" id="w-ct-say"></p>`;
+    let k = 'EXTERNAL';
+    const pal = ['#f38ba8', '#a6e3a1', '#89b4fa', '#f9e2af', '#cba6f7', '#94e2d5'];
+    const run = () => {
+      $$('#w-ct-tabs button').forEach(b => b.classList.toggle('on', b.dataset.k === k));
+      const A = $('#w-ct-a').getContext('2d'), B = $('#w-ct-b').getContext('2d'); A.fillStyle = '#000'; A.fillRect(0, 0, W * S, H * S); B.fillStyle = '#000'; B.fillRect(0, 0, W * S, H * S);
+      A.fillStyle = '#fff'; const keys = new Map();
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+        const i = y * W + x; if (!fg[i]) continue; A.fillRect(x * S, y * S, S, S);
+        [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dx, dy]) => {
+          const xx = x + dx, yy = y + dy, q = yy * W + xx; const bg = xx < 0 || yy < 0 || xx >= W || yy >= H ? outside : (fg[q] ? -1 : BL[q]);
+          if (bg < 0 || (k === 'EXTERNAL' && bg !== outside)) return;
+          const key = FL[i] + '-' + bg; if (!keys.has(key)) keys.set(key, keys.size);
+          B.fillStyle = pal[keys.get(key) % pal.length]; B.fillRect(x * S, y * S, S, S);
+        });
+      }
+      $('#w-ct-code').textContent = `contours, _ = cv.findContours(thresh, cv.RETR_${k}, cv.CHAIN_APPROX_SIMPLE)`;
+      $('#w-ct-say').innerHTML = `<b>${keys.size}</b> contour${keys.size === 1 ? '' : 's'} found. ${k === 'EXTERNAL' ? 'Only the outermost outline of each shape counts, so the ring gives one.' : 'Every boundary counts, so the ring gives two: its outside edge and the edge of its hole.'}`;
+    };
+    $('#w-ct-tabs').onclick = e => { const b = e.target.closest('button'); if (b) { k = b.dataset.k; run(); } };
+    run();
+  },
+  // bitwise operations on two shapes, and masking a picture
+  bitwiseviz(el) {
+    const S = 150, ops = ['AND', 'OR', 'XOR', 'NOT', 'Mask'];
+    const R = (x, y) => x > 15 && x < 115 && y > 15 && y < 115, C = (x, y) => (x - 100) ** 2 + (y - 100) ** 2 < 55 * 55;
+    const scene = (x, y) => (y > 105 ? [111, 191, 115] : (x - 40) ** 2 + (y - 35) ** 2 < 15 * 15 ? [247, 209, 84] : x > 60 && x < 130 && y > 60 ? [217, 83, 79] : [143, 199, 242]);
+    el.innerHTML = `<p class="wgt">Try it: combine two shapes</p>
+      <div class="wgrow" id="w-bw-tabs">${ops.map((n, i) => `<button type="button" class="seg2${i ? '' : ' on'}" data-k="${n}">${n}</button>`).join('')}</div>
+      <div class="dropviz"><figure><figcaption id="w-bw-c1">Rectangle</figcaption><canvas id="w-bw-a" width="${S}" height="${S}"></canvas></figure><figure><figcaption id="w-bw-c2">Circle</figcaption><canvas id="w-bw-b" width="${S}" height="${S}"></canvas></figure><figure><figcaption>Result</figcaption><canvas id="w-bw-r" width="${S}" height="${S}"></canvas></figure></div>
+      <p class="wgsay"><code id="w-bw-code"></code></p><p class="wgsay" id="w-bw-say"></p>`;
+    let k = 'AND';
+    const paint = (id, f) => { const g = $(id).getContext('2d'), d = g.createImageData(S, S); for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) { const c = f(x, y), i = (y * S + x) * 4; d.data[i] = c[0]; d.data[i + 1] = c[1]; d.data[i + 2] = c[2]; d.data[i + 3] = 255; } g.putImageData(d, 0, 0); };
+    const bw = v => (v ? [255, 255, 255] : [0, 0, 0]);
+    const run = () => {
+      $$('#w-bw-tabs button').forEach(b => b.classList.toggle('on', b.dataset.k === k));
+      const mask = k === 'Mask';
+      $('#w-bw-c1').textContent = mask ? 'Picture' : 'Rectangle'; $('#w-bw-c2').textContent = mask ? 'Mask (circle)' : 'Circle';
+      paint('#w-bw-a', (x, y) => mask ? scene(x, y) : bw(R(x, y))); paint('#w-bw-b', (x, y) => bw(C(x, y)));
+      const f = { AND: (x, y) => R(x, y) && C(x, y), OR: (x, y) => R(x, y) || C(x, y), XOR: (x, y) => R(x, y) !== C(x, y), NOT: (x, y) => !R(x, y) }[k];
+      paint('#w-bw-r', (x, y) => mask ? (C(x, y) ? scene(x, y) : [0, 0, 0]) : bw(f(x, y)));
+      $('#w-bw-code').textContent = { AND: 'cv.bitwise_and(rectangle, circle)', OR: 'cv.bitwise_or(rectangle, circle)', XOR: 'cv.bitwise_xor(rectangle, circle)', NOT: 'cv.bitwise_not(rectangle)', Mask: 'cv.bitwise_and(img, img, mask=circle)' }[k];
+      $('#w-bw-say').textContent = { AND: 'White only where both shapes are white: the overlap.', OR: 'White where either shape is white: both shapes joined.', XOR: 'White only where they differ: one shape but not both.', NOT: 'Every pixel flipped: white becomes black and black becomes white.', Mask: 'The picture survives only where the mask is white. Everything else turns black.' }[k];
+    };
+    $('#w-bw-tabs').onclick = e => { const b = e.target.closest('button'); if (b) { k = b.dataset.k; run(); } };
+    run();
+  },
+  // a Haar feature on a 20 x 20 pixel face patch: light pixels minus dark pixels
+  haarfeature(el) {
+    const N = 20, S = 12;
+    const px = (x, y) => { let v = 170; if (y < 5) v = 205; if (y >= 6 && y <= 8 && ((x >= 3 && x <= 7) || (x >= 12 && x <= 16))) v = 55; if (x >= 9 && x <= 10 && y >= 6 && y <= 12) v = 195; if (y >= 9 && y <= 13 && (x < 4 || x > 15)) v = 185; if (y >= 15 && y <= 16 && x >= 6 && x <= 13) v = 70; if (y >= 18) v = 150; if (x < 1 || x > 18) v = 90; return v; };
+    const types = { Edge: { w: 3, h: 2, rects: (u, w, h) => [[0, 0, w, h / 2, 1], [0, h / 2, w, h / 2, 0]] },
+      'Edge |': { w: 2, h: 3, rects: (u, w, h) => [[0, 0, w / 2, h, 1], [w / 2, 0, w / 2, h, 0]] },
+      Line: { w: 3, h: 2, rects: (u, w, h) => [[0, 0, u, h, 1], [u, 0, u, h, 0], [2 * u, 0, u, h, 1]] },
+      Four: { w: 2, h: 2, rects: (u, w, h) => [[0, 0, u, u, 1], [u, 0, u, u, 0], [0, u, u, u, 0], [u, u, u, u, 1]] } };
+    el.innerHTML = `<p class="wgt">Try it: slide a Haar feature over the face</p>
+      <div class="wgrow" id="w-hf-tabs">${Object.keys(types).map((n, i) => `<button type="button" class="seg2${i ? '' : ' on'}" data-k="${n}">${n}</button>`).join('')}</div>
+      <div class="wgrow"><label>x <input id="w-hf-x" type="range" min="0" max="19" value="3"></label><label>y <input id="w-hf-y" type="range" min="0" max="19" value="3"></label><label>size <input id="w-hf-u" type="range" min="1" max="6" value="3"></label></div>
+      <canvas id="w-hf" width="${N * S}" height="${N * S}"></canvas>
+      <p class="wgsay" id="w-hf-say"></p>`;
+    let k = 'Edge';
+    const run = () => {
+      $$('#w-hf-tabs button').forEach(bt => bt.classList.toggle('on', bt.dataset.k === k));
+      const t = types[k], u = +$('#w-hf-u').value, w = t.w * u, h = t.h * u;
+      const x0 = Math.min(+$('#w-hf-x').value, N - w), y0 = Math.min(+$('#w-hf-y').value, N - h);
+      const g = $('#w-hf').getContext('2d');
+      for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) { const v = px(x, y); g.fillStyle = `rgb(${v},${v},${v})`; g.fillRect(x * S, y * S, S, S); }
+      let sl = 0, nl = 0, sd = 0, nd = 0;
+      t.rects(u, w, h).forEach(([rx, ry, rw, rh, light]) => {
+        for (let y = 0; y < rh; y++) for (let x = 0; x < rw; x++) { const v = px(x0 + rx + x, y0 + ry + y); if (light) { sl += v; nl++; } else { sd += v; nd++; } }
+        g.fillStyle = light ? 'rgba(166,227,161,.35)' : 'rgba(243,139,168,.35)'; g.fillRect((x0 + rx) * S, (y0 + ry) * S, rw * S, rh * S);
+        g.strokeStyle = light ? '#a6e3a1' : '#f38ba8'; g.lineWidth = 2; g.strokeRect((x0 + rx) * S + 1, (y0 + ry) * S + 1, rw * S - 2, rh * S - 2);
+      });
+      const al = sl / nl, ad = sd / nd, d = al - ad, pass = d > 40;
+      $('#w-hf-say').innerHTML = `Light (green) average <b>${al.toFixed(0)}</b>, dark (red) average <b>${ad.toFixed(0)}</b>. Feature value = light &minus; dark = <b>${d.toFixed(0)}</b>. ${pass ? 'A big positive gap: this test says "could be a face" and the window moves on to the next test.' : d < -40 ? 'A big gap, but the wrong way round: dark where a face should be light, so this test says no.' : 'The two areas look about the same here, so this test learns nothing.'} The start position puts the dark half over the eyes. Move it onto the forehead or the cheeks and the gap shrinks.`;
+    };
+    $('#w-hf-tabs').onclick = e => { const bt = e.target.closest('button'); if (bt) { k = bt.dataset.k; run(); } };
+    el.addEventListener('input', run); run();
+  },
+  // Haar cascade: many overlapping hits around a real face, a few stray ones; scaleFactor and minNeighbors decide what survives
+  haardiagram(el) {
+    const W = 300, H = 200;
+    const mk = (cx, cy, base, n, seed) => { let s = seed; const r = () => (s = (s * 16807) % 2147483647) / 2147483647; return Array.from({ length: n }, () => [cx + (r() - .5) * 14, cy + (r() - .5) * 14, base * (0.9 + r() * 0.2)]); };
+    const reals = mk(150, 105, 82, 22, 5), sa = mk(58, 52, 40, 6, 9), sb = mk(245, 158, 34, 3, 13);
+    el.innerHTML = `<p class="wgt">Try it: scaleFactor and minNeighbors</p>
+      <div class="wgrow"><label>scaleFactor <input id="w-hc-s" type="range" min="105" max="150" value="130"></label><b id="w-hc-sv">1.30</b><label>minNeighbors <input id="w-hc-n" type="range" min="0" max="20" value="5"></label><b id="w-hc-v">5</b></div>
+      <div class="dropviz"><figure><figcaption>Detections on the picture</figcaption><canvas id="w-hc" width="${W}" height="${H}"></canvas></figure><figure><figcaption>Overlapping hits per spot (votes)</figcaption><svg id="w-hc-bars" viewBox="0 0 240 160" width="100%"></svg></figure></div>
+      <p class="wgsay" id="w-hc-say"></p><p class="wgsay"><code id="w-hc-code"></code></p>`;
+    const run = () => {
+      const sf = +$('#w-hc-s').value / 100, n = +$('#w-hc-n').value; $('#w-hc-sv').textContent = sf.toFixed(2); $('#w-hc-v').textContent = n;
+      const tries = Math.max(3, Math.min(22, Math.round(18 - (sf - 1.1) * 30))), scales = []; for (let s = 24; s < 180; s *= sf) scales.push(Math.round(s));
+      const groups = [{ name: 'real face', hits: reals.slice(0, tries) }, { name: 'stray A', hits: sa.slice(0, Math.max(1, Math.round(tries * .23))) }, { name: 'stray B', hits: sb.slice(0, Math.max(1, Math.round(tries * .08))) }];
+      const g = $('#w-hc').getContext('2d'); g.fillStyle = '#181825'; g.fillRect(0, 0, W, H);
+      g.fillStyle = '#f2cdcd'; g.beginPath(); g.ellipse(150, 105, 34, 42, 0, 0, 7); g.fill();
+      g.fillStyle = '#11111b'; [[137, 95], [163, 95]].forEach(([x, y]) => { g.beginPath(); g.arc(x, y, 4, 0, 7); g.fill(); }); g.fillRect(140, 120, 20, 3);
+      g.fillStyle = '#45475a'; g.beginPath(); g.arc(58, 52, 14, 0, 7); g.fill(); g.fillRect(238, 150, 14, 14);
+      let kept = 0; g.font = '11px sans-serif';
+      groups.forEach(gr => { const keep = gr.hits.length >= n; g.lineWidth = 1; g.strokeStyle = keep ? 'rgba(166,227,161,.3)' : 'rgba(243,139,168,.4)'; gr.hits.forEach(([cx, cy, s]) => g.strokeRect(cx - s / 2, cy - s / 2, s, s));
+        const a = gr.hits.reduce((p, h) => [p[0] + h[0], p[1] + h[1], p[2] + h[2]], [0, 0, 0]).map(v => v / gr.hits.length);
+        if (keep) { kept++; g.lineWidth = 2.5; g.strokeStyle = '#a6e3a1'; g.strokeRect(a[0] - a[2] / 2, a[1] - a[2] / 2, a[2], a[2]); }
+        g.fillStyle = keep ? '#a6e3a1' : '#f38ba8'; g.fillText(`${gr.hits.length} hits`, Math.max(2, a[0] - a[2] / 2), Math.max(11, a[1] - a[2] / 2 - 4)); });
+      const maxv = Math.max(22, n + 1), bw = 46, by = v => 130 - v / maxv * 112;
+      $('#w-hc-bars').innerHTML = `<line x1="24" y1="130" x2="236" y2="130" stroke="var(--s1)"/>` + groups.map((gr, i) => { const v = gr.hits.length, keep = v >= n, x = 34 + i * 68; return `<rect x="${x}" y="${by(v)}" width="${bw}" height="${130 - by(v)}" rx="3" fill="var(--${keep ? 'green' : 'red'})" opacity=".85"/><text x="${x + bw / 2}" y="${by(v) - 4}" text-anchor="middle" font-size="11" fill="var(--text)">${v}</text><text x="${x + bw / 2}" y="146" text-anchor="middle" font-size="10" fill="var(--o1)">${gr.name}</text>`; }).join('')
+        + `<line x1="24" y1="${by(n)}" x2="236" y2="${by(n)}" stroke="#f9e2af" stroke-width="2" stroke-dasharray="5 4"/><text x="236" y="${by(n) - 4}" text-anchor="end" font-size="10" fill="#f9e2af">minNeighbors = ${n}</text>`;
+      const real = groups[0].hits.length >= n;
+      $('#w-hc-say').innerHTML = `At scaleFactor ${sf.toFixed(2)} the window is tried at <b>${scales.length}</b> sizes (${scales.slice(0, 5).join(', ')}${scales.length > 5 ? ', ...' : ''} px). A smaller factor tries more sizes, so every spot collects more overlapping hits, but it runs slower. Bars at or above the dashed line survive: <b>${kept}</b> detection${kept === 1 ? '' : 's'} left. ${n <= 3 ? 'Too low: stray spots get through as false faces.' : real ? 'Just right: the real face has many hits, the strays do not.' : 'Too high: even the real face falls below the line.'}`;
+      $('#w-hc-code').textContent = `faces = face_cascade.detectMultiScale(gray, ${sf.toFixed(2)}, ${n})`;
+    };
+    el.addEventListener('input', run); run();
+  },
+  // LBPH: the confidence is a distance, so LOWER is a better match
+  lbphpipe(el) {
+    const rows = [['Ray, normal light', 34], ['Ray, dim room', 62], ['Friend (never trained)', 88], ['Stranger', 131]];
+    el.innerHTML = `<div class="steps"><div><b>1 Capture</b><span>~100 face crops per person saved to <code>data/</code></span></div><i>&rarr;</i><div><b>2 Train</b><span><code>clf.train(faces, ids)</code> then <code>classifier.xml</code></span></div><i>&rarr;</i><div><b>3 Recognize</b><span><code>clf.predict(face)</code> gives (id, confidence)</span></div></div>
+      <p class="wgt" style="margin-top:16px">Try it: where do you draw the line?</p>
+      <div class="wgrow"><label>Threshold <input id="w-lb-t" type="range" min="20" max="150" value="70"></label><b id="w-lb-v">70</b></div>
+      <div class="lbl" id="w-lb"></div><p class="wgsay">Remember: for LBPH the confidence is a <b>distance</b>. <b>Lower is a better match</b>, and 0 would be perfect.</p>`;
+    const run = () => {
+      const t = +$('#w-lb-t').value; $('#w-lb-v').textContent = t;
+      $('#w-lb').innerHTML = rows.map(([n, d]) => `<div class="lbr"><span>${n}</span><div class="lbb"><i style="width:${d / 150 * 100}%;background:var(--${d <= t ? 'green' : 'red'})"></i><u style="left:${t / 150 * 100}%"></u></div><b style="color:var(--${d <= t ? 'green' : 'red'})">${d <= t ? 'Ray (id 1)' : 'unknown'} <small>${d}</small></b></div>`).join('');
+    };
+    $('#w-lb-t').oninput = run; run();
+  },
+  // YOLO: every box comes with a confidence; conf= decides which boxes are kept
+  yolobox(el) {
+    const W = 320, H = 190;
+    const objs = [['car', 20, 108, 78, 42, '#d9534f', .92], ['truck', 128, 92, 98, 58, '#89b4fa', .78], ['car', 248, 120, 52, 32, '#f9e2af', .41], ['bike', 10, 152, 34, 28, '#cba6f7', .27]];
+    el.innerHTML = `<p class="wgt">Try it: change the confidence cut-off</p>
+      <div class="wgrow"><label>conf <input id="w-yo-c" type="range" min="0" max="100" value="50"></label><b id="w-yo-v">0.50</b></div>
+      <canvas id="w-yo" width="${W}" height="${H}"></canvas><p class="wgsay" id="w-yo-say"></p><p class="wgsay"><code id="w-yo-code"></code></p>`;
+    const run = () => {
+      const c = +$('#w-yo-c').value / 100; $('#w-yo-v').textContent = c.toFixed(2);
+      const g = $('#w-yo').getContext('2d'); g.fillStyle = '#313244'; g.fillRect(0, 0, W, H); g.fillStyle = '#89b4fa'; g.fillRect(0, 0, W, 70); g.fillStyle = '#45475a'; g.fillRect(0, 95, W, 95);
+      g.fillStyle = '#f9e2af'; for (let x = 0; x < W; x += 50) g.fillRect(x, 140, 28, 3);
+      let n = 0;
+      objs.forEach(([name, x, y, w, h, col, p]) => { g.fillStyle = col; g.fillRect(x + 4, y + 4, w - 8, h - 8);
+        if (p >= c) { n++; g.lineWidth = 2; g.strokeStyle = '#a6e3a1'; g.strokeRect(x, y, w, h); g.fillStyle = '#a6e3a1'; g.fillRect(x, y - 14, 74, 14); g.fillStyle = '#11111b'; g.font = '10px sans-serif'; g.fillText(`${name} ${p.toFixed(2)}`, x + 4, y - 3); } });
+      $('#w-yo-say').innerHTML = `<b>${n}</b> of ${objs.length} detections kept. ${c < .3 ? 'Low cut-off: more boxes, but some are guesses.' : c > .85 ? 'High cut-off: only the surest box is left, and real objects get missed.' : 'A middle cut-off keeps the confident boxes.'}`;
+      $('#w-yo-code').textContent = `results = model(frame, conf=${c.toFixed(2)}, imgsz=320)`;
+    };
+    $('#w-yo-c').oninput = run; run();
+  },
+  // hand landmarks: 21 points, landmark 8 is the index fingertip; its x position drives a servo angle
+  handlandmarks(el) {
+    const W = 300, H = 230;
+    const P = [[.5, .95], [.4, .86], [.32, .75], [.27, .64], [.22, .55], [.42, .62], [.41, .45], [.4, .33], [.4, .22], [.5, .6], [.5, .42], [.5, .29], [.5, .17], [.58, .62], [.59, .45], [.6, .33], [.6, .23], [.65, .68], [.68, .55], [.7, .46], [.71, .38]];
+    const links = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8], [5, 9], [9, 10], [10, 11], [11, 12], [9, 13], [13, 14], [14, 15], [15, 16], [13, 17], [17, 18], [18, 19], [19, 20], [0, 17]];
+    el.innerHTML = `<p class="wgt">Try it: move the index fingertip</p>
+      <div class="wgrow"><label>Fingertip x (0 to 1) <input id="w-hl-x" type="range" min="0" max="100" value="40"></label><b id="w-hl-v"></b></div>
+      <div class="dropviz"><figure><figcaption>21 landmarks (tip = number 8)</figcaption><svg id="w-hl-a" viewBox="0 0 ${W} ${H}" width="100%"></svg></figure><figure><figcaption>Servo angle</figcaption><svg id="w-hl-b" viewBox="0 0 220 150" width="100%"></svg></figure></div>
+      <p class="wgsay" id="w-hl-say"></p>`;
+    const run = () => {
+      const tx = +$('#w-hl-x').value / 100, pts = P.map((p, i) => i === 8 ? [tx, p[1]] : p), ang = Math.round(tx * 180);
+      $('#w-hl-v').textContent = tx.toFixed(2);
+      const X = p => p[0] * W, Y = p => p[1] * H;
+      $('#w-hl-a').innerHTML = links.map(([a, b]) => `<line x1="${X(pts[a])}" y1="${Y(pts[a])}" x2="${X(pts[b])}" y2="${Y(pts[b])}" stroke="var(--o0)" stroke-width="2"/>`).join('')
+        + pts.map((p, i) => `<circle cx="${X(p)}" cy="${Y(p)}" r="${i === 8 ? 7 : 3.5}" fill="${i === 8 ? '#f38ba8' : '#cba6f7'}"/>`).join('')
+        + `<text x="${X(pts[8]) + 10}" y="${Y(pts[8]) + 4}" font-size="11" fill="#f38ba8">8</text><text x="${X(pts[0]) + 8}" y="${Y(pts[0]) + 4}" font-size="11" fill="#a6adc8">0 wrist</text>`;
+      const a = ang * Math.PI / 180, cx = 110, cy = 120;
+      $('#w-hl-b').innerHTML = `<path d="M30 120 A80 80 0 0 1 190 120" fill="none" stroke="var(--s1)" stroke-width="6"/><line x1="${cx}" y1="${cy}" x2="${cx - 70 * Math.cos(a)}" y2="${cy - 70 * Math.sin(a)}" stroke="#a6e3a1" stroke-width="5" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="8" fill="#a6e3a1"/><text x="20" y="140" font-size="10" fill="#a6adc8">0&deg;</text><text x="176" y="140" font-size="10" fill="#a6adc8">180&deg;</text><text x="${cx}" y="22" text-anchor="middle" font-size="14" fill="#cdd6f4">${ang}&deg;</text>`;
+      $('#w-hl-say').innerHTML = `The model gives x as a fraction of the frame width. On a 640-pixel frame that is pixel <b>${Math.round(tx * 640)}</b>, which maps to a servo angle of <b>${ang}&deg;</b>: <code>angle = int(tip.x * 180)</code>.`;
+    };
+    $('#w-hl-x').oninput = run; run();
+  },
+  // Gaussian blur: a weighted average whose weights form a bell curve; bigger kernel, blurrier picture
+  gaussblur(el) {
+    const W = 200, H = 120; let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+    const base = new Float32Array(W * H);
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { let v = 70; if ((x - 62) ** 2 + (y - 60) ** 2 < 36 * 36) v = 200; if (x > 120 && x < 180 && y > 25 && y < 95) v = 150; base[y * W + x] = Math.max(0, Math.min(255, v + (rnd() - 0.5) * 90)); }
+    el.innerHTML = `<p class="wgt">Try it: blur the noise away</p>
+      <div class="wgrow"><label>Kernel size <input id="w-gb-k" type="range" min="0" max="5" value="2"></label><b id="w-gb-v"></b></div>
+      <div class="dropviz"><figure><figcaption>Noisy grayscale</figcaption><canvas id="w-gb-a" width="${W}" height="${H}"></canvas></figure><figure><figcaption>After GaussianBlur</figcaption><canvas id="w-gb-b" width="${W}" height="${H}"></canvas></figure><figure><figcaption>The kernel (weights)</figcaption><div class="kern" id="w-gb-k2"></div></figure></div>
+      <p class="wgsay"><code id="w-gb-code"></code></p><p class="wgsay" id="w-gb-say"></p>`;
+    const run = () => {
+      const k = [1, 3, 5, 7, 9, 11][+$('#w-gb-k').value], r = (k - 1) / 2; $('#w-gb-v').textContent = `${k} × ${k}`;
+      const sg = k === 1 ? 1 : 0.3 * ((k - 1) * 0.5 - 1) + 0.8; // OpenCV's default sigma from the kernel size
+      const ker = []; let sum = 0; for (let j = -r; j <= r; j++) for (let i = -r; i <= r; i++) { const v = Math.exp(-(i * i + j * j) / (2 * sg * sg)); ker.push(v); sum += v; }
+      const kn = ker.map(v => v / sum), out = new Float32Array(W * H);
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { let s = 0, t = 0, n = 0; for (let j = -r; j <= r; j++) for (let i = -r; i <= r; i++) { const xx = x + i, yy = y + j, w = kn[n++]; if (xx >= 0 && yy >= 0 && xx < W && yy < H) { s += base[yy * W + xx] * w; t += w; } } out[y * W + x] = s / t; }
+      [['#w-gb-a', base], ['#w-gb-b', out]].forEach(([id, src]) => { const g = $(id).getContext('2d'), d = g.createImageData(W, H); src.forEach((v, i) => { d.data[i * 4] = d.data[i * 4 + 1] = d.data[i * 4 + 2] = v; d.data[i * 4 + 3] = 255; }); g.putImageData(d, 0, 0); });
+      const mx = Math.max(...kn);
+      $('#w-gb-k2').style.gridTemplateColumns = `repeat(${k},1fr)`;
+      $('#w-gb-k2').innerHTML = kn.map(v => `<i style="background:rgba(203,166,247,${(0.12 + 0.88 * v / mx).toFixed(2)})" title="${v.toFixed(3)}"></i>`).join('');
+      $('#w-gb-code').textContent = `blur = cv.GaussianBlur(gray, (${k}, ${k}), cv.BORDER_DEFAULT)`;
+      $('#w-gb-say').textContent = k === 1 ? 'A 1 × 1 kernel only looks at the pixel itself, so nothing changes.' : `Each new pixel is the weighted average of the ${k} × ${k} patch around it. The centre counts most, the edges of the patch count least, which is the bell shape you can see in the kernel.`;
+    };
+    $('#w-gb-k').oninput = run; run();
+  },
+  // intersection over union of two boxes: how well a predicted box matches the real one
+  iouviz(el) {
+    const W = 300, H = 180, T = [90, 50, 110, 80];
+    el.innerHTML = `<p class="wgt">Try it: slide the predicted box</p>
+      <div class="wgrow"><label>Shift x <input id="w-iu-x" type="range" min="-100" max="100" value="30"></label><label>Shift y <input id="w-iu-y" type="range" min="-70" max="70" value="15"></label><label>Size <input id="w-iu-s" type="range" min="50" max="160" value="100"></label></div>
+      <canvas id="w-iu" width="${W}" height="${H}"></canvas><p class="wgsay" id="w-iu-say"></p>`;
+    const run = () => {
+      const dx = +$('#w-iu-x').value, dy = +$('#w-iu-y').value, s = +$('#w-iu-s').value / 100;
+      const P = [T[0] + dx, T[1] + dy, T[2] * s, T[3] * s];
+      const ix = Math.max(0, Math.min(T[0] + T[2], P[0] + P[2]) - Math.max(T[0], P[0])), iy = Math.max(0, Math.min(T[1] + T[3], P[1] + P[3]) - Math.max(T[1], P[1]));
+      const inter = ix * iy, uni = T[2] * T[3] + P[2] * P[3] - inter, iou = inter / uni;
+      const g = $('#w-iu').getContext('2d'); g.fillStyle = '#181825'; g.fillRect(0, 0, W, H);
+      g.fillStyle = 'rgba(243,139,168,.25)'; g.fillRect(T[0], T[1], T[2], T[3]); g.fillStyle = 'rgba(137,180,250,.25)'; g.fillRect(P[0], P[1], P[2], P[3]);
+      g.fillStyle = 'rgba(166,227,161,.6)'; g.fillRect(Math.max(T[0], P[0]), Math.max(T[1], P[1]), ix, iy);
+      g.lineWidth = 2; g.strokeStyle = '#f38ba8'; g.strokeRect(T[0], T[1], T[2], T[3]); g.strokeStyle = '#89b4fa'; g.strokeRect(P[0], P[1], P[2], P[3]);
+      g.font = '11px sans-serif'; g.fillStyle = '#f38ba8'; g.fillText('real box', 8, 14); g.fillStyle = '#89b4fa'; g.fillText('predicted box', 8, 28); g.fillStyle = '#a6e3a1'; g.fillText('overlap', 8, 42);
+      $('#w-iu-say').innerHTML = `IoU = overlap / union = <b>${iou.toFixed(2)}</b>. ${iou > .7 ? 'A good match.' : iou > .4 ? 'Partly right, but loose.' : 'A poor match: the box is mostly on the wrong spot.'} 1.0 would be a perfect box, 0 means no overlap at all.`;
+    };
+    el.addEventListener('input', run); run();
+  },
+  // movement detection: subtract the previous frame, threshold, and box the cells that changed
+  motiondiff(el) {
+    const W = 180, H = 110, C = 10;
+    el.innerHTML = `<p class="wgt">Try it: move the ball between frames</p>
+      <div class="wgrow"><label>Ball x (this frame) <input id="w-md-x" type="range" min="20" max="160" value="90"></label><label>Last frame was <input id="w-md-d" type="range" min="0" max="40" value="14"></label><label>thresh <input id="w-md-t" type="range" min="5" max="120" value="40"></label></div>
+      <div class="dropviz"><figure><figcaption>Previous frame</figcaption><canvas id="w-md-a" width="${W}" height="${H}"></canvas></figure><figure><figcaption>Current frame + box</figcaption><canvas id="w-md-b" width="${W}" height="${H}"></canvas></figure><figure><figcaption>absdiff, thresholded</figcaption><canvas id="w-md-c" width="${W}" height="${H}"></canvas></figure></div>
+      <p class="wgsay" id="w-md-say"></p>`;
+    const frame = (bx, seed) => { let s = seed; const r = () => (s = (s * 16807) % 2147483647) / 2147483647; const f = new Float32Array(W * H); for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) f[y * W + x] = 80 + (r() - 0.5) * 24 + ((x - bx) ** 2 + (y - 55) ** 2 < 16 * 16 ? 120 : 0); return f; };
+    const show = (id, f, box) => { const g = $(id).getContext('2d'), d = g.createImageData(W, H); f.forEach((v, i) => { d.data[i * 4] = d.data[i * 4 + 1] = d.data[i * 4 + 2] = v; d.data[i * 4 + 3] = 255; }); g.putImageData(d, 0, 0); if (box) { g.strokeStyle = '#a6e3a1'; g.lineWidth = 2; g.strokeRect(...box); } };
+    const run = () => {
+      const x = +$('#w-md-x').value, dd = +$('#w-md-d').value, t = +$('#w-md-t').value, prev = frame(x - dd, 5), cur = frame(x, 9);
+      const diff = new Float32Array(W * H), cells = {};
+      let n = 0; cur.forEach((v, i) => { const m = Math.abs(v - prev[i]) > t ? 255 : 0; diff[i] = m; if (m) { n++; const k = ((i % W / C) | 0) + ',' + (((i / W) | 0) / C | 0); cells[k] = (cells[k] || 0) + 1; } });
+      const hot = Object.entries(cells).filter(([, c]) => c >= 14).map(([k]) => k.split(',').map(Number));
+      let box = null; if (hot.length) { const xs = hot.map(h => h[0]), ys = hot.map(h => h[1]); box = [Math.min(...xs) * C, Math.min(...ys) * C, (Math.max(...xs) - Math.min(...xs) + 1) * C, (Math.max(...ys) - Math.min(...ys) + 1) * C]; }
+      show('#w-md-a', prev); show('#w-md-b', cur, box); show('#w-md-c', diff);
+      $('#w-md-say').innerHTML = `${n} pixels changed. ${dd === 0 ? 'The ball did not move between frames, so nothing shows up: no movement means no difference.' : t < 15 ? 'Threshold too low: camera noise counts as movement and speckles the mask.' : box ? 'Only the pixels that changed are white, so a box round them follows the ball.' : 'Nothing passed the threshold. Lower it a little.'}`;
+    };
+    el.addEventListener('input', run); run();
+  },
+  detectflow(el) {
+    flowWidget(el, 'Click through one detection loop', [
+      { t: 'Frame in', d: 'Grab the next picture from the webcam or the video file. Everything after this happens once per frame.', code: 'ret, frame = cap.read()' },
+      { t: 'Prepare', d: 'Make the picture easy to read: grayscale for a Haar cascade, or leave it as colour for YOLO. Shrinking the frame here makes everything faster.', code: 'gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)' },
+      { t: 'Detect', d: 'The detector scans the frame and returns a list of boxes. A cascade gives (x, y, w, h), YOLO gives corners plus a class and a confidence.', code: 'faces = cascade.detectMultiScale(gray, 1.3, 5)' },
+      { t: 'Filter', d: 'Drop the weak ones. Raise minNeighbors for a cascade, or raise conf for YOLO, until the false boxes go away.', code: 'results = model(frame, conf=0.5)' },
+      { t: 'Draw / act', d: 'Put the result to use: draw the boxes, count them, print the names, or trigger something such as a servo or an LCD message.', code: 'cv.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)' },
+      { t: 'Show, then repeat', d: 'Display the frame and check for the quit key. Then go back to step 1 for the next frame.', code: 'cv.imshow("Detection", frame)' },
+    ]);
+  },
+  yoloflow(el) {
+    flowWidget(el, 'Click through train, then detect', [
+      { t: 'Collect', d: 'Take many photos of the things you want found, in different light, angles and backgrounds. More variety teaches the model more.', code: '' },
+      { t: 'Label', d: 'Draw a box round every object and give it a class name. Roboflow is a handy tool for this, and it exports a YOLO-format dataset.', code: '' },
+      { t: 'data.yaml', d: 'The export includes a data.yaml that points to the train and validation folders and lists the class names.', code: 'data = "Yolo_setup/box.v5i.yolov11/data.yaml"' },
+      { t: 'Train', d: 'Start from a small pretrained model and fine-tune it on your labelled pictures for a number of epochs.', code: 'model = YOLO("yolo11n.pt"); model.train(data=data, epochs=50, imgsz=320)' },
+      { t: 'best.pt', d: 'Training saves the best weights as best.pt. That one file is your trained detector.', code: 'runs/detect/.../weights/best.pt' },
+      { t: 'Detect', d: 'Load best.pt, feed it frames, and read back boxes, classes and confidences. This is the loop from the earlier diagram.', code: 'model = YOLO("best.pt"); results = model(frame, conf=0.5, imgsz=320)' },
+    ]);
+  },
+  litflow(el) {
+    flowWidget(el, 'Click through making a model lighter', [
+      { t: 'Train', d: 'Train on a PC or in the cloud if you can, with a GPU. The Pi can train, but only small experiments are realistic.', code: 'best.pt' },
+      { t: 'Shrink the input', d: 'A smaller working size and a smaller camera frame mean far less to compute.', code: 'imgsz=320  |  cap.set(cv.CAP_PROP_FRAME_WIDTH, 320)' },
+      { t: 'Export', d: 'Convert the PyTorch weights to a format built for the Pi\'s ARM CPU. NCNN is the main target, ONNX is the portable fallback.', code: 'model.export(format="ncnn", imgsz=320)' },
+      { t: 'Check', d: 'Load the exported model and make sure the detections still look right before you trust it.', code: 'YOLO("best_ncnn_model")' },
+      { t: 'Run', d: 'Run the same detection loop with the lighter model. Inference should now be noticeably quicker on the Pi.', code: 'results = model(frame, conf=0.5, imgsz=320)' },
+    ]);
+  },
+  // the OpenCV coordinate system: (0, 0) is the TOP-LEFT pixel and y grows downward; compare with a maths graph
+  coordsys(el) {
+    const GW = 16, GH = 10, C = 20, L = 44, T = 34, W = L + GW * C + 20, H = T + GH * C + 34;
+    el.innerHTML = `<p class="wgt">Try it: hover and click the grid</p>
+      <div class="wgrow" id="w-cs-tabs"><button type="button" class="seg2 on" data-k="cv">OpenCV image</button><button type="button" class="seg2" data-k="math">Maths graph</button></div>
+      <canvas id="w-cs" width="${W}" height="${H}" style="cursor:crosshair"></canvas>
+      <div class="evlog" id="w-cs-out"></div>`;
+    let mode = 'cv', hov = null, pin = null;
+    const cv = $('#w-cs'), g = cv.getContext('2d');
+    const draw = () => {
+      g.fillStyle = '#181825'; g.fillRect(0, 0, W, H);
+      const cx = x => L + x * C, cy = row => T + row * C; // row = display row from the top
+      g.strokeStyle = '#313244'; g.lineWidth = 1;
+      for (let i = 0; i <= GW; i++) { g.beginPath(); g.moveTo(cx(i), T); g.lineTo(cx(i), T + GH * C); g.stroke(); }
+      for (let j = 0; j <= GH; j++) { g.beginPath(); g.moveTo(L, cy(j)); g.lineTo(L + GW * C, cy(j)); g.stroke(); }
+      g.font = '10px sans-serif'; g.fillStyle = '#a6adc8'; g.textAlign = 'center';
+      for (let x = 0; x < GW; x += 5) g.fillText(x, cx(x) + C / 2, T - 6);
+      g.fillText(GW - 1, cx(GW - 1) + C / 2, T - 6);
+      g.textAlign = 'right';
+      const yl = r => mode === 'cv' ? r : GH - 1 - r;
+      for (let r = 0; r < GH; r += (r === 0 ? 5 : 5)) g.fillText(yl(r), L - 6, cy(r) + C / 2 + 3);
+      g.fillText(yl(GH - 1), L - 6, cy(GH - 1) + C / 2 + 3);
+      // axes
+      g.strokeStyle = '#89b4fa'; g.fillStyle = '#89b4fa'; g.lineWidth = 2; g.textAlign = 'left';
+      const oy = mode === 'cv' ? T : T + GH * C;
+      g.beginPath(); g.moveTo(L, oy); g.lineTo(L + GW * C + 14, oy); g.stroke(); g.textAlign = 'right'; g.fillText('x (columns) →', W - 6, oy + (mode === 'cv' ? -20 : 18)); g.textAlign = 'left';
+      g.strokeStyle = '#f38ba8'; g.fillStyle = '#f38ba8';
+      g.beginPath(); g.moveTo(L, T + (mode === 'cv' ? 0 : -14)); g.lineTo(L, T + GH * C + (mode === 'cv' ? 14 : 0)); g.stroke();
+      g.save(); g.translate(12, T + GH * C / 2); g.rotate(-Math.PI / 2); g.textAlign = 'center'; g.fillText(mode === 'cv' ? 'y (rows), grows DOWN' : 'y, grows UP', 0, 0); g.restore();
+      g.fillStyle = '#a6e3a1'; g.textAlign = 'left'; g.beginPath(); g.arc(L, oy, 4, 0, 7); g.fill();
+      g.fillText(mode === 'cv' ? '(0, 0) top-left' : '(0, 0) bottom-left', L + 8, oy + (mode === 'cv' ? 12 : -8));
+      g.textAlign = 'right'; g.fillStyle = '#a6adc8';
+      if (mode === 'cv') { g.fillText(`(${GW - 1}, ${GH - 1}) bottom-right`, L + GW * C, T + GH * C + 16); g.textAlign = 'left'; g.fillText(`(0, ${GH - 1}) bottom-left`, L, T + GH * C + 16); }
+      // points
+      const mark = (pt, col, fillA) => { if (!pt) return; const r = mode === 'cv' ? pt[1] : GH - 1 - pt[1]; g.fillStyle = fillA; g.fillRect(cx(pt[0]), cy(r), C, C); g.strokeStyle = col; g.lineWidth = 2; g.strokeRect(cx(pt[0]) + 1, cy(r) + 1, C - 2, C - 2); };
+      mark(hov, '#cdd6f4', 'rgba(205,214,244,.18)'); mark(pin, '#a6e3a1', 'rgba(166,227,161,.35)');
+      const pt = pin || hov;
+      if (!pt) { $('#w-cs-out').innerHTML = 'Move the mouse over the grid. Each square is one pixel of a ' + GW + ' &times; ' + GH + ' picture.'; return; }
+      const [x, y] = pt, my = GH - 1 - y;
+      $('#w-cs-out').innerHTML = mode === 'cv'
+        ? `drawing / mouse:  (x, y) = (${x}, ${y})<br>NumPy index:      img[${y}, ${x}]   <i>row first</i><br>img.shape = (${GH}, ${GW})   <i>(height, width)</i>`
+        : `maths graph:   (x, y) = (${x}, ${my})<br>the same pixel in OpenCV is (x, y) = (${x}, ${y}): y is counted from the TOP, not the bottom`;
+    };
+    const at = e => { const r = cv.getBoundingClientRect(), px = (e.clientX - r.left) * W / r.width, py = (e.clientY - r.top) * H / r.height, x = Math.floor((px - L) / C), row = Math.floor((py - T) / C); return x >= 0 && x < GW && row >= 0 && row < GH ? [x, mode === 'cv' ? row : GH - 1 - row] : null; };
+    cv.onmousemove = e => { hov = at(e); draw(); }; cv.onmouseleave = () => { hov = null; draw(); };
+    cv.onclick = e => { const p = at(e); pin = p && pin && p[0] === pin[0] && p[1] === pin[1] ? null : p; draw(); };
+    $('#w-cs-tabs').onclick = e => { const b = e.target.closest('button'); if (b) { mode = b.dataset.k; $$('#w-cs-tabs button').forEach(t => t.classList.toggle('on', t === b)); draw(); } };
+    el._reset = () => { mode = 'cv'; hov = pin = null; $$('#w-cs-tabs button').forEach(t => t.classList.toggle('on', t.dataset.k === 'cv')); draw(); };
+    draw();
+  },
+  // YOLO model sizes: same family, bigger means more accurate but slower and heavier (relative, not a benchmark)
+  yolosizes(el) {
+    const sz = [
+      ['n', 'Nano', 2, 5, 1, 'The smallest and fastest. The one for a Raspberry Pi, a phone or a quick experiment. Misses more, especially small objects.', 'yolo11n.pt'],
+      ['s', 'Small', 3, 4, 2, 'A step up in accuracy for a little more work. Fine for a laptop CPU or a Pi when nano is not accurate enough.', 'yolo11s.pt'],
+      ['m', 'Medium', 4, 3, 3, 'A good all-rounder when you have a laptop with a graphics card or a modest GPU.', 'yolo11m.pt'],
+      ['l', 'Large', 4.5, 2, 4, 'For when accuracy matters more than speed and you have a proper GPU.', 'yolo11l.pt'],
+      ['x', 'Extra large', 5, 1, 5, 'The most accurate and the heaviest. A big GPU or the cloud, not a small board.', 'yolo11x.pt'],
+    ];
+    el.innerHTML = `<p class="wgt">Try it: pick a model size</p>
+      <div class="wgrow" id="w-ys-tabs">${sz.map((z, i) => `<button type="button" class="seg2${i ? '' : ' on'}" data-k="${z[0]}">${z[0]} ${z[1]}</button>`).join('')}</div>
+      <div class="ysb" id="w-ys"></div><p class="wgsay" id="w-ys-say"></p><p class="wgsay"><code id="w-ys-code"></code></p>`;
+    const run = k => {
+      const z = sz.find(q => q[0] === k);
+      $$('#w-ys-tabs button').forEach(b => b.classList.toggle('on', b.dataset.k === k));
+      const bar = (n, v, c) => `<div class="ysr"><span>${n}</span><div><i style="width:${v / 5 * 100}%;background:var(--${c})"></i></div></div>`;
+      $('#w-ys').innerHTML = bar('Accuracy', z[2], 'green') + bar('Speed', z[3], 'blue') + bar('Size and memory', z[4], 'peach');
+      $('#w-ys-say').innerHTML = `<b>${z[1]}.</b> ${z[5]} The bars are relative, to compare sizes with each other. They are not benchmark numbers.`;
+      $('#w-ys-code').textContent = `model = YOLO("${z[6]}")`;
+    };
+    $('#w-ys-tabs').onclick = e => { const b = e.target.closest('button'); if (b) run(b.dataset.k); };
+    el._reset = () => run('n'); run('n');
+  },
+  // hover the 21 MediaPipe hand landmarks to see their index and name
+  landmarkmap(el) {
+    const W = 300, H = 230;
+    const P = [[.5, .95], [.4, .86], [.32, .75], [.27, .64], [.22, .55], [.42, .62], [.41, .45], [.4, .33], [.4, .22], [.5, .6], [.5, .42], [.5, .29], [.5, .17], [.58, .62], [.59, .45], [.6, .33], [.6, .23], [.65, .68], [.68, .55], [.7, .46], [.71, .38]];
+    const links = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8], [5, 9], [9, 10], [10, 11], [11, 12], [9, 13], [13, 14], [14, 15], [15, 16], [13, 17], [17, 18], [18, 19], [19, 20], [0, 17]];
+    const names = ['WRIST', 'THUMB_CMC', 'THUMB_MCP', 'THUMB_IP', 'THUMB_TIP', 'INDEX_FINGER_MCP', 'INDEX_FINGER_PIP', 'INDEX_FINGER_DIP', 'INDEX_FINGER_TIP', 'MIDDLE_FINGER_MCP', 'MIDDLE_FINGER_PIP', 'MIDDLE_FINGER_DIP', 'MIDDLE_FINGER_TIP', 'RING_FINGER_MCP', 'RING_FINGER_PIP', 'RING_FINGER_DIP', 'RING_FINGER_TIP', 'PINKY_MCP', 'PINKY_PIP', 'PINKY_DIP', 'PINKY_TIP'];
+    el.innerHTML = `<p class="wgt">Try it: hover a landmark</p>
+      <svg id="w-lm" viewBox="0 0 ${W} ${H}" width="100%" style="max-width:340px"></svg><p class="wgsay" id="w-lm-say"></p>`;
+    let at = 8;
+    const draw = () => {
+      $('#w-lm').innerHTML = links.map(([a, b]) => `<line x1="${P[a][0] * W}" y1="${P[a][1] * H}" x2="${P[b][0] * W}" y2="${P[b][1] * H}" stroke="var(--o0)" stroke-width="2"/>`).join('')
+        + P.map((p, i) => `<circle data-i="${i}" cx="${p[0] * W}" cy="${p[1] * H}" r="${i === at ? 8 : 5}" fill="${i === at ? '#f38ba8' : [4, 8, 12, 16, 20].includes(i) ? '#a6e3a1' : '#cba6f7'}" style="cursor:pointer"/>`).join('')
+        + `<text x="${P[at][0] * W + 12}" y="${P[at][1] * H + 4}" font-size="12" fill="#f38ba8">${at}</text>`;
+      const f = at === 0 ? 'the wrist' : ['thumb', 'index finger', 'middle finger', 'ring finger', 'little finger'][Math.floor((at - 1) / 4)];
+      const part = at === 0 ? '' : ['base joint', 'first knuckle', 'second knuckle', 'fingertip'][(at - 1) % 4];
+      $('#w-lm-say').innerHTML = `Landmark <b>${at}</b>: <code>${names[at]}</code>, the ${at === 0 ? 'wrist' : part + ' of the ' + f}. Fingertips (4, 8, 12, 16, 20) are green.`;
+    };
+    $('#w-lm').onmouseover = e => { const c = e.target.closest('circle'); if (c) { at = +c.dataset.i; draw(); } };
+    $('#w-lm').onclick = $('#w-lm').onmouseover;
+    el._reset = () => { at = 8; draw(); }; draw();
+  },
+  // which tool for which job: YOLO, MediaPipe or a Haar cascade
+  toolpicker(el) {
+    const jobs = [
+      ['Count the cars on a road', 'YOLO', 'It finds many objects of a common kind in one frame, and cars are in the classes a pretrained YOLO already knows.'],
+      ['Tell which fingers are held up', 'MediaPipe', 'It gives the 21 hand landmarks straight away, with no training. Compare each fingertip with the joint below it.'],
+      ['Find your own water bottle on a desk', 'YOLO', 'MediaPipe only knows what Google trained it for. YOLO can be trained on pictures of your bottle, as your own class.'],
+      ['Check a person\'s posture while exercising', 'MediaPipe', 'Its pose model tracks 33 body landmarks, which is what you need for angles at the knee, hip or elbow.'],
+      ['Find front-facing faces very fast on a Pi, with no training', 'Haar', 'A cascade is tiny, quick and needs no training. For more head angles, MediaPipe\'s face detection is the upgrade.'],
+      ['Make a servo follow your fingertip', 'MediaPipe', 'Landmark 8 is the index fingertip. Its x position becomes the servo angle.'],
+      ['Spot a missing item on a shelf of your own products', 'YOLO', 'Train YOLO on labelled pictures of your products, and count the boxes it returns.'],
+    ];
+    el.innerHTML = `<p class="wgt">Try it: pick a job, see the tool</p>
+      <div class="tpj" id="w-tp-jobs">${jobs.map((j, i) => `<button type="button" class="tpb" data-i="${i}">${j[0]}</button>`).join('')}</div>
+      <div class="tpres" id="w-tp"></div>`;
+    const run = i => {
+      $$('#w-tp-jobs button').forEach(b => b.classList.toggle('on', +b.dataset.i === i));
+      if (i < 0) { $('#w-tp').innerHTML = '<p class="wgsay">Choose a job above.</p>'; return; }
+      const j = jobs[i];
+      $('#w-tp').innerHTML = `<div class="tpt">${['YOLO', 'MediaPipe', 'Haar'].map(t => `<span class="${t === j[1] ? 'on' : ''}">${t}</span>`).join('')}</div><p>${j[2]}</p>`;
+    };
+    $('#w-tp-jobs').onclick = e => { const b = e.target.closest('button'); if (b) run(+b.dataset.i); };
+    el._reset = () => run(-1); run(-1);
   },
   // dropout: the same small network with and without random neurons switched off
   dropoutdiagram(el) {
@@ -1293,7 +1919,7 @@ async function loadChapter() {
       </div>
     </div>`;
   Object.assign(widgets, window.moreWidgets || {});
-  $$('[data-widget]').forEach(el => widgets[el.dataset.widget] && widgets[el.dataset.widget](el));
+  $$('[data-widget]').forEach(el => { const f = widgets[el.dataset.widget]; if (f) { f(el); addReset(el); } });
   const mark = $('#mark'), topmark = $('#topmark');
   const paint = () => {
     const isDone = (load('coder:done') || []).includes(id);

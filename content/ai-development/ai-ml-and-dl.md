@@ -5,13 +5,17 @@ summary: Artificial intelligence, machine learning and deep learning: three nest
 
 > [!aha] AI, ML and DL are not three separate fields sitting side by side. They are nested, like dolls: every deep learning system is machine learning, and every machine learning system is AI. The circles get smaller and more specific as you go in.
 
-> [!tip] **Got the guts for the real thing?** These chapters keep the maths light on purpose. If you want to go deeper and do not mind the heavy maths, read [Michael Nielsen's Neural Networks and Deep Learning](http://neuralnetworksanddeeplearning.com/), a free online book that builds a network from scratch, one idea at a time. Then take on [Deep Learning by Ian Goodfellow, Yoshua Bengio and Aaron Courville](https://www.deeplearningbook.org/), the standard textbook, also free to read online.
+```cta
+books | Got the guts for the real thing? | These chapters keep the maths light on purpose. If you do not mind the heavy maths, go deeper with these two free books.
+Neural Networks and Deep Learning | http://neuralnetworksanddeeplearning.com/ | Michael Nielsen
+Deep Learning | https://www.deeplearningbook.org/ | Ian Goodfellow, Yoshua Bengio and Aaron Courville
+```
 
 ## Artificial intelligence: the biggest circle
 
-**AI** is any program that does something that looks intelligent: answering a question, picking a move, recognising a face. By that definition, a thermostat that decides when to turn on the heat and a giant language model both count, just at wildly different levels of sophistication.
+**AI** is any program that does something that looks intelligent: answering a question, picking a move, recognising a face. By that definition, a thermostat that decides when to turn on the heat and a giant language model both count, just at wildly different levels of sophistication. The name goes back to 1956, when researcher John McCarthy used it for a summer workshop at Dartmouth College. For decades after that, most AI was written by hand: experts spelled out rules ("if this, then that"), or a program searched through possible moves, the way a chess engine does. Such systems can be very strong, but only at the one job someone programmed them for. Everything in use today is **narrow AI**: excellent at one kind of task (translating, spotting spam, playing Go) and useless outside it. The science-fiction kind, one system that can do anything a person can, is called **general AI**, and it does not exist yet. So "AI" names the *goal* of acting intelligently, not any one method of getting there. Machine learning, the next circle, is just one of those methods.
 
-> [!compare] Think of it like "vehicle". A skateboard is a vehicle. So is a rocket. The word tells you almost nothing about how it works.
+> [!compare] Think of it like calling someone "skilled". A cashier following the price list, a chess champion and a doctor who has seen thousands of cases are all skilled, but in very different ways. The word tells you almost nothing about how the skill works, and "AI" is the same.
 
 ## Machine learning: programs that learn from data
 
@@ -70,7 +74,7 @@ Each circle in that diagram is loosely inspired by a biological neuron: it takes
 
 | Tool | Real-life picture | What it does |
 |---|---|---|
-| AI | "Vehicle" | Anything that acts intelligently, however it is built |
+| AI | Calling someone "skilled" | Anything that acts intelligently, however it is built |
 | ML | Learning a recipe by tasting it, not reading it | Learns its own rules from examples, instead of being hand-coded |
 | DL | Learning in layers: edges, then shapes, then whole objects | Machine learning with many-layered neural networks |
 | Input layer | Raw material entering a factory | Hands over the data, unchanged |

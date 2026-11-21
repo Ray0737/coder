@@ -11,14 +11,14 @@ const mdInline = s => mdEsc(s)
   .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
 
 // python colours: comments, strings (with f/r prefixes), numbers, keywords, common built-ins
-const PY = /(#.*)|([fFrRbB]{0,2}(?:"(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'))|\b(\d+(?:\.\d+)?)\b|\b(def|class|if|elif|else|for|while|in|not|and|or|return|import|from|as|True|False|None|pass|break|continue|try|except|with|lambda)\b|\b(print|input|int|float|str|len|range|type|list|dict|tuple|set|open|round|abs|sum|min|max)(?=\()/g;
+const PY = /(#.*)|([fFrRbB]{0,2}(?:"(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'))|\b(\d+(?:\.\d+)?)\b|\b(True|False|None)\b|\b(def|class|if|elif|else|for|while|in|not|and|or|return|import|from|as|pass|break|continue|try|except|finally|with|lambda|is|raise|global|yield)\b|\b([A-Za-z_]\w*)(?=\()/g;
 function mdCode(code, lang) {
   if (lang !== 'python') return mdEsc(code);
   let out = '', last = 0, m;
   PY.lastIndex = 0;
   while ((m = PY.exec(code))) {
     out += mdEsc(code.slice(last, m.index));
-    const cls = m[1] ? 'c' : m[2] ? 's' : m[3] ? 'n' : m[4] ? 'k' : 'b';
+    const cls = m[1] ? 'c' : m[2] ? 's' : m[3] || m[4] ? 'n' : m[5] ? 'k' : /^[A-Z]/.test(m[6]) ? 'y' : 'b';
     out += `<span class="${cls}">${mdEsc(m[0])}</span>`;
     last = m.index + m[0].length;
   }
@@ -48,7 +48,9 @@ function mdParse(src) {
       for (i++; i < lines.length && !lines[i].startsWith(m[1]); i++) buf.push(lines[i]);
       i++;
       const lang = m[2].toLowerCase();
-      if (lang === 'terms') out.push(`<div class="tms">${buf.filter(x => x.trim()).map(x => { const i = x.indexOf('|'); return `<div class="tm"><b>${mdInline(x.slice(0, i).trim())}</b><span>${mdInline(x.slice(i + 1).trim())}</span></div>`; }).join('')}</div>`);
+      if (lang === 'cta') { const rows = buf.filter(x => x.trim()).map(x => x.split('|').map(v => v.trim())), [ic, t, d] = rows[0];
+        out.push(`<div class="ctac"><span class="tmi">${icon(ic)}</span><div><b>${mdInline(t)}</b><p>${mdInline(d)}</p><div class="ctal">${rows.slice(1).map(([l, u, sub]) => `<a href="${mdEsc(u)}" target="_blank" rel="noopener"><span><b>${mdInline(l)}</b>${sub ? `<small>${mdInline(sub)}</small>` : ''}</span>${icon('arrow-up-right')}</a>`).join('')}</div></div></div>`); }
+      else if (lang === 'terms') out.push(`<div class="tms">${buf.filter(x => x.trim()).map(x => { const i = x.indexOf('|'); return `<div class="tm"><b>${mdInline(x.slice(0, i).trim())}</b><span>${mdInline(x.slice(i + 1).trim())}</span></div>`; }).join('')}</div>`);
       else if (lang === 'cards') out.push(`<div class="pcs">${buf.filter(x => x.trim()).map(x => { const [n, f, d, p, c] = x.split('|').map(s => s.trim()); return `<div class="pc"><b class="pn">${mdInline(n)}</b><code>${mdInline(f)}</code><p>${mdInline(d)}</p><p class="pcl"><span class="pro"><em>Pros:</em> ${mdInline(p)}</span><span class="con"><em>Cons:</em> ${mdInline(c)}</span></p></div>`; }).join('')}</div>`);
       else if (lang === 'widget') out.push(`<div class="wg" data-widget="${mdEsc(buf.join('').trim())}"></div>`);
       else out.push(`<figure class="code">${lang ? `<figcaption>${mdEsc(lang)}</figcaption>` : ''}<pre><code>${mdCode(buf.join('\n'), lang)}</code></pre></figure>`);
