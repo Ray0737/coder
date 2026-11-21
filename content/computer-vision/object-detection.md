@@ -46,11 +46,14 @@ The area check matters. Noise leaves a few stray white dots, and without it ever
 
 ## Every detector runs the same loop
 
-Whichever way you choose, the loop around it is the same. Click through it:
+Whichever way you choose, the loop around it is the same:
 
-```widget
-detectflow
-```
+1. **Frame in:** grab the next picture from the webcam or the video file. Everything after this happens once per frame. `ret, frame = cap.read()`
+2. **Prepare:** make the picture easy to read. Use grayscale for a Haar cascade, or leave it in colour for YOLO. Shrinking the frame here makes everything faster. `gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)`
+3. **Detect:** the detector scans the frame and returns a list of boxes. A cascade gives `(x, y, w, h)`, and YOLO gives corners plus a class and a confidence. `faces = cascade.detectMultiScale(gray, 1.3, 5)`
+4. **Filter:** drop the weak ones. Raise `minNeighbors` for a cascade, or raise `conf` for YOLO, until the false boxes go away. `results = model(frame, conf=0.5)`
+5. **Draw or act:** put the result to use. Draw the boxes, count them, print the names, or trigger something such as a servo or an LCD message. `cv.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)`
+6. **Show, then repeat:** display the frame and check for the quit key, then go back to step 1 for the next frame. `cv.imshow("Detection", frame)`
 
 ## How good is a box? Intersection over union
 

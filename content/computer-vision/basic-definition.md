@@ -53,6 +53,17 @@ The rest of this course walks along that loop with **OpenCV**, a free library fo
 
 > [!aha] Hand-built rules are fast and easy to explain, but they break when the light or angle changes. Learned models cope with the mess of the real world, but they need data to train on. Most real projects use both: rules to prepare the picture, a trained model to find things in it.
 
+### From pixels to a trained model
+
+When a classic (non-deep) model learns from pictures, the work happens in three stages. This is called the **preprocessing, feature extraction and training pipeline**:
+
+1. **Preprocess:** clean the picture so every example looks alike. Convert it to grayscale with `cvtColor`, blur it with `GaussianBlur` to remove noise, and resize it to one standard size.
+2. **Extract features:** turn the cleaned picture into numbers that describe it. That might be edges from `Canny`, outlines from `findContours`, a colour mask, or a histogram of local patterns like LBPH uses.
+3. **Train:** give those feature numbers and their labels to a model, such as an SVM or k-nearest-neighbours, and let it learn which features go with which label.
+4. **Predict:** run new pictures through the *same* preprocessing and feature steps, then ask the trained model for an answer.
+
+The same cleaning has to happen at training time and at prediction time, or the model sees numbers it was never taught. A deep-learning model such as YOLO skips stage 2, because the network learns its own features from the raw picture.
+
 Learned vision is the same idea as the neural networks in the AI Development course. In fact, the CNN chapter there is the model family behind most modern image recognition.
 
 ## Try it
@@ -62,6 +73,7 @@ Learned vision is the same idea as the neural networks in the AI Development cou
 3. A webcam sends 30 frames per second at 640 × 480, in colour. Roughly how many numbers is that every second?
 4. Name one thing a person does easily with a photo that is hard for a computer, and say why.
 5. Is "keep only the green pixels" machine learning? Is a face detector? Explain the difference.
+6. Why must new pictures go through the same preprocessing as the training pictures before the model sees them?
 
 ## Quick recap
 
