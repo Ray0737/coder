@@ -1485,3 +1485,5 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 .lostact .btn{padding:6px 12px;font-size:12px}
 .lesson[data-cls="ai-development"] > p{margin:18px 0}
 .lesson[data-cls="ai-development"] > p + h3{margin-top:46px}
+.dropviz figure{display:flex;flex-direction:column}
+.dropviz figcaption{flex:1;display:flex;align-items:center;justify-content:center}
