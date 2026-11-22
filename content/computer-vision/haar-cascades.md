@@ -11,6 +11,11 @@ A **Haar cascade** is a classic, pre-trained face detector. Someone trained it o
 
 > [!compare] Think of it like a security guard checking tickets through a series of gates. The first gate rejects most people instantly with a quick look, and only those who pass reach the next, stricter gate. A window that gets through every gate is let in as a face. Most of the picture is thrown out at gate one, which is why it is so fast.
 
+```cta
+github-logo | Get the cascade files | The ready-made .xml files (faces, eyes, smiles and more) that ship with OpenCV.
+Haar cascades on GitHub | https://github.com/opencv/opencv/tree/4.x/data/haarcascades | The official folder of pre-trained cascades
+```
+
 ```python
 face_cascade = cv.CascadeClassifier('haarcascade_frontalface_default.xml')
 gray  = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)          # cascades want grayscale
