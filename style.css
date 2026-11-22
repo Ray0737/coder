@@ -1483,5 +1483,5 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 .lost .note{font-size:11px}
 .lostact{gap:8px;margin:4px 0 0}
 .lostact .btn{padding:6px 12px;font-size:12px}
-.lesson[data-cls="ai-development"] p{margin:18px 0}
-.lesson[data-cls="ai-development"] p + h3{margin-top:46px}
+.lesson[data-cls="ai-development"] > p{margin:18px 0}
+.lesson[data-cls="ai-development"] > p + h3{margin-top:46px}
