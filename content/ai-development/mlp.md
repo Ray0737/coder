@@ -215,6 +215,14 @@ Math Level | The same formulas from this chapter (`z`, the activation, the loss,
 ```
 
 ```cta
+books | Get the MNIST dataset | The 70,000 handwritten digits used in this chapter, free to download.
+The original MNIST page | http://yann.lecun.com/exdb/mnist/ | Yann LeCun, the source of the dataset
+Digit Recognizer on Kaggle | https://www.kaggle.com/c/digit-recognizer | A beginner competition built on MNIST
+MNIST mirror on GitHub | https://github.com/cvdfoundation/mnist | Download links for the four data files
+MNIST database on Wikipedia | https://en.wikipedia.org/wiki/MNIST_database | History and benchmark results
+```
+
+```cta
 flask | See it for yourself | Train a small network in your browser, or put an MLP next to a CNN and compare them.
 Neural network playground | @neural-playground | Pick data, layers and settings, and watch it learn
 Neural network comparison | @compare#MLP,CNN | MLP next to a CNN
