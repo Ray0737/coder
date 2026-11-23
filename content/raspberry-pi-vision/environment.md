@@ -71,6 +71,7 @@ python3 -c "import cv2, mediapipe, numpy, RPi.GPIO; print('all good')"
 | 16x2 I2C LCD | `rpi_lcd` (it pulls in `smbus` by itself) | `pip install rpi_lcd`, and enable I2C in `sudo raspi-config` (see the next section) |
 | Checking the LCD address | The `i2cdetect` command, from `i2c-tools` | `sudo apt install i2c-tools`, then `sudo i2cdetect -y 1` |
 | Webcam and drawing | `opencv-python` | Already in `requirements.txt` |
+| Face recognition (LBPH) | `opencv-contrib-python`, because `cv.face` is not in plain `opencv-python` | `pip install opencv-contrib-python` in place of `opencv-python`, never both |
 | Hand tracking | `mediapipe==0.10.9`, plus the `hand_landmarker.task` file | Already in `requirements.txt`, and keep the file next to the script |
 | YOLO detection | `ultralytics` | `pip install ultralytics` |
 | Exporting a lighter YOLO model | `ncnn`, `onnx`, `onnxsim` | `pip install ncnn onnx onnxsim` |

@@ -32,6 +32,8 @@ pixelgrid
 
 Whatever the project, most vision programs run the same loop, and the rest of this course walks along it with **OpenCV**, a free library for Python, starting with how to read a picture and ending with detectors that find faces and objects in a live camera. The Raspberry Pi course then puts the same ideas on a small board that drives real hardware.
 
+> [!tip] Install OpenCV with `pip install opencv-python`. The face recognition chapter needs the **contrib** build instead, `pip install opencv-contrib-python`, which has everything in the plain build plus extra modules such as `cv.face`. Install only one of the two, because having both in the same environment makes them clash.
+
 | Step | What happens | Example |
 |---|---|---|
 | 1. Capture | Get an image or a video frame | Read a file, or grab a frame from the webcam |
