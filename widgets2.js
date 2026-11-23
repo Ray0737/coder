@@ -650,5 +650,50 @@
       el._reset = () => { li = 1; q('#bd-r').value = 0; q('#bd-l').querySelectorAll('button').forEach((b, k) => b.classList.toggle('on', k === 1)); draw(); };
       draw();
     },
+    // ---------- CNN ----------
+    // stack conv+pool blocks: map size shrinks, channels grow, and each unit sees a wider patch of the original image
+    cnnstack(el) {
+      const q = s => el.querySelector(s), SIDES = [32, 64, 224], CH = [8, 16, 32, 64, 128];
+      let si = 0;
+      el.innerHTML = `<p class="wgt">Try it: stack conv + pool blocks</p>
+        <div class="tb"><span>Image</span>${chips('cs-side', SIDES.map(s => s + '×' + s), 0)}<label>Blocks <input id="cs-n" type="range" min="1" max="5" step="1" value="3"><b class="wgv" id="cs-nv"></b></label></div>
+        <div class="stk" id="cs-row"></div><div class="afrow" id="cs-r"></div>
+        <p class="wgcap">Each block is a 3×3 convolution (same padding) then 2×2 max pooling. The orange square on the photo is how much of the original image one unit at the end of the last block can see.</p>`;
+      const draw = () => {
+        const side = SIDES[si], n = +q('#cs-n').value; q('#cs-nv').textContent = n;
+        let s = side, cin = 3, rf = 1, j = 1, params = 0;
+        const boxes = [`<div class="stkb"><b>Input</b><span>${s}×${s}×3</span><small>sees 1 px</small></div>`];
+        for (let k = 0; k < n; k++) {
+          params += 9 * cin * CH[k] + CH[k]; rf += 2 * j; rf += j; j *= 2; s = Math.floor(s / 2); cin = CH[k];
+          boxes.push(`<div class="stkb"><b>Block ${k + 1}</b><span>${s}×${s}×${cin}</span><small>sees ${rf} px</small></div>`);
+        }
+        q('#cs-row').innerHTML = boxes.join('<i>→</i>');
+        const frac = Math.min(1, rf / side), W = 84;
+        q('#cs-r').innerHTML = `<div><span>One unit sees</span><small>of the image width</small><b>${Math.round(frac * 100)}%</b></div><div><span>Map size</span><small>pixels per side</small><b>${s}</b></div><div><span>Weights so far</span><small>all conv layers</small><b>${params.toLocaleString('en-US')}</b></div>
+          <div><span>The photo</span><small>orange = what it sees</small><b style="display:block;width:${W}px;height:${W}px;background:var(--crust);border-radius:6px;position:relative"><u style="position:absolute;left:${(W - frac * W) / 2}px;top:${(W - frac * W) / 2}px;width:${frac * W}px;height:${frac * W}px;border:2px solid var(--peach);border-radius:4px;box-sizing:border-box"></u></b></div>`;
+      };
+      pickIn(q, '#cs-side', i => { si = i; draw(); });
+      el.addEventListener('input', draw);
+      el._reset = () => { si = 0; q('#cs-n').value = 3; q('#cs-side').querySelectorAll('button').forEach((b, k) => b.classList.toggle('on', k === 0)); draw(); };
+      draw();
+    },
+
+    // why skip connections help: the plain path shrinks the learning signal at every layer, the shortcut path does not
+    resdepth(el) {
+      const q = s => el.querySelector(s);
+      el.innerHTML = `<p class="wgt">Try it: a signal through many layers</p>
+        <div class="tb"><label>Layers <input id="rd-l" type="range" min="1" max="50" step="1" value="20"><b class="wgv" id="rd-lv"></b></label><label>Kept per layer <input id="rd-r" type="range" min="0.5" max="0.95" step="0.01" value="0.8"><b class="wgv" id="rd-rv"></b></label></div>
+        <div class="nndiag" id="rd-plot"></div><div class="afrow" id="rd-ro"></div>
+        <p class="wgcap">A simplified picture: each layer on the plain road passes on only a fraction of the learning signal, while the shortcut passes it on whole. Real networks are messier, but this is the reason very deep plain stacks stopped learning.</p>`;
+      const draw = () => {
+        const L = +q('#rd-l').value, r = +q('#rd-r').value;
+        q('#rd-lv').textContent = L; q('#rd-rv').textContent = Math.round(r * 100) + '%';
+        const pts = Array.from({ length: 51 }, (_, i) => [i, Math.pow(r, i)]);
+        q('#rd-plot').innerHTML = curveSVG([{ pts: [[0, 1], [50, 1]], color: 'var(--s1)', dash: '4 3' }, { pts, color: 'var(--mauve)' }], { xMin: 0, xMax: 50, yMin: 0, yMax: 1, xLabel: 'layers deep', yLabel: 'signal left', dots: [{ x: L, y: Math.pow(r, L), color: 'var(--peach)' }] });
+        q('#rd-ro').innerHTML = `<div><span>Plain road</span><small>after ${L} layers</small><b>${(Math.pow(r, L) * 100).toFixed(Math.pow(r, L) < 0.01 ? 3 : 1)}%</b></div><div><span>With a shortcut</span><small>identity path</small><b>100%</b></div>`;
+      };
+      el.addEventListener('input', draw);
+      draw();
+    },
   };
 })();

@@ -1544,3 +1544,4 @@ details.more p code,details.more li code,details.more td code{background:none;pa
 .fltab .fd span:last-child{color:var(--peach);font-weight:700}
 .fltab .flq{background:color-mix(in srgb,var(--peach) 11%,transparent);border-radius:8px;margin:4px 8px 0;padding:9px 10px}
 .fltab .flq span:last-child{font-size:16px;line-height:1}
+.stk{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:12px}.stk i{color:var(--o0);font-style:normal;font-size:12px}.stkb{display:flex;flex-direction:column;gap:3px;padding:8px 12px;background:var(--base);border-radius:8px;font-size:11px;color:var(--text)}.stkb b{font-weight:inherit}.stkb small{color:var(--o0);font-size:10px}
