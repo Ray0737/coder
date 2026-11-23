@@ -225,6 +225,7 @@ async function showWork() {
         <div class="cpanel">
           <div class="chd"><span class="ni">${icon('lightbulb')}</span><div><b>What this cell does</b><i id="cwhich"></i></div>
             <span class="cnav"><button type="button" id="cprev" data-tip="Previous cell">${icon('caret-left')}</button><button type="button" id="cnext" data-tip="Next cell">${icon('caret-right')}</button></span></div>
+          <b id="ctopic"></b>
           <p id="cdoes"></p>
           <div class="cout" id="cout"></div>
           <div class="cft"><a class="btn ghost" href="${pathById(f.chapter)}">${icon('file-text')}<span>Read the chapter</span></a></div>
@@ -241,7 +242,8 @@ async function showWork() {
     const all = $$('.wseg');
     all.forEach(el => el.classList.toggle('on', +el.dataset.i === i));
     $('#cdoes').innerHTML = f.does[i] ? say(f.does[i]) : 'No description yet.';
-    $('#cwhich').textContent = `In [${i + 1}] \u00b7 ${cells[i].label} \u00b7 ${i + 1} of ${cells.length}`;
+    $('#cwhich').textContent = `In [${i + 1}] \u00b7 ${i + 1} of ${cells.length}`;
+    $('#ctopic').textContent = cells[i].label;
     $('#cout').innerHTML = f.outs[i] ? `<span class="ocl">Output</span><pre>${esc(f.outs[i])}</pre>` : '';
     $('#cout').hidden = !f.outs[i];
     $('#cprev').disabled = i === 0;
