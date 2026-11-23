@@ -688,13 +688,13 @@ const widgets = {
   },
   // intersection over union of two boxes: how well a predicted box matches the real one
   iouviz(el) {
-    const W = 300, H = 180, T = [90, 50, 110, 80];
+    const W = 360, H = 220, T = [130, 70, 100, 80];
     el.innerHTML = `<p class="wgt">Try it: slide the predicted box</p>
-      <div class="wgrow"><label>Shift x <input id="w-iu-x" type="range" min="-100" max="100" value="30"></label><label>Shift y <input id="w-iu-y" type="range" min="-70" max="70" value="15"></label><label>Size <input id="w-iu-s" type="range" min="50" max="160" value="100"></label></div>
+      <div class="wgrow"><label>Shift x <input id="w-iu-x" type="range" min="-120" max="120" value="30"></label><label>Shift y <input id="w-iu-y" type="range" min="-80" max="80" value="15"></label><label>Size <input id="w-iu-s" type="range" min="50" max="160" value="100"></label></div>
       <canvas id="w-iu" width="${W}" height="${H}"></canvas><p class="wgsay" id="w-iu-say"></p>`;
     const run = () => {
       const dx = +$('#w-iu-x').value, dy = +$('#w-iu-y').value, s = +$('#w-iu-s').value / 100;
-      const P = [T[0] + dx, T[1] + dy, T[2] * s, T[3] * s];
+      const pw = T[2] * s, ph = T[3] * s, P = [Math.max(0, Math.min(W - pw, T[0] + dx)), Math.max(0, Math.min(H - ph, T[1] + dy)), pw, ph];   // the predicted box always stays inside the picture
       const ix = Math.max(0, Math.min(T[0] + T[2], P[0] + P[2]) - Math.max(T[0], P[0])), iy = Math.max(0, Math.min(T[1] + T[3], P[1] + P[3]) - Math.max(T[1], P[1]));
       const inter = ix * iy, uni = T[2] * T[3] + P[2] * P[3] - inter, iou = inter / uni;
       const g = $('#w-iu').getContext('2d'); g.fillStyle = '#181825'; g.fillRect(0, 0, W, H);
