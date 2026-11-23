@@ -39,9 +39,35 @@ const WORK = {
       outs: [],
     },
   ],
+  'ai-development/mlp': [
+    {
+      file: 'MLP_train_week2.py', title: 'MLP from scratch', cutAt: /^\s*#\s*===== /,
+      note: 'MNIST train using a NumPy MLP from scratch.',
+      does: [
+        'Loads train.csv with pandas, splits off the label column as y and scales the 784 pixel columns to x by dividing by 255 (0-1 range). train_test_split holds out 10% as a validation set, stratified so every digit keeps its share, so there is data the model never trains on to check it honestly. The commented block below would preview one digit as an image with imshow if uncommented.',
+        "Five small functions plus the NeuralNet class's setup. relu(z) passes positive scores through and blocks the rest, the kink that lets stacked layers learn curves instead of one straight line; deriv_relu is relu's slope, used later to push error backward through it. softmax turns the last layer's raw scores into 10 probabilities that sum to 1. one_hot turns a label like 3 into a 10-long vector with a single 1, comparable to softmax's output for the loss. get_predict reads off the highest-probability class, get_accuracy compares that to the true labels. init_params and NeuralNet.__init__ fill W1, b1, W2, b2 with small random numbers: W is a per-input volume knob, b is a per-neuron trigger offset, both reshaped as training runs.",
+        'One image goes through both layers: Z1 is the hidden layer\'s weighted sum (W1·X+b1), A1 = relu(Z1) is what actually fires, Z2 is the output layer\'s weighted sum, A2 = softmax(Z2) is the final probability per digit. This is the guess pass, nothing is adjusted yet.',
+        "Walks the forward pass backward with the chain rule to find which way is downhill for every weight and bias. dZ2 is the output error (predicted minus true, from one_hot). dW2/db2 are its slope on W2/b2. dZ1 pushes that error back through relu's derivative to the hidden layer, giving dW1/db1. Nothing is updated here yet, just measured.",
+        'The actual learning step: every weight and bias moves a small distance (alpha) opposite its slope from back_prop. Too big an alpha and accuracy explodes or oscillates, too small and it stalls, the one knob to retune if training misbehaves.',
+        'fit() chops the training images into batch_size chunks, reshuffled every epoch, and takes one forward_prop + back_prop + gradient step per chunk instead of one slow step over everything. Every 10th epoch it checks accuracy on the whole training set. Below the class, X/Y/X_val/Y_val are reshaped so pixels are rows and images are columns (what forward_prop expects), then a NeuralNet is built and trained for 100 epochs.',
+        "Runs the trained model once on X_val, the slice it never trained on, for a real accuracy number, since training accuracy alone can hide overfitting. Then plots 90 validation digits with their true label and the model's guess, green when they match and red when they don't, since the true label is known here, unlike test.csv.",
+        "test.csv has no label column (Kaggle-style: scored on submission, not told the answer), so this only produces guesses, not an accuracy number. Predictions go into submission.csv as ImageId/Label pairs, and the same grid plot repeats but shows only the guess, no color code, because there is no ground truth to check it against.",
+      ],
+      outs: [],
+    },
+  ],
 };
 
-const REPO = 'https://github.com/eai-spsm/M.4-Classwork';   // where the class files are kept
+// where each class's files are kept: the whole-course repo (for "Copy clone link") and that class's own folder in it (for the GitHub button)
+const REPOS = {
+  'basic-python': { repo: 'https://github.com/eai-spsm/M.4-Classwork', folder: 'https://github.com/eai-spsm/M.4-Classwork/tree/main/Code%20-%20Basic%20Python' },
+  'circuits-arduino-gpio': { repo: 'https://github.com/eai-spsm/M.4-Classwork', folder: 'https://github.com/eai-spsm/M.4-Classwork/tree/main/Code%20-%20Microcontroller' },
+  'physics-in-robotics': { repo: 'https://github.com/eai-spsm/M.4-Classwork', folder: 'https://github.com/eai-spsm/M.4-Classwork/tree/main/Code%20-%20Robot' },
+  'line-chatbot': { repo: 'https://github.com/eai-spsm/M.4-Classwork', folder: 'https://github.com/eai-spsm/M.4-Classwork/tree/main/Code%20-%20Line%20Dialogflow' },
+  'raspberry-pi-vision': { repo: 'https://github.com/eai-spsm/M.5-Classwork', folder: 'https://github.com/eai-spsm/M.5-Classwork/tree/main/Code%20-%20Raspi' },
+  'computer-vision': { repo: 'https://github.com/eai-spsm/M.5-Classwork', folder: 'https://github.com/eai-spsm/M.5-Classwork/tree/main/Code%20-%20Computer%20Vision' },
+  'ai-development': { repo: 'https://github.com/eai-spsm/M.5-Classwork', folder: 'https://github.com/eai-spsm/M.5-Classwork/tree/main/Code%20-%20Deeplearn' },
+};
 const wmain = $('#wmain');
 const wItems = Object.entries(WORK).flatMap(([chapter, files]) => files.map(f => ({ ...f, chapter, cs: chapter.split('/')[0] })));
 const wId = f => f.cs + '/' + f.file;
@@ -58,7 +84,7 @@ $('#tree').innerHTML = notes.map(([g, ic, c, ns, yr]) => {
     if (n === 'Coming soon') return '<li class="todo"><span>Coming soon</span></li>';
     const files = WORK[cs + '/' + slug(n)];
     if (!files) return `<li class="todo" style="--c:var(--${c})"><span>${icon('file-text')}${esc(n)}</span></li>`;
-    return files.map(f => `<li style="--c:var(--${c})"><a href="work.html#${cs}/${f.file}">${icon('code')}${esc(f.file)}<i>${esc(f.title)}</i></a></li>`).join('');
+    return files.map(f => `<li style="--c:var(--${c})"><a href="work.html#${cs}/${f.file}">${icon('code')}${esc(f.file)}</a></li>`).join('');
   }).join('');
   return head + `<button class="grp" style="--c:var(--${c})" aria-expanded="false" data-g="${esc(g)}">${icon('caret-right')}<svg class="i f"><use href="#i-${ic}"/></svg><span>${esc(g)}</span></button><ul class="tree">${items}</ul>`;
 }).join('');
@@ -76,7 +102,7 @@ function cutCells(code, cutAt) {
   const cells = [];
   let cur = { label: 'Header', lines: [] };
   code.split('\n').forEach(line => {
-    if (cutAt.test(line)) { cells.push(cur); cur = { label: line.replace(/^#\s*/, '').trim(), lines: [] }; }
+    if (cutAt.test(line)) { cells.push(cur); cur = { label: line.replace(/^\s*#+\s*/, '').replace(/=+/g, '').trim(), lines: [] }; }
     cur.lines.push(line);
   });
   cells.push(cur);
@@ -195,7 +221,7 @@ async function showWork() {
       </div>
       <aside class="wside">
         <div class="wtop"><span class="ni" style="--c:var(--${folder[2]})">${icon('code')}</span><div><h1>${esc(f.file)}</h1><p class="sum">${esc(f.note)}</p></div></div>
-        <div class="cft" style="margin:0 0 16px;padding:0;border:0"><a class="btn ghost" href="${REPO}" target="_blank" rel="noopener">${icon('github-logo')}<span>GitHub</span></a><button class="btn ghost" id="wcopy" type="button">${icon('notebook')}<span>Copy clone link</span></button></div>
+        <div class="cft" style="margin:0 0 16px;padding:0;border:0"><a class="btn ghost" href="${REPOS[f.cs].folder}" target="_blank" rel="noopener">${icon('github-logo')}<span>GitHub</span></a><button class="btn ghost" id="wcopy" type="button">${icon('notebook')}<span>Copy clone link</span></button></div>
         <div class="cpanel">
           <div class="chd"><span class="ni">${icon('lightbulb')}</span><div><b>What this cell does</b><i id="cwhich"></i></div>
             <span class="cnav"><button type="button" id="cprev" data-tip="Previous cell">${icon('caret-left')}</button><button type="button" id="cnext" data-tip="Next cell">${icon('caret-right')}</button></span></div>
@@ -230,7 +256,7 @@ async function showWork() {
   const copy = (text, btn) => (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(() => flash(btn, 'Copied')).catch(() => {});
   body.addEventListener('click', e => { const c = e.target.closest('.wseg'); if (c) pick(+c.dataset.i); });
   body.addEventListener('keydown', e => { const c = e.target.closest('.wseg'); if (c && e.target === c && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); pick(+c.dataset.i); } });
-  $('#wcopy').onclick = () => copy(REPO + '.git', $('#wcopy'));
+  $('#wcopy').onclick = () => copy(REPOS[f.cs].repo + '.git', $('#wcopy'));
   $('#cprev').onclick = () => pick(cur - 1, true);
   $('#cnext').onclick = () => pick(cur + 1, true);
   pick(0);
