@@ -229,8 +229,8 @@ const widgets = {
       $$('#w-fl-tabs button').forEach(b => b.classList.toggle('on', b.dataset.k === k));
       const head = `<div class="flr flg" ${g}><span class="flb" style="grid-column:span ${n}">Features (the inputs)</span><span class="flb">Label (the answer)</span></div>
         <div class="flr flh" ${g}>${s.fh.map(h => `<span>${h}</span>`).join('')}<span>${s.lh}</span></div>`;
-      const rows = s.rows.map(r => `<div class="flr" ${g}>${r.map((v, i) => `<span>${typeof v === 'number' && k === 'Class' ? v.toFixed(1) : v}</span>`).join('')}</div>`).join('');
-      const q = `<div class="flr" ${g}>${s.q.map(v => `<span>${k === 'Class' ? v.toFixed(1) : v}</span>`).join('')}<span>?</span></div>`;
+      const rows = s.rows.map(r => `<div class="flr fd" ${g}>${r.map((v, i) => `<span>${typeof v === 'number' && k === 'Class' ? v.toFixed(1) : v}</span>`).join('')}</div>`).join('');
+      const q = `<div class="flr fd flq" ${g}>${s.q.map(v => `<span>${k === 'Class' ? v.toFixed(1) : v}</span>`).join('')}<span>?</span></div>`;
       $('#w-fl').innerHTML = head + rows + q;
       $('#w-flnote').innerHTML = s.note + ' The last row is a new example: the model sees only the features and must guess the label.';
     };
@@ -273,9 +273,8 @@ const widgets = {
     };
     const mse = (w, pts) => pts.reduce((s, p) => s + (dot(w, feat(p[0])) - p[1]) ** 2, 0) / pts.length;
     el.innerHTML = `<p class="wgt">Try it: tame a wiggly curve</p>
-      <div class="wgrow" id="w-rg-tabs">${['None', 'L1', 'L2', 'Dropout', 'More data'].map((n, i) => `<button type="button" class="seg2${i ? '' : ' on'}" data-k="${n}">${n}</button>`).join('')}</div>
+      <div class="wgrow wgctl" id="w-rg-tabs">${['None', 'L1', 'L2', 'Dropout', 'More data'].map((n, i) => `<button type="button" class="seg2${i ? '' : ' on'}" data-k="${n}">${n}</button>`).join('')}<label id="w-rg-lamrow">λ <input id="w-rg-lam" type="range" min="1" max="100" value="55" style="width:100px"><b class="wgv" id="w-rg-lamv"></b></label></div>
       <div class="tms" id="w-rg-desc" style="margin:22px 0 16px"></div>
-      <div class="wgrow" id="w-rg-lamrow"><label>Penalty strength (λ) <input id="w-rg-lam" type="range" min="1" max="100" value="55"></label><b id="w-rg-lamv"></b></div>
       <div class="dropviz" id="w-rg-fig"></div><p class="wgsay" id="w-rg-say"></p><div id="w-rg-drop" hidden></div>`;
     let dropReady = false;
     let kind = 'None';
@@ -1645,7 +1644,7 @@ const widgets = {
       const total = tp + fn + fp + tn || 1;
       const acc = (tp + tn) / total, prec = tp / (tp + fp || 1), rec = tp / (tp + fn || 1), f1 = (prec + rec) ? 2 * prec * rec / (prec + rec) : 0;
       const row = (label, val) => `<div><code>${label}</code><span class="ok">${(val * 100).toFixed(1)}%</span></div>`;
-      $('#w-cmrows').innerHTML = row('accuracy = (TP+TN) / total', acc) + row('precision = TP / (TP+FP)', prec) + row('recall = TP / (TP+FN)', rec) + row('F1 = 2·precision·recall / (precision+recall)', f1);
+      $('#w-cmrows').innerHTML = row('accuracy = (TP+TN) / total', acc) + row('precision = TP / (TP+FP)', prec) + row('recall = TP / (TP+FN)', rec) + row('F1 = 2·pr·rc / (pr+rc)', f1);
     };
     el.addEventListener('input', run); run();
   },
@@ -2548,6 +2547,7 @@ fit();
 async function loadChapter() {
   activeTimers.forEach(clearInterval); activeTimers = [];
   const id = chapterId();
+  document.documentElement.dataset.cls = (id || '').split('/')[0]; // lets the stylesheet treat one class (like ai-development) differently
   const idx = all.findIndex(x => slug(x.g) + '/' + slug(x.n) === id);
   if (idx < 0) { setNav($('#tprev'), null, 'Previous topic'); setNav($('#tnext'), null, 'Next topic'); $('#notepane').innerHTML = ''; setTitle('Chapter'); showMessage('Chapter not found', 'Pick one from the list on the left.'); return; }
   const entry = all[idx];

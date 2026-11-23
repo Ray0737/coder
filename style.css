@@ -457,9 +457,11 @@ a.tab:hover{color:var(--text);text-decoration:underline;text-underline-offset:2p
 .callout.warn{background:color-mix(in srgb,var(--red) 9%,var(--mantle))}
 .callout.warn .ct{color:var(--red)}
 /* "> [!more] Title" dropdown, FAQ style: a thin line, the title, a "+" on the right. The body slides open (see the click handler at the end of md.js) */
-details.more{margin:18px 0;border-top:1px solid var(--s0);border-bottom:1px solid var(--s0);color:var(--sub0);font-size:13px;line-height:1.7}
+details.more{margin:12px 0;border-top:1px solid var(--s0);border-bottom:1px solid var(--s0);color:var(--sub0);font-size:13px;line-height:1.7}
 details.more+details.more{margin-top:0;border-top:0}
-details.more>summary{cursor:pointer;padding:12px 2px;font-weight:700;font-size:13px;color:var(--text);list-style:none;display:flex;align-items:center;justify-content:space-between;gap:16px;user-select:none;transition:color .15s}
+details.more:has(+details.more){margin-bottom:0}
+.lesson p+details.more{margin-top:6px}
+details.more>summary{cursor:pointer;padding:10px 2px;font-weight:700;font-size:13px;color:var(--text);list-style:none;display:flex;align-items:center;justify-content:space-between;gap:16px;user-select:none;transition:color .15s}
 details.more>summary::-webkit-details-marker{display:none}
 details.more>summary::after{content:"+";flex:none;font-size:20px;font-weight:400;line-height:1;color:var(--o1);transition:transform .25s ease,color .15s}
 details.more>summary:hover,details.more>summary:hover::after{color:var(--mauve)}
@@ -872,11 +874,11 @@ textarea{border:0;outline:0}
 .stg .plots{flex:1 1 300px;margin-top:0}
 .stg .plots svg{flex:1 1 100%;max-width:340px}
 .afrow{display:flex;flex-wrap:wrap;margin-top:14px;background:var(--base);border-radius:8px}
-.afrow>div{flex:1 1 110px;display:flex;flex-direction:column;gap:2px;padding:10px 16px}
+.afrow>div{flex:1 1 110px;display:flex;flex-direction:column;gap:5px;padding:16px 18px}
 .afrow>div+div{border-left:1px solid var(--s1)}
 .afrow span{color:var(--text);font-size:12px}
 .afrow small{color:var(--o0);font-size:11px}
-.afrow b{color:var(--green);font-weight:400;font-size:18px;font-variant-numeric:tabular-nums;margin-top:4px}
+.afrow b{color:var(--green);font-weight:400;font-size:18px;font-variant-numeric:tabular-nums;margin-top:10px}
 
 /* result cards: one panel with dividers instead of a stack of separate cards, sans font; .h = short values side by side in one row */
 .wgtable{gap:0;background:var(--crust);border-radius:8px;overflow:hidden;margin-top:6px}
@@ -1516,3 +1518,26 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 .mathb{margin:12px 0;text-align:center;font:15px/1.9 "Cambria Math","STIX Two Math","Latin Modern Math",Georgia,serif;color:var(--text)}
 .mathb>div{white-space:pre-wrap}
 details.more p code,details.more li code,details.more td code{background:none;padding:0;color:var(--text);font:1.06em "Cambria Math","STIX Two Math","Latin Modern Math",Georgia,serif}
+
+/* AI Development diagrams: one text size, taken from the MLP diagrams (11px labels, 9px small ticks) */
+[data-cls="ai-development"] .wg svg text{font-size:11px}
+[data-cls="ai-development"] .wg svg text[font-size="9"],[data-cls="ai-development"] .wg svg text[font-size="8"]{font-size:9px}
+/* confusion-matrix metric cards: labels hang from the top, the percentages sit on one line along the bottom, even when a formula wraps */
+#w-cmrows>div{justify-content:space-between;gap:10px;padding:18px 14px}
+/* confusion matrix: roomier cells, and more air between the matrix and the metric cards below it */
+.cmgrid{gap:10px;margin:12px 0 20px}
+.cmcell{padding:16px 10px;gap:8px}
+
+/* features / label table: coloured group headings, zebra rows, the label column in peach, and the unknown row picked out */
+.fltab{padding:6px 0 8px;overflow-x:auto}
+.fltab .flr{padding:9px 18px;gap:8px 12px}
+.fltab .flg{padding-top:10px;padding-bottom:0}
+.fltab .flg .flb{padding-bottom:7px;font-size:12px;border-bottom:2px solid currentColor}
+.fltab .flg .flb:first-child{color:var(--mauve)}
+.fltab .flg .flb:last-child{color:var(--peach)}
+.fltab .flh{padding-top:10px;border-bottom:1px solid var(--s0);margin-bottom:2px}
+.fltab .flh span:last-child{color:var(--peach)}
+.fltab .fd:nth-child(even){background:color-mix(in srgb,var(--mantle) 70%,transparent)}
+.fltab .fd span:last-child{color:var(--peach);font-weight:700}
+.fltab .flq{background:color-mix(in srgb,var(--peach) 11%,transparent);border-radius:8px;margin:4px 8px 0;padding:9px 10px}
+.fltab .flq span:last-child{font-size:16px;line-height:1}

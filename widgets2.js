@@ -236,8 +236,8 @@
       const mse = (P, f) => P.reduce((s, [x, y]) => s + (f(x) - y) ** 2, 0) / P.length;
       const st = { pos: 3 }, W = 420, H = 220, sx = x => 20 + x * (W - 40), sy = y => H / 2 - Math.max(-2.2, Math.min(2.2, y)) / 2.2 * (H / 2 - 12);
       el.innerHTML = `<p class="wgt">Try it: fit a curve to the same 12 points</p>
-        <div class="tb"><span>Model</span>${chips('fc-c', ['Underfit', 'Good fit', 'Overfit'], 1)}<span class="sp"></span>${btns('fc')}</div>
-        <div class="tb ro"><label>Degree (curve flexibility) <input id="fc-d" type="range" min="1" max="11" value="3"></label><span id="fc-ro"></span></div>
+        <div class="tb"><span>Model</span>${chips('fc-c', ['Underfit', 'Good fit', 'Overfit'], 1)}<label>Degree <input id="fc-d" type="range" min="1" max="11" value="3" style="width:100px"></label><span class="sp"></span><span class="opts">${btns('fc')}</span></div>
+        <p class="wgcap" id="fc-ro" style="margin:0 0 8px"></p>
         <svg viewBox="0 0 ${W} ${H}" class="fcsvg" id="fc-svg"></svg><p class="wgo" id="fc-n"></p>
         <p class="wgcap">Blue dots are the 12 points the model trains on, grey rings are 40 fresh points it has never seen, the faint line is the true pattern. The fit is a real least-squares polynomial, recomputed each time.</p>`;
       const draw = () => {

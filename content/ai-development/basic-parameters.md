@@ -1,6 +1,6 @@
 ---
 title: Basic parameters
-summary: Epoch, batch size and learning rate: the three dials that control how training happens, not what is learned.
+summary: Epoch, batch size and learning rate: the three dials that set the rhythm of training, not what is learned.
 ---
 
 > [!aha] These three words describe the *rhythm* of training, not the model itself. Get them wrong and even a good model never learns well.
@@ -13,7 +13,7 @@ An **epoch** is one complete pass through every training example, once. Train fo
 
 ## Batch size: how many examples before a nudge
 
-Weights are not updated after every single example, and not only once after all of them either. They are updated after a **batch**: a small group of examples.
+Weights are not updated after every single example, and not only once after all of them either. They are updated after a **batch**, a small group of examples, and the size of that group sets a trade-off between speed and steadiness.
 
 | Batch size | What happens |
 |---|---|
@@ -23,19 +23,22 @@ Weights are not updated after every single example, and not only once after all 
 
 ## Learning rate: how big each nudge is
 
-The **learning rate** scales every weight update. Too small and training crawls. Too big and it overshoots the best answer and can get worse, not better.
+The **learning rate** scales every weight update. Too small and training crawls, too big and it overshoots the best answer and can get worse, not better. Pick one below to see what the loss does.
 
 ```widget
 learningrate
 ```
 
-### The valley picture
+## The valley picture
 
-Picture every possible set of weights as a spot on the ground, and the loss ("how bad is the model here?") as the height at that spot. Peaks are terrible guesses, low ground is good ones. Training is rolling a ball downhill: the **gradient** is the slope under the ball, each update steps in the opposite direction (downhill), and the learning rate is the length of the step.
-
-With two weights you could draw that landscape. A real network has millions, so it cannot be drawn, but the idea is identical. One honest caveat: the ball only feels the slope right under it, so it can settle in a shallow dip instead of the deepest valley on the whole map. Where it starts matters, which is why the starting weights are random and why re-running training can give a slightly different model.
+Picture every possible set of weights as a spot on the ground, and the loss ("how bad is the model here?") as the height at that spot. Training is rolling a ball downhill: the **gradient** is the slope under the ball, each update steps the opposite way (downhill), and the learning rate is the length of the step. The Training a network chapter lets you roll that ball yourself.
 
 > [!tip] **Loss**, **cost** and **objective** function are three names for the same thing: the single number training tries to push down. Books and papers use all three.
+
+> [!more] More: the full valley story, and why the starting point matters
+> Peaks are terrible guesses and low ground is good ones. With two weights you could draw that landscape, but a real network has millions, so it cannot be drawn, though the idea is identical.
+>
+> One honest caveat: the ball only feels the slope right under it, so it can settle in a shallow dip instead of the deepest valley on the whole map. Where it starts matters, which is why the starting weights are random and why re-running training can give a slightly different model.
 
 ```cta
 flask | Try the settings yourself | Change the learning rate, the activation and the batch size on a live network and watch what happens to the loss.

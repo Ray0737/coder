@@ -1,13 +1,13 @@
 ---
 title: Data handling
-summary: Cleaning, and the train/test split: a model is only as good as the data it never cheats off of.
+summary: Turning data into numbers, cleaning it, and splitting it into train, validation and test sets.
 ---
 
 > [!aha] Never grade a student on the exact questions they studied from. Never test a model on the exact examples it trained on either. That one habit is the difference between a model that works and one that only looks like it works.
 
 ## What kind of data goes in?
 
-A model only understands **numbers**. Whatever you start with, the first job is to turn it into a list of numbers. Here is what to expect for each kind of data:
+A model only understands **numbers**, so whatever you start with, the first job is to turn it into a list of numbers. A photo, a song and a sentence all end up the same way, and what changes is which model is good at reading them.
 
 | Data | What it looks like | How it becomes numbers | Usual model |
 |---|---|---|---|
@@ -17,31 +17,26 @@ A model only understands **numbers**. Whatever you start with, the first job is 
 | Words (text) | A sentence | Cut into **tokens**, each token gets an ID number, then a vector that carries its meaning | RNN, Transformer, LLM |
 | Time series | One reading per tick: sensor, stock price | Already a list of numbers, kept in order | RNN, LSTM |
 
-> [!aha] To a model, a photo, a song and a sentence are all the same thing: a long list of numbers. What changes is which model is good at reading them.
+> [!more] More: how a model is trained, start to finish
+> Whatever the data was, training follows the same path:
+>
+> 1. **Turn it into numbers** (pixels, samples, token IDs, columns).
+> 2. **Clean and scale** it, so no feature dominates by size alone.
+> 3. **Split** it into train, validation and test sets.
+> 4. **Loop:** feed in a batch, get a guess, measure the loss, nudge the weights, repeat for many epochs.
+> 5. **Test once** on the held-back test set.
 
-### How is it trained?
+## Features, labels and classes
 
-Whatever the data was, training follows the same path:
-
-1. **Turn it into numbers** (pixels, samples, token IDs, columns).
-2. **Clean and scale** it, so no feature dominates by size alone.
-3. **Split** it into train, validation and test sets.
-4. **Loop:** feed in a batch, get a guess, measure the loss, nudge the weights, repeat for many epochs.
-5. **Test once** on the held-back test set.
-
-### Features, labels and classes
-
-Every training example is a row with two parts. The **features** are the inputs: the measurable things about one example. The **label** is the answer you want the model to learn. When the label is one of a fixed set of choices, each choice is a **class**. When the label is a number, there are no classes (that is regression).
+Every training example is a row with two parts. The **features** are the inputs, the measurable things about one example, and the **label** is the answer you want the model to learn. When the label is one of a fixed set of choices, each choice is a **class**, and when the label is a number there are no classes (that is regression). Without labels you are in unsupervised territory, where the model gets features only and finds structure by itself.
 
 ```widget
 featurelabel
 ```
 
-Without labels you are in unsupervised territory: the model gets features only and finds structure by itself.
-
 ## Cleaning: garbage in, garbage out
 
-Real data is messy before it is useful: missing values, duplicate rows, typos, wildly different scales (age in years next to income in the thousands). **Cleaning** means fixing or removing these before training even starts.
+Real data is messy before it is useful, so **cleaning** means fixing or removing the problems before training even starts: missing values, duplicate rows, typos, and wildly different scales (age in years next to income in the thousands).
 
 | Problem | Typical fix |
 |---|---|
@@ -52,17 +47,13 @@ Real data is messy before it is useful: missing values, duplicate rows, typos, w
 
 ## The train / validation / test split
 
-Once the data is clean, it gets split into **three** pieces, **before** any training happens:
-
-- **Training set**: what the model actually learns its weights from.
-- **Validation set**: not trained on. Used *while* building the model, to tune settings and catch overfitting early (this is the "validation error" from the next chapter).
-- **Test set**: touched exactly once, at the very end, to report how well the finished model generalises to data it has never influenced in any way.
+Once the data is clean, it gets split into three pieces **before** any training happens. The **training set** is what the model learns its weights from. The **validation set** is not trained on: it is used while building the model, to tune settings and catch overfitting early. The **test set** is touched exactly once, at the very end, to report how well the finished model does on data it never influenced. Drag the sliders to change the split.
 
 ```widget
 traintestsplit
 ```
 
-> [!warn] If the model ever sees the test set during training, even by accident, or you keep re-checking the test score and tweaking settings based on it, the test score stops meaning anything. That is what the validation set exists to prevent: it soaks up all the "try this, check the score, adjust" loop, so the test set stays untouched until the very last step.
+> [!warn] If the model ever sees the test set during training, even by accident, or you keep re-checking the test score and tweaking settings based on it, the test score stops meaning anything. The validation set exists to soak up all the "try this, check the score, adjust" loop, so the test set stays untouched until the last step.
 
 ## Try it
 

@@ -23,21 +23,13 @@ The train line (solid) always keeps falling as the model gets more complex: more
 
 ## Fighting overfitting: regularization
 
-Overfitting is a numbers game: the more free parameters a model has, the easier it is to describe *any* dataset of that size, real pattern or not. A small network that reads MNIST digits, with 30 hidden neurons, already has nearly 24,000 parameters. With 100 hidden neurons it has nearly 80,000, and modern networks have millions or even billions. The true test of a model is never how well it fits the data it has seen, but how well it predicts situations it has not.
-
-There are three ways to fight it. **Get more training data**, which always helps. **Shrink the network**, which works but costs power, so people do it reluctantly. Or keep the network and the data, and add a **regularization** technique. L1 and L2 change the loss; dropout changes the network itself. Try them all on one wiggly curve first:
-
-Pick a method to read what it does, and see its effect on one wiggly curve and the 10 weights behind it. The Dropout tab swaps the curve for a small network with neurons switched off:
+Overfitting is a numbers game: the more free parameters a model has, the easier it is to fit *any* dataset, real pattern or not, and a small MNIST network already has nearly 24,000 of them. There are three ways to fight it: **get more training data**, **shrink the network**, or keep both and add **regularization** (L1 and L2 change the loss, dropout changes the network). Exactly why it works is still debated, but the result is solid: it shrinks the gap between training and validation error. Pick a method below and watch what it does to one wiggly curve and the 10 weights behind it.
 
 ```widget
 regviz
 ```
 
 > [!compare] Think of L2 as a tax on loud weights. A weight is only allowed to grow large if the drop in loss it buys is worth the tax. The tax rate is a dial called **λ** (lambda): turn it down and the network just minimises the original loss, turn it up and it prefers small weights above all.
-
-**Why does it help?** The standard story is that small weights mean a simpler explanation of the data, and a simpler explanation should generalise better. Honest caveat: that story is terse and has soft spots, and the full explanation is still debated. What is solid is the result: for a fixed network and fixed data, regularization really does shrink the gap between training and validation error.
-
-**Fun fact:** in Python code the dial is usually named `lmbda`, because `lambda` is already a reserved word in the language.
 
 Want to see an L1 tax at work? Open the [Playground](playground.html), switch Regularization to L1, raise the regularization rate and press play: lines whose weights are pushed to zero fade out for good.
 
@@ -54,37 +46,28 @@ Error curves say *that* something is wrong. For a yes/no prediction, a confusion
 confusionmatrix
 ```
 
-## Accuracy: the obvious number, with a trap
+## Accuracy, precision, recall and F1
 
-**Accuracy** is simply `(TP + TN) / total`: the fraction the model got right. The trap: if 99% of emails are not spam, a model that *never* predicts spam is 99% accurate, and completely useless.
+Four numbers built from the same four counts, each answering a different question. Using spam detection as the example:
 
-## Precision and recall: two different kinds of "good"
-
-- **Precision** = `TP / (TP + FP)`: of everything flagged as spam, how much really was spam? High precision means few false alarms.
-- **Recall** = `TP / (TP + FN)`: of everything that really was spam, how much did it catch? High recall means few misses.
+| Metric | Formula | The question it answers | The catch |
+|---|---|---|---|
+| **Accuracy** | `(TP + TN) / total` | What fraction did the model get right? | Misleading when one class is rare: if 99% of emails are not spam, a model that *never* predicts spam is 99% accurate and completely useless |
+| **Precision** | `TP / (TP + FP)` | Of everything flagged as spam, how much really was spam? | High precision means few false alarms, but it can hide missed spam |
+| **Recall** | `TP / (TP + FN)` | Of everything that really was spam, how much did it catch? | High recall means few misses, but it can hide false alarms |
+| **F1** | `2·pr·rc / (pr + rc)` | Is it good at both at once? | The balance point of `pr` (precision) and `rc` (recall). It drops sharply if either is weak, so one great score can't hide a terrible one |
 
 > [!compare] Think of a smoke detector. High recall means it catches every real fire. High precision means it rarely goes off for burnt toast. A detector can be great at one and bad at the other.
 
-## F1: one number that needs both
-
-**F1** is the balance point between precision and recall: `2 · precision · recall / (precision + recall)`. It drops sharply if either one is weak, so a model can't hide a terrible recall behind a great precision.
-
 ## One test set can get lucky: cross validation
 
-A single train/test split tells you how the model did on one particular slice of held-out data, which might happen to be an easy slice or a hard one. **K-fold cross validation** tests on every slice in turn. Split the data into **K** equal folds. For each fold in turn, hold it out as the test set and train on the rest. That gives K scores, which get averaged into one more trustworthy number.
+A single train/test split tells you how the model did on one particular slice of held-out data, which might happen to be an easy slice or a hard one. **K-fold cross validation** tests on every slice in turn. Split the data into **K** equal folds. For each fold in turn, hold it out as the test set and train on the rest. That gives K scores, which get averaged into one more trustworthy number. Every example is in the test set exactly once, so the final score reflects the whole dataset, not one lucky or unlucky slice. The cost is that the model is trained K times, once per fold, which is why cross validation is mostly used to **compare** models or settings fairly, not as the final production training run.
 
 ```widget
 crossvalfolds
 ```
 
 > [!compare] Think of a teacher grading a student with five different pop quizzes instead of one big exam, then averaging the five scores. One unlucky quiz no longer decides the whole grade.
-
-Every example is in the test set exactly once, so the final score reflects the whole dataset, not one lucky or unlucky slice. The cost: the model is trained K times, once per fold. That is why cross validation is mostly used to **compare** models or settings fairly, not as the final production training run.
-
-```cta
-flask | Watch overfitting happen | Add noise, switch regularization on and off, and compare the training and test loss on a live network.
-Neural network playground | @neural-playground | Pick data, layers and settings, and watch it learn
-```
 
 ## Try it
 

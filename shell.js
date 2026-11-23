@@ -174,13 +174,10 @@ const notes = [
   ['LINE Chatbot','chat-text','teal',['# Chatbot basics','What a chatbot is','Rule-based NLP','# Dialogflow','Dialogflow intents','# LINE','LINE OA and Messaging API','# Backend','Webhook and database','# Replies and wrap-up','Rich replies: Flex Messages','End to end: check stock'],'M.4 Foundations'],
   ['Raspberry Pi Vision','circuitry','red',['# Know the board','The board and its ports','# Boot and connect','Flashing the OS','HDMI, SSH and VS Code','# Linux on the Pi','Terminal cheatsheet','Environment','Editing with vim and nano','# GPIO, a quick recap','What GPIO connects to','Python and Arduino compared','# Wrap-up','Problems we faced'],'M.5 Applied AI'],
   ['Computer Vision','eye','sky',['# Introduction','Basic definition','# OpenCV basics','Reading and displaying','Mouse events','Crop, flip and resize','Color spaces','Thresholding and edges','Contours','Bitwise ops and masking','# Detection','Object detection','Movement detection','Haar cascades','Face recognition','Trained detection (YOLO)','MediaPipe'],'M.5 Applied AI'],
-  ['AI Development','brain','mauve',['# AI, ML and DL','AI, ML and DL',
-    '# ML: Data and training','Data handling','Basic parameters',
-    '# ML: Supervised','Linear regression','Classification',
-    '# ML: Unsupervised','Unsupervised learning',
-    '# ML: Evaluation','Evaluation',
-    '# Deep learning foundations','MLP','Training a network',
-    '# Deep learning models','CNN','RNN, LSTM and GRU','Transformer','Generative models','LLM and RL'
+  ['AI Development','brain','mauve',['# Part 1: Foundations','AI, ML and DL','Data handling','Basic parameters',
+    '# Part 2: Classic ML','Linear regression','Classification','Unsupervised learning','Evaluation',
+    '# Part 3: Deep learning foundations','MLP','Training a network',
+    '# Part 4: Deep learning models','CNN','RNN, LSTM and GRU','Transformer','Generative models','LLM and RL'
   ],'M.5 Applied AI'],
   ['AI Research','lightbulb','lavender',['Coming soon'],'M.5 Applied AI'],
   ['Research','lightbulb','sapphire',['Coming soon'],'M.6 Capstone'],
