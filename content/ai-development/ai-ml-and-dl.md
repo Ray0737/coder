@@ -62,7 +62,7 @@ forwardpass
 | Part | What you will learn | Why it comes here |
 |---|---|---|
 | 1. Foundations | What AI, ML and DL are, how data is prepared, and the dials of training | Every model is only as good as the data and the setup it learns from |
-| 2. Classic ML | Regression, classification, clustering, PCA and how to check a model | The simple models teach the ideas that deep learning builds on |
+| 2. Classic ML | Regression, classification, ensembles, clustering, PCA and how to check a model | The simple models teach the ideas that deep learning builds on |
 | 3. Deep learning foundations | The MLP and how a network is trained | One neuron, stacked into layers, taught by trial and error |
 | 4. Deep learning models | CNN, RNN, Transformer, generative models, LLM and RL | Neural networks built for images, sequences, text and more |
 

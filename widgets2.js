@@ -487,5 +487,168 @@
       q('#tp-reset').onclick = () => { gen = []; draw(); };
       draw();
     },
+
+    // ---------- Classic ML ----------
+    // least squares with and without one movable extra point: one far-off point drags the whole line
+    lsoutlier(el) {
+      const q = s => el.querySelector(s), r = seeded(12);
+      const base = Array.from({ length: 10 }, (_, i) => ({ x: i + 1, y: 2 * (i + 1) + 3 + (r() * 2 - 1) * 2.5, color: 'var(--sky)' }));
+      const ols = P => { const n = P.length, mx = P.reduce((s, p) => s + p.x, 0) / n, my = P.reduce((s, p) => s + p.y, 0) / n, m = P.reduce((s, p) => s + (p.x - mx) * (p.y - my), 0) / P.reduce((s, p) => s + (p.x - mx) ** 2, 0); return [m, my - m * mx]; };
+      el.innerHTML = `<p class="wgt">Try it: one extra point pulls the line</p>
+        <div class="tb"><label>Height of the extra point <input id="lo-y" type="range" min="0" max="60" step="1" value="27"><b class="wgv" id="lo-yv"></b></label></div>
+        <div class="nndiag" id="lo-p"></div><div class="afrow" id="lo-r"></div>`;
+      const draw = () => {
+        const y = +q('#lo-y').value, ex = { x: 12, y, color: 'var(--peach)', r: 6 }, [m0, b0] = ols(base), [m1, b1] = ols([...base, ex]);
+        q('#lo-yv').textContent = y;
+        q('#lo-p').innerHTML = scatterSVG([...base, ex], { xMin: 0, xMax: 14, yMin: -5, yMax: 65, xLabel: 'x', yLabel: 'y', lines: [{ x1: 0, y1: b0, x2: 14, y2: m0 * 14 + b0, color: 'var(--o0)', dash: '4 3', w: 1 }, { x1: 0, y1: b1, x2: 14, y2: m1 * 14 + b1, color: 'var(--mauve)' }] });
+        q('#lo-r').innerHTML = `<div><span>Slope without the extra point</span><small>dashed line</small><b>${m0.toFixed(2)}</b></div><div><span>Slope with it</span><small>solid line</small><b>${m1.toFixed(2)}</b></div>`;
+      };
+      q('#lo-y').oninput = draw; draw();
+    },
+
+    // K-nearest neighbours on two seeded clusters with a few noisy points: move the new point, change K, watch the vote
+    knnvote(el) {
+      const q = s => el.querySelector(s), r = seeded(9), g = () => (r() + r() + r() - 1.5) * 1.6, P = [];
+      for (let i = 0; i < 14; i++) { P.push({ x: 3.6 + g(), y: 5.6 + g(), c: 0 }); P.push({ x: 7 + g(), y: 3.4 + g(), c: 1 }); }
+      P.push({ x: 4.3, y: 5.9, c: 1 }, { x: 6.6, y: 3.8, c: 0 });
+      const col = ['var(--sky)', 'var(--peach)'], name = ['blue', 'orange'], Ks = [1, 3, 5, 9]; let ki = 1;
+      el.innerHTML = `<p class="wgt">Try it: ask the K nearest neighbours</p>
+        <div class="tb"><span>K</span>${chips('kn-k', Ks, ki)}<label>New point x <input id="kn-x" type="range" min="0" max="11" step="0.1" value="4.2"></label><label>y <input id="kn-y" type="range" min="0" max="9" step="0.1" value="6.2"></label></div>
+        <div class="nndiag" id="kn-p"></div><p class="wgcap" id="kn-s"></p>`;
+      const draw = () => {
+        const K = Ks[ki], qx = +q('#kn-x').value, qy = +q('#kn-y').value;
+        const nb = P.map(p => ({ p, d: (p.x - qx) ** 2 + (p.y - qy) ** 2 })).sort((a, b) => a.d - b.d).slice(0, K), v1 = nb.filter(n => n.p.c).length, v0 = K - v1, pred = v1 > v0 ? 1 : 0;
+        const lines = nb.map(n => ({ x1: qx, y1: qy, x2: n.p.x, y2: n.p.y, color: col[n.p.c], w: 1, dash: '3 3' }));
+        q('#kn-p').innerHTML = scatterSVG([...P.map(p => ({ x: p.x, y: p.y, color: col[p.c], r: 3.5 })), { x: qx, y: qy, color: col[pred], r: 8 }], { xMin: 0, xMax: 11, yMin: 0, yMax: 9, xLabel: 'feature 1', yLabel: 'feature 2', lines });
+        q('#kn-s').textContent = `The big dot is the new point. Its ${K} nearest neighbour${K > 1 ? 's vote' : ' votes'}: ${v0} blue, ${v1} orange, so it is called ${name[pred]}.` + (K === 1 ? ' With K = 1 a single odd neighbour decides everything.' : '');
+      };
+      pickIn(q, '#kn-k', i => { ki = i; draw(); });
+      q('#kn-x').oninput = draw; q('#kn-y').oninput = draw;
+      el._reset = () => { ki = 1; q('#kn-x').value = 4.2; q('#kn-y').value = 6.2; q('#kn-k').querySelectorAll('button').forEach((b, k) => b.classList.toggle('on', k === 1)); draw(); };
+      draw();
+    },
+
+    // the same three scores read two ways: independent sigmoid bars, or one softmax pie that has to add to 100%
+    softmaxbars(el) {
+      const q = s => el.querySelector(s), names = ['Cat', 'Dog', 'Bird'], init = [2, 1.5, -1], sig = z => 1 / (1 + Math.exp(-z));
+      el.innerHTML = `<p class="wgt">Try it: separate progress bars or one shared pie</p>
+        <div class="tb">${names.map((n, i) => `<label>${n} score <input id="sm-${i}" type="range" min="-4" max="4" step="0.5" value="${init[i]}"><b class="wgv" id="sm-${i}v"></b></label>`).join('')}</div>
+        <div class="cmp2"><div><p class="wgt2">Sigmoid: one bar per class</p><div id="sm-a"></div><p class="wgo" id="sm-at"></p></div>
+          <div><p class="wgt2">Softmax: one shared 100%</p><div id="sm-b"></div><p class="wgo" id="sm-bt"></p></div></div>`;
+      const bars = v => names.map((n, i) => `<div class="tpr"><span>${n}</span><u><s style="width:${v[i] * 100}%"></s></u><em>${(v[i] * 100).toFixed(0)}%</em></div>`).join('');
+      const draw = () => {
+        const z = names.map((_, i) => +q('#sm-' + i).value), e = z.map(Math.exp), s = e.reduce((a, b) => a + b), a = z.map(sig), b = e.map(v => v / s);
+        z.forEach((v, i) => q('#sm-' + i + 'v').textContent = v.toFixed(1));
+        q('#sm-a').innerHTML = bars(a); q('#sm-b').innerHTML = bars(b);
+        q('#sm-at').innerHTML = `Total <b>${(a.reduce((x, y) => x + y) * 100).toFixed(0)}%</b>. Free to be anything, so use it when several classes can be true at once.`;
+        q('#sm-bt').innerHTML = `Total <b>100%</b>. Raising one class has to take share from the others, so use it when exactly one class is right.`;
+      };
+      el.addEventListener('input', draw); draw();
+    },
+
+    // chance that a majority of n independent voters, each right with probability p, is right (a real binomial sum)
+    ensemblevote(el) {
+      const q = s => el.querySelector(s), lg = [0]; for (let i = 1; i <= 201; i++) lg[i] = lg[i - 1] + Math.log(i);
+      const maj = (p, n) => { let s = 0; for (let k = (n + 1) / 2; k <= n; k++) s += Math.exp(lg[n] - lg[k] - lg[n - k] + k * Math.log(p) + (n - k) * Math.log(1 - p)); return s; };
+      el.innerHTML = `<p class="wgt">Try it: many weak voters against one</p>
+        <div class="tb"><label>Each model is right <input id="ev-p" type="range" min="0.5" max="0.8" step="0.01" value="0.6"><b class="wgv" id="ev-pv"></b></label><label>Models <input id="ev-n" type="range" min="1" max="101" step="2" value="25"><b class="wgv" id="ev-nv"></b></label></div>
+        <div class="nndiag" id="ev-plot"></div><div class="afrow" id="ev-r"></div>
+        <p class="wgcap">This assumes the models make their mistakes independently. Real models trained on the same data do not, which is why a forest works hard to make its trees different from each other.</p>`;
+      const draw = () => {
+        const p = +q('#ev-p').value, n = +q('#ev-n').value, a = maj(p, n);
+        q('#ev-pv').textContent = (p * 100).toFixed(0) + '%'; q('#ev-nv').textContent = n;
+        const pts = Array.from({ length: 51 }, (_, i) => [2 * i + 1, maj(p, 2 * i + 1)]);
+        q('#ev-plot').innerHTML = curveSVG([{ pts: [[1, p], [101, p]], color: 'var(--s1)', dash: '4 3' }, { pts, color: 'var(--mauve)' }], { xMin: 1, xMax: 101, yMin: 0.5, yMax: 1, xLabel: 'number of models voting', yLabel: 'chance the vote is right', dots: [{ x: n, y: a, color: 'var(--peach)' }] });
+        q('#ev-r').innerHTML = `<div><span>One model</span><small>right</small><b>${(p * 100).toFixed(0)}%</b></div><div><span>Majority of ${n}</span><small>right</small><b>${(a * 100).toFixed(1)}%</b></div>`;
+      };
+      el.addEventListener('input', draw); draw();
+    },
+
+    // one fully grown tree against a random forest on two noisy half-moons, scored on points the trees never saw
+    forestdemo(el) {
+      const q = s => el.querySelector(s), G = 44, M = 2.6, S = 340, gn = r => (r() + r() + r() - 1.5) * 1.1;
+      const moons = (seed, n) => { const r = seeded(seed), P = []; for (let i = 0; i < n; i++) { const t = r() * Math.PI, u = r() * Math.PI; P.push([(Math.cos(t) - .5) * 1.6 + gn(r) * .3, (Math.sin(t) - .25) * 1.6 + gn(r) * .3, 0]); P.push([(1 - Math.cos(u) - .5) * 1.6 + gn(r) * .3, (.5 - Math.sin(u) - .25) * 1.6 + gn(r) * .3, 1]); } return P; };
+      // a tree grown until every leaf is pure (depth cap 9); rf = random picker, so the tree looks at one random feature per split
+      const grow = (D, d, rf) => {
+        const n = D.length, s1 = D.reduce((a, v) => a + v[2], 0), p = s1 / n;
+        if (d >= 9 || n < 2 || p === 0 || p === 1) return p;
+        let best = null;
+        for (const f of rf ? (rf() < .5 ? [0, 1] : [1, 0]) : [0, 1]) {
+          const s = D.slice().sort((a, b) => a[f] - b[f]); let l1 = 0;
+          for (let i = 0; i < n - 1; i++) {
+            l1 += s[i][2]; if (s[i][f] === s[i + 1][f]) continue;
+            const nl = i + 1, pl = l1 / nl, pr = (s1 - l1) / (n - nl), imp = nl * pl * (1 - pl) + (n - nl) * pr * (1 - pr);
+            if (!best || imp < best.imp) best = { imp, f, t: (s[i][f] + s[i + 1][f]) / 2 };
+          }
+          if (rf && best) break;
+        }
+        if (!best) return p;
+        return { f: best.f, t: best.t, l: grow(D.filter(v => v[best.f] < best.t), d + 1, rf), r: grow(D.filter(v => v[best.f] >= best.t), d + 1, rf) };
+      };
+      const run = (T, x, y) => { while (typeof T === 'object') T = (T.f ? y : x) < T.t ? T.l : T.r; return T; };
+      const tr = moons(3, 50), te = moons(4, 100), one = grow(tr, 0, null), rr = seeded(3);
+      const forest = Array.from({ length: 30 }, () => grow(tr.map(() => tr[Math.floor(rr() * tr.length)]), 0, rr));
+      const info = ['One tree asks yes/no questions until every training point is sorted, so it bends around each noisy point (overfitting).', 'Each tree sees a different random resample of the data and a random feature at each split. Averaging their votes smooths the noise away.'];
+      let mode = 0;
+      el.innerHTML = `<p class="wgt">Try it: one tree against a forest</p>
+        <div class="tb"><span>Model</span>${chips('fd-m', ['One tree', 'Random forest'])}<label>Trees <input id="fd-n" type="range" min="1" max="30" value="15"><b class="wgv" id="fd-nv"></b></label></div>
+        <div class="cbrow"><canvas id="fd-cv" width="${S}" height="${S}"></canvas><div class="cbinfo"><b id="fd-t"></b><p id="fd-d"></p></div></div><div class="afrow" id="fd-r"></div>`;
+      const draw = () => {
+        const n = mode ? +q('#fd-n').value : 1, f = mode ? (x, y) => { let s = 0; for (let i = 0; i < n; i++) s += run(forest[i], x, y); return s / n; } : (x, y) => run(one, x, y);
+        const g = q('#fd-cv').getContext('2d'), cell = S / G, px = x => (x + M) / (2 * M) * S, py = y => (M - y) / (2 * M) * S;
+        q('#fd-n').disabled = !mode; q('#fd-nv').textContent = mode ? n : 'off';
+        g.clearRect(0, 0, S, S);
+        for (let i = 0; i < G; i++) for (let j = 0; j < G; j++) { const p = f(-M + (i + .5) / G * 2 * M, M - (j + .5) / G * 2 * M), conf = Math.abs(p - .5) * 2; g.fillStyle = p >= .5 ? `rgba(250,179,135,${.07 + .2 * conf})` : `rgba(137,180,250,${.07 + .2 * conf})`; g.fillRect(i * cell, j * cell, cell + .5, cell + .5); }
+        for (const [x, y, c] of tr) { g.beginPath(); g.arc(px(x), py(y), 4, 0, 7); g.fillStyle = c ? '#fab387' : '#89b4fa'; g.fill(); g.strokeStyle = 'rgba(255,255,255,.9)'; g.lineWidth = 1; g.stroke(); }
+        const acc = P => Math.round(P.filter(([x, y, c]) => (f(x, y) >= .5 ? 1 : 0) === c).length / P.length * 100);
+        q('#fd-t').textContent = mode ? `Random forest of ${n} tree${n > 1 ? 's' : ''}` : 'One fully grown tree'; q('#fd-d').textContent = info[mode];
+        q('#fd-r').innerHTML = `<div><span>Training points</span><small>seen while learning</small><b>${acc(tr)}%</b></div><div><span>Fresh points</span><small>never seen, the real test</small><b>${acc(te)}%</b></div>`;
+      };
+      pickIn(q, '#fd-m', i => { mode = i; draw(); });
+      q('#fd-n').oninput = draw;
+      el._reset = () => { mode = 0; q('#fd-n').value = 15; q('#fd-m').querySelectorAll('button').forEach((b, k) => b.classList.toggle('on', k === 0)); draw(); };
+      draw();
+    },
+
+    // gradient boosting on a noisy sine wave: each round adds one one-question tree fit to what is still wrong
+    boostdemo(el) {
+      const q = s => el.querySelector(s), f0 = x => Math.sin(2 * Math.PI * x), r = seeded(24), nz = () => (r() + r() + r() - 1.5) * .9;
+      const D = Array.from({ length: 30 }, (_, i) => { const x = (i + .5) / 30; return [x, f0(x) + nz()]; }), T = Array.from({ length: 60 }, (_, i) => { const x = (i + .5) / 60; return [x, f0(x) + nz()]; });
+      const LR = [0.1, 0.3, 1], W = 420, H = 220, sx = x => 20 + x * (W - 40), sy = y => H / 2 - Math.max(-2.2, Math.min(2.2, y)) / 2.2 * (H / 2 - 12); let li = 1;
+      // fit R rounds: each round finds the best split of x on the current leftovers and adds lr times the two leaf averages
+      const fit = (R, lr) => {
+        const mean = D.reduce((s, d) => s + d[1], 0) / D.length, st = [], F = x => mean + st.reduce((s, k) => s + lr * (x < k.t ? k.ml : k.mr), 0);
+        for (let m = 0; m < R; m++) {
+          const res = D.map(d => d[1] - F(d[0])); let best = null;
+          for (let i = 1; i < D.length; i++) {
+            const t = (D[i - 1][0] + D[i][0]) / 2; let sl = 0, sr = 0, nl = 0, nr = 0;
+            D.forEach((d, j) => { if (d[0] < t) { sl += res[j]; nl++; } else { sr += res[j]; nr++; } });
+            const ml = sl / nl, mr = sr / nr, e = D.reduce((s, d, j) => s + (res[j] - (d[0] < t ? ml : mr)) ** 2, 0);
+            if (!best || e < best.e) best = { e, t, ml, mr };
+          }
+          st.push(best);
+        }
+        return F;
+      };
+      const mse = (P, F) => P.reduce((s, [x, y]) => s + (F(x) - y) ** 2, 0) / P.length;
+      el.innerHTML = `<p class="wgt">Try it: add one small tree at a time</p>
+        <div class="tb"><span>Learning rate</span>${chips('bd-l', LR, li)}<label>Rounds <input id="bd-r" type="range" min="0" max="100" value="0"><b class="wgv" id="bd-rv"></b></label></div>
+        <svg viewBox="0 0 ${W} ${H}" class="fcsvg" id="bd-svg"></svg><div class="afrow" id="bd-e"></div>
+        <p class="wgcap">Blue dots are the 30 training points, the faint line is the true wave, the orange line is the model, and the short dashes are what is still wrong. Each round fits a tree with a single question to those dashes and adds a small piece of it.</p>`;
+      const draw = () => {
+        const R = +q('#bd-r').value, lr = LR[li], F = fit(R, lr);
+        q('#bd-rv').textContent = R;
+        q('#bd-svg').innerHTML = `<line x1="20" y1="${sy(0)}" x2="${W - 20}" y2="${sy(0)}" stroke="var(--s1)"/>
+          <polyline points="${Array.from({ length: 121 }, (_, i) => sx(i / 120) + ',' + sy(f0(i / 120))).join(' ')}" fill="none" stroke="var(--o0)" stroke-dasharray="3 3"/>
+          ${D.map(([x, y]) => `<line x1="${sx(x)}" y1="${sy(y)}" x2="${sx(x)}" y2="${sy(F(x))}" stroke="var(--s1)" stroke-dasharray="2 2"/>`).join('')}
+          <polyline points="${Array.from({ length: 241 }, (_, i) => sx(i / 240) + ',' + sy(F(i / 240))).join(' ')}" fill="none" stroke="var(--peach)" stroke-width="2"/>
+          ${D.map(([x, y]) => `<circle cx="${sx(x)}" cy="${sy(y)}" r="4" fill="var(--blue)"/>`).join('')}`;
+        q('#bd-e').innerHTML = `<div><span>Training error</span><small>on the 30 dots</small><b>${mse(D, F).toFixed(2)}</b></div><div><span>Test error</span><small>on 60 fresh points</small><b>${mse(T, F).toFixed(2)}</b></div>`;
+      };
+      pickIn(q, '#bd-l', i => { li = i; draw(); });
+      q('#bd-r').oninput = draw;
+      el._reset = () => { li = 1; q('#bd-r').value = 0; q('#bd-l').querySelectorAll('button').forEach((b, k) => b.classList.toggle('on', k === 1)); draw(); };
+      draw();
+    },
   };
 })();

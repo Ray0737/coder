@@ -1649,20 +1649,25 @@ const widgets = {
     el.addEventListener('input', run); run();
   },
   // a scatter of noisy points with a slope/intercept line you control, and the sum of squared error it produces
+  // drag slope and intercept, or jump to the least-squares best fit
   linregfit(el) {
     const rnd = seeded(7);
     const pts = Array.from({ length: 12 }, (_, i) => { const x = i + 1; return { x, y: 2 * x + 3 + (rnd() * 2 - 1) * 3 }; });
+    const n = pts.length, mx = pts.reduce((s, p) => s + p.x, 0) / n, my = pts.reduce((s, p) => s + p.y, 0) / n;
+    const bm = pts.reduce((s, p) => s + (p.x - mx) * (p.y - my), 0) / pts.reduce((s, p) => s + (p.x - mx) ** 2, 0), bb = my - bm * mx;
+    const sseOf = (m, b) => pts.reduce((s, p) => s + (p.y - (m * p.x + b)) ** 2, 0), best = sseOf(bm, bb);
     el.innerHTML = `<p class="wgt">Try it: fit the line</p>
-      <div class="wgrow"><label>slope (m) <input id="w-m" type="range" min="-1" max="5" step="0.1" value="1"></label><label>intercept (b) <input id="w-b2" type="range" min="-10" max="20" step="1" value="0"></label></div>
-      <div class="nndiag" id="w-lr"></div><p class="wgo">Sum of squared error = <b id="w-sse"></b></p>`;
+      <div class="tb"><label>slope (m) <input id="w-m" type="range" min="-1" max="5" step="0.05" value="1"><b class="wgv" id="w-mv"></b></label><label>intercept (b) <input id="w-b2" type="range" min="-10" max="20" step="0.5" value="0"><b class="wgv" id="w-bv"></b></label><button type="button" class="bt" id="w-best">Best fit</button></div>
+      <div class="nndiag" id="w-lr"></div><p class="wgo">Sum of squared error = <b id="w-sse"></b> (the lowest any line can reach is <b>${best.toFixed(1)}</b>)</p>`;
     const run = () => {
       const m = +$('#w-m').value, b = +$('#w-b2').value;
       const xMin = 0, xMax = 13, yMin = -5, yMax = 35;
-      const sse = pts.reduce((s, p) => s + (p.y - (m * p.x + b)) ** 2, 0);
-      $('#w-sse').innerHTML = sse.toFixed(1);
+      $('#w-mv').textContent = m.toFixed(2); $('#w-bv').textContent = b.toFixed(1);
+      $('#w-sse').innerHTML = sseOf(m, b).toFixed(1);
       const residuals = pts.map(p => ({ x1: p.x, y1: p.y, x2: p.x, y2: m * p.x + b, color: 'var(--s1)', w: 1, dash: '2 2' }));
       $('#w-lr').innerHTML = scatterSVG(pts, { xMin, xMax, yMin, yMax, xLabel: 'x', yLabel: 'y', lines: [{ x1: xMin, y1: m * xMin + b, x2: xMax, y2: m * xMax + b, color: 'var(--mauve)' }, ...residuals] });
     };
+    $('#w-best').onclick = () => { $('#w-m').value = Math.round(bm / 0.05) * 0.05; $('#w-b2').value = Math.round(bb / 0.5) * 0.5; run(); };
     el.addEventListener('input', run); run();
   },
   // the sigmoid curve with a movable decision threshold
@@ -1702,64 +1707,89 @@ const widgets = {
     };
     el.addEventListener('input', run); run();
   },
-  // a static, clean two-split decision tree
+  // a two-split decision tree you can walk down by changing the person's age and income
   decisiontree(el) {
-    // plain on purpose: text for the questions, coloured text for the answers, thin lines between them
-    const q = (x, y, s) => `<text x="${x}" y="${y + 4}" text-anchor="middle" font-size="13" fill="var(--text)">${s}</text>`;
-    const leaf = (x, y, s) => `<text x="${x}" y="${y + 4}" text-anchor="middle" font-size="13" fill="var(--mauve)">${s}</text>`;
-    const edge = (x1, y1, x2, y2, label) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--s1)"/><text x="${(x1 + x2) / 2 + (x2 < x1 ? -12 : 12)}" y="${(y1 + y2) / 2 + 3}" text-anchor="middle" font-size="10" fill="var(--o0)">${label}</text>`;
-    el.innerHTML = `<p class="wgt">A decision tree, one split at a time</p>
-      <svg viewBox="0 0 380 200" width="100%" height="200" style="max-width:420px;display:block;margin:6px auto">
-        ${edge(190, 30, 110, 76, 'yes')}${edge(190, 30, 300, 76, 'no')}${edge(110, 106, 60, 152, 'yes')}${edge(110, 106, 165, 152, 'no')}
-        ${q(190, 18, 'Age &lt; 30?')}${q(110, 94, 'Income &lt; 50k?')}${leaf(300, 94, 'SUV')}${leaf(60, 170, 'Hatchback')}${leaf(165, 170, 'Sedan')}
-      </svg>
-      <p class="wgcap">Every box is a yes/no question about one feature. Follow the arrows from the root to a leaf, and the leaf is the prediction.</p>`;
-  },
-  // real k-means over a seeded dataset: step through the iterations
-  kmeanscluster(el) {
-    const rnd = seeded(33);
-    const pts = Array.from({ length: 18 }, () => ({ x: rnd() * 12, y: rnd() * 9 }));
-    const K = 3, colors = ['var(--sky)', 'var(--peach)', 'var(--green)'];
-    let centroids = Array.from({ length: K }, (_, i) => ({ x: 2 + i * 4, y: 4 + (i % 2) * 3 }));
-    const dist2 = (a, b) => (a.x - b.x) ** 2 + (a.y - b.y) ** 2;
-    const snapshots = [];
-    for (let iter = 0; iter < 5; iter++) {
-      const assign = pts.map(p => { let bi = 0, bd = Infinity; centroids.forEach((c, i) => { const d = dist2(p, c); if (d < bd) { bd = d; bi = i; } }); return bi; });
-      snapshots.push({ centroids: centroids.map(c => ({ ...c })), assign });
-      centroids = centroids.map((c, i) => { const members = pts.filter((_, j) => assign[j] === i); return members.length ? { x: members.reduce((s, p) => s + p.x, 0) / members.length, y: members.reduce((s, p) => s + p.y, 0) / members.length } : c; });
-    }
-    el.innerHTML = `<p class="wgt">Try it: step through k-means</p>
-      <div class="wgrow"><label>Iteration <input id="w-km" type="range" min="0" max="${snapshots.length - 1}" value="0"></label><b id="w-kmv">0</b></div>
-      <div class="nndiag" id="w-kmplot"></div><p class="wgcap" id="w-kmsay"></p>`;
-    const run = () => {
-      const it = +$('#w-km').value; $('#w-kmv').textContent = it;
-      const snap = snapshots[it];
-      const dots = pts.map((p, i) => ({ x: p.x, y: p.y, color: colors[snap.assign[i]] }));
-      const cdots = snap.centroids.map((c, i) => ({ x: c.x, y: c.y, color: colors[i], r: 7 }));
-      $('#w-kmplot').innerHTML = scatterSVG([...dots, ...cdots], { xMin: -1, xMax: 13, yMin: -1, yMax: 10, xLabel: 'feature 1', yLabel: 'feature 2' });
-      $('#w-kmsay').textContent = it === 0 ? 'Iteration 0: the centroids start in roughly fixed spots, before any grouping happens.' : `Iteration ${it}: every point joined its nearest centroid (its color), then each centroid moved to the average of its group.`;
+    const q = (x, y, s, on) => `<text x="${x}" y="${y + 4}" text-anchor="middle" font-size="13" fill="${on ? 'var(--text)' : 'var(--o0)'}"${on ? ' font-weight="700"' : ''}>${s}</text>`;
+    const leaf = (x, y, s, on) => `<text x="${x}" y="${y + 4}" text-anchor="middle" font-size="13" fill="${on ? 'var(--mauve)' : 'var(--o0)'}"${on ? ' font-weight="700"' : ''}>${s}</text>`;
+    const edge = (x1, y1, x2, y2, label, on) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${on ? 'var(--mauve)' : 'var(--s1)'}" stroke-width="${on ? 2 : 1}"/><text x="${(x1 + x2) / 2 + (x2 < x1 ? -12 : 12)}" y="${(y1 + y2) / 2 + 3}" text-anchor="middle" font-size="10" fill="var(--o0)">${label}</text>`;
+    el.innerHTML = `<p class="wgt">Try it: walk down the tree</p>
+      <div class="tb"><label>Age <input id="dt-a" type="range" min="18" max="70" value="35"><b class="wgv" id="dt-av"></b></label><label>Income <input id="dt-i" type="range" min="10" max="120" step="5" value="40"><b class="wgv" id="dt-iv"></b></label></div>
+      <svg id="dt-svg" viewBox="0 0 380 200" width="100%" height="200" style="max-width:420px;display:block;margin:6px auto"></svg>
+      <p class="wgcap" id="dt-s"></p>`;
+    const draw = () => {
+      const age = +$('#dt-a').value, inc = +$('#dt-i').value, young = age < 30, low = inc < 50, ans = !young ? 'SUV' : low ? 'Hatchback' : 'Sedan';
+      $('#dt-av').textContent = age; $('#dt-iv').textContent = inc + 'k';
+      $('#dt-svg').innerHTML = edge(190, 30, 110, 76, 'yes', young) + edge(190, 30, 300, 76, 'no', !young) + edge(110, 106, 60, 152, 'yes', young && low) + edge(110, 106, 165, 152, 'no', young && !low)
+        + q(190, 18, 'Age &lt; 30?', true) + q(110, 94, 'Income &lt; 50k?', young) + leaf(300, 94, 'SUV', ans === 'SUV') + leaf(60, 170, 'Hatchback', ans === 'Hatchback') + leaf(165, 170, 'Sedan', ans === 'Sedan');
+      $('#dt-s').textContent = young ? `Age ${age} is under 30, so go left. Income ${inc}k is ${low ? 'under' : 'at least'} 50k, so the answer is ${ans}.` : `Age ${age} is not under 30, so go right. That leaf is the answer: ${ans}.`;
     };
-    el.addEventListener('input', run); run();
+    el.addEventListener('input', draw); draw();
   },
-  // real 2x2 PCA on seeded correlated data: the first principal axis and its share of the variance
+  // real k-means over three seeded blobs: pick K, step through the iterations, see how the total distance falls as K grows
+  kmeanscluster(el) {
+    const rnd = seeded(33), g = () => (rnd() + rnd() + rnd() - 1.5) * 1.5, pts = [];
+    [[2.5, 2.5], [9, 3], [5.5, 8]].forEach(([cx, cy]) => { for (let i = 0; i < 8; i++) pts.push({ x: cx + g(), y: cy + g() }); });
+    const order = pts.map((_, i) => [rnd(), i]).sort((a, b) => a[0] - b[0]).map(a => a[1]);
+    const colors = ['var(--sky)', 'var(--peach)', 'var(--green)', 'var(--mauve)', 'var(--yellow)'];
+    const d2 = (a, b) => (a.x - b.x) ** 2 + (a.y - b.y) ** 2;
+    // every K gets its own run of assign / update, stopping when nothing moves; inertia = total squared distance to the own centroid
+    const runK = K => {
+      let cs = order.slice(0, K).map(i => ({ x: pts[i].x, y: pts[i].y })); const snaps = [];
+      for (let it = 0; it < 12; it++) {
+        const a = pts.map(p => { let bi = 0, bd = Infinity; cs.forEach((c, i) => { const d = d2(p, c); if (d < bd) { bd = d; bi = i; } }); return bi; });
+        snaps.push({ cs: cs.map(c => ({ ...c })), a, inertia: pts.reduce((s, p, j) => s + d2(p, cs[a[j]]), 0) });
+        if (it && a.every((v, j) => v === snaps[it - 1].a[j])) break;
+        cs = cs.map((c, i) => { const m = pts.filter((_, j) => a[j] === i); return m.length ? { x: m.reduce((s, p) => s + p.x, 0) / m.length, y: m.reduce((s, p) => s + p.y, 0) / m.length } : c; });
+      }
+      return snaps;
+    };
+    const runs = {}; [1, 2, 3, 4, 5, 6].forEach(K => runs[K] = runK(K));
+    const Ks = [2, 3, 4, 5]; let ki = 1;
+    const chip = Ks.map((k, i) => `<button type="button" class="bt${i === ki ? ' on' : ''}" data-i="${i}">${k}</button>`).join('');
+    el.innerHTML = `<p class="wgt">Try it: pick K and step through k-means</p>
+      <div class="tb"><span>K</span><span class="opts" id="km-k">${chip}</span><label>Iteration <input id="w-km" type="range" min="0" max="2" value="0"><b class="wgv" id="w-kmv"></b></label></div>
+      <div class="nndiag" id="w-kmplot"></div><p class="wgcap" id="w-kmsay"></p><p class="wgcap" id="w-kmel"></p>`;
+    const draw = () => {
+      const K = Ks[ki], snaps = runs[K], inp = $('#w-km'); inp.max = snaps.length - 1;
+      const it = Math.min(+inp.value, snaps.length - 1); inp.value = it; $('#w-kmv').textContent = it;
+      const snap = snaps[it];
+      const dots = pts.map((p, i) => ({ x: p.x, y: p.y, color: colors[snap.a[i]] })), cdots = snap.cs.map((c, i) => ({ x: c.x, y: c.y, color: colors[i], r: 8 }));
+      $('#w-kmplot').innerHTML = scatterSVG([...dots, ...cdots], { xMin: -1, xMax: 13, yMin: -1, yMax: 11, xLabel: 'feature 1', yLabel: 'feature 2' });
+      $('#w-kmsay').textContent = (it === 0 ? 'Iteration 0: the K centroids start on K random points, before any grouping has been improved.' : `Iteration ${it}: every point joined its nearest centroid (its colour), then each centroid moved to the average of its group.`)
+        + ` Total squared distance to the own centroid: ${snap.inertia.toFixed(0)}.`;
+      $('#w-kmel').textContent = 'Final total squared distance for K = 1 to 6: ' + [1, 2, 3, 4, 5, 6].map(k => runs[k][runs[k].length - 1].inertia.toFixed(0)).join(', ') + '. It always falls as K grows, and the sharp bend is where more groups stop helping.';
+    };
+    $('#km-k').onclick = e => { const b = e.target.closest('button'); if (!b) return; ki = +b.dataset.i; $$('#km-k button').forEach(x => x.classList.toggle('on', x === b)); draw(); };
+    $('#w-km').oninput = draw;
+    el._reset = () => { ki = 1; $('#w-km').value = 0; $$('#km-k button').forEach((b, k) => b.classList.toggle('on', k === 1)); draw(); };
+    draw();
+  },
+  // real 2x2 PCA on seeded correlated data: turn the projection axis by hand and watch how much of the spread it keeps
   pcavariance(el) {
     const rnd = seeded(44);
-    const pts = Array.from({ length: 30 }, () => { const x = rnd() * 10; return { x, y: 0.75 * x + (rnd() * 2 - 1) * 1.8 + 1 }; });
-    const n = pts.length, mx = pts.reduce((s, p) => s + p.x, 0) / n, my = pts.reduce((s, p) => s + p.y, 0) / n;
+    const raw = Array.from({ length: 30 }, () => { const x = rnd() * 10; return { x, y: 0.75 * x + (rnd() * 2 - 1) * 1.8 + 1 }; });
+    const n = raw.length, mx = raw.reduce((s, p) => s + p.x, 0) / n, my = raw.reduce((s, p) => s + p.y, 0) / n;
+    const pts = raw.map(p => ({ x: p.x - mx, y: p.y - my }));
     let a = 0, b = 0, d = 0;
-    pts.forEach(p => { const dx = p.x - mx, dy = p.y - my; a += dx * dx; b += dx * dy; d += dy * dy; });
+    pts.forEach(p => { a += p.x * p.x; b += p.x * p.y; d += p.y * p.y; });
     a /= n; b /= n; d /= n;
-    const tr = a + d, det = a * d - b * b, disc = Math.sqrt(Math.max(0, (tr / 2) ** 2 - det));
-    const l1 = tr / 2 + disc, l2 = Math.max(0, tr / 2 - disc);
-    const angle = Math.atan2(l1 - a, b || 1e-9), len = 6;
-    const line = { x1: mx - Math.cos(angle) * len, y1: my - Math.sin(angle) * len, x2: mx + Math.cos(angle) * len, y2: my + Math.sin(angle) * len, color: 'var(--mauve)' };
-    const p1 = (l1 / (l1 + l2) * 100).toFixed(1), p2 = (l2 / (l1 + l2) * 100).toFixed(1);
-    el.innerHTML = `<p class="wgt">The first principal component</p>
-      <div class="nndiag" id="w-pca"></div>
-      <p class="wgt2">Variance explained</p>
-      <div class="wgbars"><div class="wgbar"><i style="height:${p1}%"></i><b>${p1}%</b><span>PC1</span></div><div class="wgbar"><i style="height:${p2}%"></i><b>${p2}%</b><span>PC2</span></div></div>
-      <p class="wgcap">PC1 is the one straight line through the data that keeps the most spread. Projecting every point onto just that line throws away the least information.</p>`;
-    $('#w-pca').innerHTML = scatterSVG(pts, { xMin: -1, xMax: 11, yMin: -2, yMax: 10, xLabel: 'feature 1', yLabel: 'feature 2', lines: [line] });
+    const tr = a + d, disc = Math.sqrt(Math.max(0, (tr / 2) ** 2 - (a * d - b * b))), l1 = tr / 2 + disc;
+    const best = Math.round(((Math.atan2(l1 - a, b || 1e-9) * 180 / Math.PI) + 180) % 180);
+    const keep = deg => { const t = deg * Math.PI / 180, c = Math.cos(t), s = Math.sin(t); return (a * c * c + 2 * b * c * s + d * s * s) / tr; };
+    el.innerHTML = `<p class="wgt">Try it: find the direction that keeps the most spread</p>
+      <div class="tb"><label>Axis angle <input id="pc-a" type="range" min="0" max="179" value="90"><b class="wgv" id="pc-av"></b></label><button type="button" class="bt" id="pc-best">Snap to PC1</button></div>
+      <div class="nndiag" id="w-pca"></div><div class="afrow" id="pc-r"></div>
+      <p class="wgcap">Each dot is dropped straight onto the axis (the short dashes). The orange dots on the axis are all the model keeps. PC1 is the angle where they stay most spread out.</p>`;
+    const draw = () => {
+      const deg = +$('#pc-a').value, t = deg * Math.PI / 180, c = Math.cos(t), s = Math.sin(t), L = 6.5;
+      const proj = pts.map(p => { const u = p.x * c + p.y * s; return { x: u * c, y: u * s }; });
+      const lines = [{ x1: -L * c, y1: -L * s, x2: L * c, y2: L * s, color: 'var(--mauve)' }, ...pts.map((p, i) => ({ x1: p.x, y1: p.y, x2: proj[i].x, y2: proj[i].y, color: 'var(--s1)', w: 1, dash: '2 2' }))];
+      $('#pc-av').textContent = deg + '°';
+      $('#w-pca').innerHTML = scatterSVG([...pts.map(p => ({ ...p, color: 'var(--sky)' })), ...proj.map(p => ({ ...p, color: 'var(--peach)', r: 3 }))], { w: 360, h: 270, xMin: -6, xMax: 6, yMin: -4.4, yMax: 4.4, xTicksN: 5, yTicksN: 5, xLabel: 'feature 1 (centred)', yLabel: 'feature 2 (centred)', lines });
+      $('#pc-r').innerHTML = `<div><span>This axis keeps</span><small>of the total spread</small><b>${(keep(deg) * 100).toFixed(1)}%</b></div><div><span>PC1 keeps</span><small>the most any axis can, at ${best}°</small><b>${(keep(best) * 100).toFixed(1)}%</b></div>`;
+    };
+    $('#pc-best').onclick = () => { $('#pc-a').value = best; draw(); };
+    $('#pc-a').oninput = draw; draw();
   },
   // a strip of K folds: pick which one is held out for testing
   crossvalfolds(el) {

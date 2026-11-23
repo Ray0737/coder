@@ -868,6 +868,9 @@ textarea{border:0;outline:0}
 .tpr u s{display:block;height:100%;background:var(--mauve);text-decoration:none}
 .tpr em{font-style:normal;text-align:right;color:var(--o0);font-variant-numeric:tabular-nums}
 .tpr.off{opacity:.35}
+.cmp2{display:grid;grid-template-columns:1fr 1fr;gap:6px 28px}
+.cmp2 .wgt2{margin-top:10px}
+@media(max-width:560px){.cmp2{grid-template-columns:1fr}}
 .wg .tb input[type=text]{background:transparent;color:var(--text);border-bottom:1px solid var(--s1);padding:3px 2px}
 #ls-ch{flex:0 1 240px}
 #gc-p svg{flex:1 1 100%;max-width:460px}
