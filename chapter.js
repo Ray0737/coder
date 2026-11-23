@@ -2391,47 +2391,6 @@ const widgets = {
     el._reset = () => { which = 'Badly wrong'; $('#w-cc-eta').value = 0.15; run(); };
     run();
   },
-  // a 2-2-1 sigmoid network with fixed numbers, walked through one backprop step at a time
-  backproptiny(el) {
-    const sig = z => 1 / (1 + Math.exp(-z)), f = n => n.toFixed(3);
-    const x = [1, 0.5], W1 = [[0.5, -0.4], [0.3, 0.8]], b1 = [0.1, -0.1], W2 = [0.6, -0.7], b2 = 0.2, y = 1, eta = 1;
-    const z1 = W1.map((r, j) => r[0] * x[0] + r[1] * x[1] + b1[j]), a1 = z1.map(sig);
-    const z2 = W2[0] * a1[0] + W2[1] * a1[1] + b2, a2 = sig(z2), C = (a2 - y) ** 2 / 2;
-    const d2 = (a2 - y) * a2 * (1 - a2), d1 = [0, 1].map(j => W2[j] * d2 * a1[j] * (1 - a1[j]));
-    const nW2 = W2.map((w, j) => w - eta * a1[j] * d2), nb2 = b2 - eta * d2;
-    const nW1 = W1.map((r, j) => r.map((w, i) => w - eta * x[i] * d1[j])), nb1 = b1.map((b, j) => b - eta * d1[j]);
-    const na1 = [0, 1].map(j => sig(nW1[j][0] * x[0] + nW1[j][1] * x[1] + nb1[j])), na2 = sig(nW2[0] * na1[0] + nW2[1] * na1[1] + nb2);
-    const steps = [
-      ['Inputs', [`x = (${x[0]}, ${x[1]}), target y = ${y}`], 'Every weight and bias is fixed, so you can check each number by hand.'],
-      ['Forward: hidden layer', z1.map((z, j) => `z${j + 1} = ${W1[j][0]}·${x[0]} + ${W1[j][1]}·${x[1]} + ${b1[j]} = ${f(z)}, so a${j + 1} = σ(z${j + 1}) = ${f(a1[j])}`)],
-      ['Forward: output', [`z = ${W2[0]}·${f(a1[0])} + ${W2[1]}·${f(a1[1])} + ${b2} = ${f(z2)}`, `a = σ(z) = ${f(a2)}, but the target is ${y}`]],
-      ['Cost', [`C = ½(a − y)² = ½(${f(a2)} − ${y})² = ${f(C)}`]],
-      ['Backward: output δ', [`δ = (a − y)·a(1 − a) = (${f(a2 - y)})·${f(a2 * (1 - a2))} = ${f(d2)}`], 'δ is how much the cost changes per unit change in z: the blame at the output.'],
-      ['Backward: hidden δ', d1.map((d, j) => `δ${j + 1} = w${j + 1}·δ·a${j + 1}(1 − a${j + 1}) = ${W2[j]}·${f(d2)}·${f(a1[j] * (1 - a1[j]))} = ${f(d)}`), 'The blame goes back through the same weights the answer came forward through.'],
-      ['Gradients', [`output weights: ∂C/∂w = a_hidden · δ = (${f(a1[0] * d2)}, ${f(a1[1] * d2)}), bias ${f(d2)}`, `hidden weights: ∂C/∂w = input · δ_hidden, e.g. ${f(x[0] * d1[0])} for the top-left weight`]],
-      ['Update with η = 1', [`w ← w − η·∂C/∂w for every weight and bias`, `new output a = ${f(na2)} (was ${f(a2)}), new cost = ${f((na2 - y) ** 2 / 2)} (was ${f(C)})`], 'One nudge, and the answer moved toward the target.'],
-    ];
-    let at = 0;
-    el.innerHTML = `<p class="wgt">Try it: step through one backpropagation</p>
-      <div class="nndiag" id="w-bp-svg"></div>
-      <div class="wgrow wgctl"><button type="button" class="seg2" id="w-bp-prev">Back</button><button type="button" class="seg2" id="w-bp-next">Next</button><span id="w-bp-n" class="wgcap" style="margin:0"></span></div>
-      <div class="bpsay" id="w-bp-say"></div>`;
-    const node = (cx, cy, top, below, stroke) => `<circle cx="${cx}" cy="${cy}" r="17" fill="var(--base)" stroke="${stroke}" stroke-width="1.5"/><text x="${cx}" y="${cy + 4}" text-anchor="middle" font-size="10" fill="var(--text)">${top}</text>${below ? `<text x="${cx}" y="${cy + 31}" text-anchor="middle" font-size="10" fill="var(--red)">${below}</text>` : ''}`;
-    const go = i => {
-      at = Math.max(0, Math.min(steps.length - 1, i));
-      const hy = [35, 100], oy = 67, ix = 60, hx = 180, ox = 300;
-      let lines = ''; hy.forEach(a => hy.forEach(b => lines += `<line x1="${ix}" y1="${a}" x2="${hx}" y2="${b}" stroke="var(--s1)"/>`)); hy.forEach(a => lines += `<line x1="${hx}" y1="${a}" x2="${ox}" y2="${oy}" stroke="var(--s1)"/>`);
-      const nodes = x.map((v, i) => node(ix, hy[i], v, '', 'var(--sub0)')).join('')
-        + hy.map((y0, j) => node(hx, y0, at >= 1 ? f(a1[j]).slice(0, 5) : 'a', at >= 5 ? 'δ ' + f(d1[j]) : '', 'var(--sub0)')).join('')
-        + node(ox, oy, at >= 2 ? f(a2).slice(0, 5) : 'a', at >= 4 ? 'δ ' + f(d2) : '', 'var(--mauve)');
-      const lab = [['Input', ix], ['Hidden', hx], ['Output', ox]].map(([t, cx]) => `<text x="${cx}" y="146" text-anchor="middle" font-size="10" fill="var(--o1)">${t}</text>`).join('');
-      $('#w-bp-svg').innerHTML = `<svg viewBox="35 8 290 142" width="100%" height="142">${lines}${nodes}${lab}</svg>`;
-      $('#w-bp-n').textContent = `step ${at + 1} of ${steps.length}`;
-      $('#w-bp-say').innerHTML = `<b>${steps[at][0]}</b><div class="bpl">${steps[at][1].map(l => `<code>${mdEsc(l)}</code>`).join('')}</div>${steps[at][2] ? `<span class="wgcap">${mdEsc(steps[at][2])}</span>` : ''}`;
-    };
-    $('#w-bp-prev').onclick = () => go(at - 1); $('#w-bp-next').onclick = () => go(at + 1);
-    el._reset = () => go(0); go(0);
-  },
   // fill in the blanks of an f-string and watch the sentence change
   fstring(el) {
     el.innerHTML = `<p class="wgt">Try it: fill in the blanks</p>

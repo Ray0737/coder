@@ -809,5 +809,80 @@
       draw();
     },
 
+    // a 2-2-1 sigmoid network with fixed numbers, walked through one backprop step at a time: weights sit on the edges, the flow lights up, and the update shows old to new
+    backproptiny(el) {
+      const q = s => el.querySelector(s);
+      const sig = z => 1 / (1 + Math.exp(-z)), f = n => n.toFixed(3), g2 = n => n.toFixed(2);
+      const x = [1, 0.5], W1 = [[0.5, -0.4], [0.3, 0.8]], b1 = [0.1, -0.1], W2 = [0.6, -0.7], b2 = 0.2, y = 1, eta = 1;
+      const z1 = W1.map((r, j) => r[0] * x[0] + r[1] * x[1] + b1[j]), a1 = z1.map(sig);
+      const z2 = W2[0] * a1[0] + W2[1] * a1[1] + b2, a2 = sig(z2), C = (a2 - y) ** 2 / 2;
+      const d2 = (a2 - y) * a2 * (1 - a2), d1 = [0, 1].map(j => W2[j] * d2 * a1[j] * (1 - a1[j]));
+      const nW2 = W2.map((w, j) => w - eta * a1[j] * d2), nb2 = b2 - eta * d2;
+      const nW1 = W1.map((r, j) => r.map((w, i) => w - eta * x[i] * d1[j])), nb1 = b1.map((v, j) => v - eta * d1[j]);
+      const na1 = [0, 1].map(j => sig(nW1[j][0] * x[0] + nW1[j][1] * x[1] + nb1[j])), na2 = sig(nW2[0] * na1[0] + nW2[1] * na1[1] + nb2), nC = (na2 - y) ** 2 / 2;
+      const steps = [
+        ['Inputs', 'Forward', [`x = (${x[0]}, ${x[1]}), target y = ${y}`], 'Every weight and bias is fixed, so you can check each number by hand.'],
+        ['Forward: hidden layer', 'Forward', z1.map((z, j) => `z${j + 1} = ${W1[j][0]}·${x[0]} + ${W1[j][1]}·${x[1]} + ${b1[j]} = ${f(z)}, so a${j + 1} = σ(z${j + 1}) = ${f(a1[j])}`)],
+        ['Forward: output', 'Forward', [`z = ${W2[0]}·${f(a1[0])} + ${W2[1]}·${f(a1[1])} + ${b2} = ${f(z2)}`, `a = σ(z) = ${f(a2)}, but the target is ${y}`]],
+        ['Cost', 'Forward', [`C = ½(a − y)² = ½(${f(a2)} − ${y})² = ${f(C)}`]],
+        ['Backward: output δ', 'Backward', [`δ = (a − y)·a(1 − a) = (${f(a2 - y)})·${f(a2 * (1 - a2))} = ${f(d2)}`], 'δ is how much the cost changes per unit change in z: the blame at the output.'],
+        ['Backward: hidden δ', 'Backward', d1.map((d, j) => `δ${j + 1} = w${j + 1}·δ·a${j + 1}(1 − a${j + 1}) = ${W2[j]}·${f(d2)}·${f(a1[j] * (1 - a1[j]))} = ${f(d)}`), 'The blame goes back through the same weights the answer came forward through.'],
+        ['Gradients', 'Backward', [`output weights: ∂C/∂w = a_hidden · δ = (${f(a1[0] * d2)}, ${f(a1[1] * d2)}), bias ${f(d2)}`, `hidden weights: ∂C/∂w = input · δ_hidden, e.g. ${f(x[0] * d1[0])} for the top-left weight`]],
+        ['Update with η = 1', 'Update', [`w ← w − η·∂C/∂w for every weight and bias`, `new output a = ${f(na2)} (was ${f(a2)}), new cost = ${f(nC)} (was ${f(C)})`], 'One nudge, and the answer moved toward the target.'],
+      ];
+      let at = 0;
+      el.innerHTML = `<p class="wgt">Try it: step through one backpropagation</p>
+        <div class="tb"><button type="button" class="bt" id="bp-p">Back</button><button type="button" class="bt act" id="bp-n">Next</button><span id="bp-ph"></span><span class="sp"></span><span id="bp-k"></span></div>
+        <div id="bp-bar" style="display:flex;gap:3px;margin:0 0 8px"></div>
+        <div class="nndiag" id="bp-svg"></div><div class="bpsay" id="bp-say"></div>`;
+      const T = (xx, yy, t, o = {}) => `<text x="${xx}" y="${yy}" text-anchor="${o.a || 'middle'}" font-size="${o.s || 10}" fill="${o.c || 'var(--o1)'}">${t}</text>`;
+      const IX = 70, HX = 235, OX = 400, IY = [62, 148], HY = [62, 148], OY = 105;
+      const draw = (go = true) => {
+        const [title, phase] = steps[at], fwd = at >= 1 && at <= 3, back = at >= 4 && at <= 6, upd = at === 7;
+        const label = (cx, cy, t, col) => `<rect x="${cx - 26}" y="${cy - 7}" width="52" height="14" rx="4" fill="var(--crust)"/>${T(cx, cy + 3, t, { c: col, s: 9 })}`;
+        let h = '';
+        // edges: width follows |w|, colour follows the phase
+        const edge = (x1, y1, x2, y2, w, hot, col, t, lcol) => {
+          const L = t == null ? '' : label(x1 + (x2 - x1) * (x1 === IX ? .3 : .5), y1 + (y2 - y1) * (x1 === IX ? .3 : .5), t, lcol);
+          return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${hot ? col : 'var(--s1)'}" stroke-width="${(hot ? 1.6 : 1) + Math.min(Math.abs(w), 1) * 1.6}" ${hot && back ? 'stroke-dasharray="5 4"' : ''} opacity="${hot ? 1 : .8}"/>${L}`;
+        };
+        const e1hot = at === 1, e2hot = at === 2, bhot = at === 4 || at === 5;
+        for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) {
+          const txt = at === 6 ? '∂ ' + g2(x[i] * d1[j]) : upd ? `${g2(W1[j][i])}→${g2(nW1[j][i])}` : g2(W1[j][i]);
+          h += edge(IX, IY[i], HX, HY[j], W1[j][i], e1hot || at === 6 || upd, fwd ? 'var(--mauve)' : upd ? 'var(--green)' : 'var(--peach)', txt, at === 6 ? 'var(--peach)' : upd ? 'var(--green)' : 'var(--o1)');
+        }
+        for (let j = 0; j < 2; j++) {
+          const txt = at === 6 ? '∂ ' + g2(a1[j] * d2) : upd ? `${g2(W2[j])}→${g2(nW2[j])}` : g2(W2[j]);
+          h += edge(HX, HY[j], OX, OY, W2[j], e2hot || bhot || at === 6 || upd, fwd ? 'var(--mauve)' : upd ? 'var(--green)' : 'var(--peach)', txt, at === 6 ? 'var(--peach)' : upd ? 'var(--green)' : 'var(--o1)');
+        }
+        // nodes
+        const node = (cx, cy, top, val, ring, below, above) => `<circle cx="${cx}" cy="${cy}" r="22" fill="var(--base)" stroke="${ring}" stroke-width="1.6"/>${T(cx, cy + 4, val, { c: 'var(--text)', s: 11 })}${top ? T(cx, cy - 29, top, { s: 9 }) : ''}${below ? T(cx, cy + 38, below, { c: 'var(--peach)', s: 10 }) : ''}${above || ''}`;
+        const nodeRing = (hot, col) => hot ? col : 'var(--sub0)';
+        x.forEach((v, i) => { h += node(IX, IY[i], 'x' + (i + 1), v, nodeRing(false)); });
+        [0, 1].forEach(j => {
+          const val = upd ? f(na1[j]).slice(0, 5) : at >= 1 ? f(a1[j]).slice(0, 5) : 'a', ring = nodeRing(at === 1, 'var(--mauve)');
+          h += node(HX, HY[j], at >= 1 ? 'z ' + g2(z1[j]) : 'hidden ' + (j + 1), val, ring, at >= 5 && at <= 6 ? 'δ ' + f(d1[j]) : '');
+        });
+        const oval = upd ? f(na2).slice(0, 5) : at >= 2 ? f(a2).slice(0, 5) : 'a';
+        h += node(OX, OY, at >= 2 ? 'z ' + g2(z2) : 'output', oval, nodeRing(at === 2 || at === 3, at === 3 ? 'var(--red)' : upd ? 'var(--green)' : 'var(--mauve)'), at >= 4 && at <= 6 ? 'δ ' + f(d2) : '');
+        // target and cost badge on the right
+        h += T(472, 100, 'target', { s: 9 }) + T(472, 114, String(y), { c: 'var(--text)', s: 12 });
+        if (at >= 3) h += `<rect x="440" y="140" width="62" height="34" rx="7" fill="var(--crust)" stroke="${upd ? 'var(--green)' : 'var(--red)'}"/>${T(471, 154, 'cost', { s: 9 })}${T(471, 168, upd ? f(nC) : f(C), { c: 'var(--text)', s: 11 })}`;
+        if (upd) h += T(471, 188, 'was ' + f(C), { s: 9 });
+        // direction arrow
+        if (fwd || back || upd) h += T(235, 20, fwd ? 'forward →' : back ? '← backward' : 'update the weights', { c: fwd ? 'var(--mauve)' : back ? 'var(--peach)' : 'var(--green)', s: 11 });
+        q('#bp-svg').innerHTML = `<svg viewBox="20 8 500 200" width="100%" height="200">${h}</svg>`;
+        q('#bp-ph').textContent = phase;
+        q('#bp-k').textContent = `step ${at + 1} of ${steps.length}`;
+        q('#bp-bar').innerHTML = steps.map((s, i) => `<i style="flex:1;height:4px;border-radius:2px;background:var(--${i === at ? 'mauve' : i < at ? 'sub0' : 's1'})"></i>`).join('');
+        q('#bp-p').disabled = at === 0; q('#bp-n').disabled = at === steps.length - 1;
+        q('#bp-say').innerHTML = `<b>${title}</b><div class="bpl">${steps[at][2].map(l => `<code>${mdEsc(l)}</code>`).join('')}</div>${steps[at][3] ? `<span class="wgcap">${mdEsc(steps[at][3])}</span>` : ''}`;
+      };
+      q('#bp-p').onclick = () => { at = Math.max(0, at - 1); draw(); };
+      q('#bp-n').onclick = () => { at = Math.min(steps.length - 1, at + 1); draw(); };
+      el._reset = () => { at = 0; draw(); };
+      draw();
+    },
+
   };
 })();
