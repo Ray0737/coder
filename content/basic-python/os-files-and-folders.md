@@ -7,7 +7,7 @@ summary: Let Python move around folders, build file paths safely, and list the f
 
 ## Where am I?
 
-When a script runs, it has a **current working directory**: the folder it treats as "here". Every relative path starts from it.
+When a script runs, it has a **current working directory**: the folder it treats as "here". Every relative path starts from it. `.` means "this folder" and `..` means "the folder above". A path like `data/cat.png` is **relative**, because it depends on where you are, and a path like `C:\Users\me\data\cat.png` is **absolute**, because it works from anywhere.
 
 ```python
 import os
@@ -16,13 +16,11 @@ print(os.getcwd())          # the folder the script is running from
 print(os.listdir("."))      # the names inside it, as a list of text
 ```
 
-`.` means "this folder" and `..` means "the folder above". A path like `data/cat.png` is **relative**, because it depends on where you are. A path like `C:\Users\me\data\cat.png` is **absolute**, because it works from anywhere.
-
 > [!warn] The most common beginner error is `FileNotFoundError: [Errno 2] No such file or directory`. The file is usually fine. The script is running from a **different folder** than you think. Print `os.getcwd()` and look.
 
 ## Building paths: os.path
 
-Never glue paths together with `+` and a slash. Windows uses `\`, Linux and the Raspberry Pi use `/`, and `os.path.join` picks the right one for the machine.
+Never glue paths together with `+` and a slash. Windows uses `\`, Linux and the Raspberry Pi use `/`, and `os.path.join` picks the right one for the machine. `os.path.join` glues the parts together with the right separator for your machine, so the same code works on Windows and on the Pi.
 
 ```python
 import os
@@ -31,11 +29,17 @@ path = os.path.join("data", "images", "cat01.png")
 print(path)                       # data/images/cat01.png  (data\images\cat01.png on Windows)
 ```
 
-The other `os.path` tools take a path apart or ask questions about it. Type a path and see:
+## Taking a path apart
+
+The other `os.path` tools take a path apart or ask questions about it. Type a path and see.
 
 ```widget
 pathviz
 ```
+
+## The os.path questions
+
+These are the calls the diagram uses, and each one answers a single question about a path.
 
 | Call | Answers |
 |---|---|
@@ -50,6 +54,8 @@ pathviz
 
 ## Making, renaming and deleting
 
+These calls make, rename and delete real things on disk, so run them with care. `makedirs` makes the whole chain of folders, and `exist_ok=True` stops it complaining if they are already there. `rename` changes a name (and can move a file), `remove` deletes one file, and `rmdir` deletes a folder only if it is empty.
+
 ```python
 import os
 
@@ -63,11 +69,19 @@ os.rmdir("empty_folder")                      # deletes an EMPTY folder
 
 > [!warn] **Danger: never point a delete at a system folder.** On Windows the folder `C:\Windows\System32` holds the files Windows needs to start, and on Linux and the Pi the same goes for `/`, `/bin`, `/usr` and `/etc`. Deleting inside them, or running a delete or `shutil.rmtree` on a wrong or empty path, can leave the computer unable to boot and force a full reinstall, with no way to undo it. A path built from `input()` or from a variable that turned out empty can end up pointing there. Never run a delete you copied from the internet without reading it, test with `print()` first, and only ever delete inside a folder your own program created.
 
-To copy a file, the `os` module has no call, so use `shutil.copy("a.txt", "b.txt")`. To delete a folder with files inside, `shutil.rmtree("folder")`, which is just as permanent.
+## Copying and deleting a folder
+
+To copy a file, the `os` module has no call, so use `shutil`. To delete a folder with files inside, use `shutil.rmtree`, which is just as permanent as `os.remove`.
+
+```python
+import shutil
+shutil.copy("a.txt", "b.txt")      # copy a file
+# shutil.rmtree("folder")         # delete a folder and everything inside it
+```
 
 ## Looking through a dataset folder
 
-Image datasets are usually one folder per class:
+Image datasets are usually one folder per class, like this.
 
 ```
 dataset/
@@ -75,7 +89,9 @@ dataset/
     dogs/   dog01.jpg  dog02.jpg ...
 ```
 
-Loop over the folders, then over the files inside each, and keep only the pictures:
+## Loop over the folders and files
+
+Loop over the folders, then over the files inside each, and keep only the pictures. The folder name becomes the **label** and the files become the **examples**, which is how many training programs read data. For each name in `dataset`, the code builds the full path, skips anything that is not a folder, and makes a list of the files inside whose names end in `.jpg` or `.png` (after `lower()`, so `.JPG` counts too). It then prints each class name with how many pictures it has.
 
 ```python
 import os
@@ -89,7 +105,9 @@ for label in os.listdir(root):                       # "cats", "dogs"
     print(label, len(files))
 ```
 
-The folder name becomes the **label** and the files become the **examples**. That is how many training programs read data. To visit every folder at any depth in one go, use `os.walk`:
+## os.walk: every folder at any depth
+
+To visit every folder at any depth in one go, use `os.walk`.
 
 ```python
 for folder, subfolders, files in os.walk("dataset"):
@@ -100,7 +118,7 @@ for folder, subfolders, files in os.walk("dataset"):
 
 ## Environment variables: secrets stay out of code
 
-An **environment variable** is a setting that lives in the computer, outside your script. It is the right place for passwords and API keys, so they never end up in a file you share.
+An **environment variable** is a setting that lives in the computer, outside your script. It is the right place for passwords and API keys, so they never end up in a file you share. `os.environ.get("API_KEY")` reads the setting and gives `None` if it is not set, so the `if` can print a helpful message instead of crashing.
 
 ```python
 import os
@@ -114,7 +132,7 @@ if key is None:
 
 ## The modern alternative: pathlib
 
-Python also has `pathlib`, which treats a path as an object and uses `/` to join. Many new programs use it, so you will meet it:
+Python also has `pathlib`, which treats a path as an object and uses `/` to join. Many new programs use it, so you will meet it. `Path("data") / "images" / "cat01.png"` joins the parts with `/`. The path object then has handy parts, such as `.name` for the file name, `.suffix` for the extension and `.exists()` to check it is there.
 
 ```python
 from pathlib import Path

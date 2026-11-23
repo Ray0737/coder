@@ -7,7 +7,7 @@ summary: Give a script its settings from the command line, stop it with an exit 
 
 ## sys.argv: the words you typed
 
-When you run a script, everything you typed after `python` is handed to it as a list of text called `sys.argv`. The first item, `sys.argv[0]`, is always the script's own name.
+When you run a script, everything you typed after `python` is handed to it as a list of text called `sys.argv`. The first item, `sys.argv[0]`, is always the script's own name. Run `python greet.py hello 3` and the list holds the script name, then `'hello'`, then `'3'`, all as text.
 
 ```python
 # greet.py
@@ -21,7 +21,9 @@ python greet.py hello 3
 # ['greet.py', 'hello', '3']
 ```
 
-Change the command and watch the list change. A value in quotes stays together as one item:
+## Watch the list change
+
+Change the command and watch the list change. A value in quotes stays together as one item.
 
 ```widget
 argvviz
@@ -30,6 +32,8 @@ argvviz
 > [!warn] Every item in `sys.argv` is **text**, even `3`. The same trap as `input()`: convert with `int()` or `float()` before using it in a sum.
 
 ## Using the arguments
+
+Check `len(sys.argv)` **first**, because asking for `sys.argv[2]` when only one argument was given stops with `IndexError: list index out of range`. Printing a short "Usage:" message when something is missing is the polite way to fail. The script needs two arguments, so if the list is shorter than 3 (the script name counts as one) it prints a usage line and exits with code 1. Otherwise `word` is the first argument, `count` is the second turned into a number, and the output is the word repeated `count` times.
 
 ```python
 import sys
@@ -48,13 +52,11 @@ python repeat.py ha 3
 # hahaha
 ```
 
-Check `len(sys.argv)` **first**. Asking for `sys.argv[2]` when only one argument was given stops with `IndexError: list index out of range`. Printing a short "Usage:" message when something is missing is the polite way to fail.
-
 > [!compare] Think of it like ordering at a counter. `input()` is the cashier asking you questions one at a time. Command-line arguments are handing over a filled-in order slip at the start, so the kitchen can begin without asking anything.
 
 ## sys.exit: stopping with a result
 
-`sys.exit()` ends the program at once. The number you give is an **exit code**: `0` means success, anything else means something went wrong. Scripts that run other scripts, and tools like a scheduler, read this code.
+`sys.exit()` ends the program at once. The number you give is an **exit code**: `0` means success, anything else means something went wrong. Scripts that run other scripts, and tools like a scheduler, read this code. The three calls show the three ways to leave: `sys.exit(0)` for success, `sys.exit(1)` for a problem, and passing text prints that text as an error message and exits with 1.
 
 ```python
 import sys
@@ -66,7 +68,7 @@ sys.exit("Could not open the file")   # prints the message to the error stream a
 
 ## Which Python am I running?
 
-When a package "is not found" even though you installed it, you are often running a **different Python** than the one you installed into. Ask:
+When a package "is not found" even though you installed it, you are often running a **different Python** than the one you installed into, so ask. If `sys.executable` points to a virtual environment folder (`venv`), you are inside it, and if not, you are using the system Python. On the Raspberry Pi this one line explains a lot of errors.
 
 ```python
 import sys
@@ -76,13 +78,18 @@ print(sys.version)         # its version
 print(sys.platform)        # 'win32', 'linux', 'darwin'
 ```
 
-If `sys.executable` points to a virtual environment folder (`venv`), you are inside it. If not, you are using the system Python. On the Raspberry Pi this one line explains a lot of errors.
+## Where imports are searched
 
 `sys.path` is the list of folders Python searches when you write `import something`. If an import fails, printing `sys.path` shows where Python looked.
 
+```python
+import sys
+print(sys.path)
+```
+
 ## Reading and writing the screen
 
-`print()` actually writes to `sys.stdout`, and error messages go to `sys.stderr`. You can write to them directly, which is how programs keep results and error messages apart:
+`print()` actually writes to `sys.stdout`, and error messages go to `sys.stderr`. You can write to them directly, which is how programs keep results and error messages apart. `sys.stdin` is where `input()` reads from, and a script can read lines piped into it from another program with `for line in sys.stdin:`.
 
 ```python
 import sys
@@ -91,11 +98,9 @@ sys.stdout.write("normal output\n")
 sys.stderr.write("something went wrong\n")
 ```
 
-`sys.stdin` is where `input()` reads from. A script can read lines piped into it from another program: `for line in sys.stdin:`.
-
 ## When the arguments get complicated
 
-For a few values, `sys.argv` is perfect. For options with names, defaults and a help message, Python has `argparse`:
+For a few values, `sys.argv` is perfect. For options with names, defaults and a help message, Python has `argparse`. It converts types, handles `--help` and prints clear errors for you, and you do not need it yet, but you will see it in most AI training scripts. In the code, `add_argument("--epochs", type=int, default=5)` defines an optional named setting that becomes a whole number and is 5 if you leave it out, and `add_argument("path")` defines a required value. `parse_args()` reads what was typed and puts the answers in `args`.
 
 ```python
 import argparse
@@ -106,8 +111,6 @@ parser.add_argument("path")
 args = parser.parse_args()
 print(args.epochs, args.path)
 ```
-
-It converts types, handles `--help` and prints clear errors for you. You do not need it yet, but you will see it in most AI training scripts.
 
 ## Try it
 

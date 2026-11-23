@@ -11,6 +11,8 @@ summary: Build a window with labels and buttons, place them, and make the progra
 
 ## The smallest window
 
+Five lines make a window, and `mainloop()` is the waiting part. It goes **last**, because nothing after it runs until the window closes. `tk.Tk()` creates the window, `title` and `geometry` set its title bar, size and position, and `configure(bg=...)` sets the background colour.
+
 ```python
 import tkinter as tk
 
@@ -21,8 +23,6 @@ root.configure(bg="#C0BCBD")         # background colour
 
 root.mainloop()                      # stay open until closed
 ```
-
-`mainloop()` is the waiting part. It goes **last**, because nothing after it runs until the window closes.
 
 ## Widgets: the things in a window
 
@@ -37,19 +37,27 @@ A **widget** is one piece of the window. The window is the wall, and widgets are
 | `ttk.Treeview` | a table with rows |
 | `ttk.Combobox` | a drop-down list |
 
+## Making a widget
+
+Creating a widget does not show it. You must also **place** it, and the next section shows how.
+
 ```python
 label1 = tk.Label(text="Team: Falcons", fg="black", font=("Arial", "10"), bg="#FFC107")
 ```
 
-Creating a widget does not show it. You must also **place** it.
-
 ## Three ways to place a widget
+
+There are three layout methods, and the table says which one suits which job.
 
 | Method | How it positions | Best for |
 |---|---|---|
 | `.place(x, y, width, height)` | exact pixel position | posters and fixed layouts |
 | `.pack()` | stacks one after another | simple vertical or horizontal lists |
 | `.grid(row, column)` | rows and columns, like a table | forms and button panels |
+
+## Placing with place()
+
+With `place` the top-left corner of the window is (0, 0), and you give the size and position of each widget in pixels.
 
 ```python
 label1.place(height=35, width=400, x=0, y=0)       # top-left corner is (0, 0)
@@ -60,7 +68,7 @@ label3.place(height=95, width=95, x=0, y=70)
 
 ## Buttons and events
 
-A button takes a **command**: the function to run when it is clicked. Give just the function **name**, with no brackets. With brackets Python runs it at once, not on click.
+A button takes a **command**: the function to run when it is clicked. Give just the function **name**, with no brackets. With brackets Python runs it at once, not on click. `command=hello` hands the function itself to the button, with no brackets, so it runs on each click rather than once at the start.
 
 ```python
 def hello():
@@ -69,7 +77,9 @@ def hello():
 tk.Button(root, text="Click me", command=hello).pack()
 ```
 
-To pass a value to the function, wrap the call in a `lambda`, which delays it until the click:
+## Passing a value to a button
+
+To pass a value to the function, wrap the call in a `lambda`, which delays it until the click.
 
 ```python
 tk.Button(root, text="Matcha", command=lambda: count_order("Matcha")).pack()
@@ -77,11 +87,15 @@ tk.Button(root, text="Matcha", command=lambda: count_order("Matcha")).pack()
 
 ## Putting it together: a cafe order screen
 
-The class exercise is an ordering screen. Each button adds one to a counter kept in a **dictionary**, and Submit builds a receipt from it. The data lives in two dictionaries, the prices and the counts, and every click changes the counts. Try it:
+The class exercise is an ordering screen. Each button adds one to a counter kept in a **dictionary**, and Submit builds a receipt from it. The data lives in two dictionaries, the prices and the counts, and every click changes the counts. Try it.
 
 ```widget
 cafeorder
 ```
+
+## The cafe code
+
+This is where the earlier chapters pay off: a **dictionary** for the data, a **loop** over `.items()`, an **if** to skip unordered items, and **functions** for each click. The two dictionaries hold the prices and how many of each drink were ordered. `count_order` adds one to an item and updates the button's text, and `order_cost` loops over `count.items()`, skips items with a quantity of 0, builds a receipt line for each, adds up the total and shows it in a pop-up.
 
 ```python
 price = {"Thai Tea": 40, "Milk Tea": 35, "Matcha": 60, "Drip Coffee": 30}
@@ -103,11 +117,9 @@ def order_cost():
     messagebox.showinfo("Order Receipt", receipt)
 ```
 
-This is where the earlier chapters pay off: a **dictionary** for the data, a **loop** over `.items()`, an **if** to skip unordered items, and **functions** for each click.
-
 ## Pop-up messages
 
-`messagebox` shows a small dialog. It needs its own import:
+`messagebox` shows a small dialog. It needs its own import: The three calls show a message in a small dialog: `showinfo` for plain information, `showwarning` for a caution and `showerror` for a failure. The first text is the title bar and the second is the message.
 
 ```python
 from tkinter import messagebox
@@ -119,7 +131,7 @@ messagebox.showerror("Error", "Failed to save data")
 
 ## A live clock with after()
 
-`after(milliseconds, function)` asks Tkinter to run a function later. If that function asks `after` again, it repeats, which makes a clock. Do **not** use `while True` or `time.sleep` in a window program, because they freeze the window.
+`after(milliseconds, function)` asks Tkinter to run a function later. If that function asks `after` again, it repeats, which makes a clock. Do **not** use `while True` or `time.sleep` in a window program, because they freeze the window. In the code, `update_clock` reads the time as text, writes it into the label, and then asks `after(1000, ...)` to call itself again in one second, which keeps the clock ticking without freezing the window.
 
 ```python
 from datetime import datetime
@@ -136,15 +148,13 @@ update_clock(clock_label)
 
 ## Pictures on buttons
 
-`PhotoImage` loads a picture for a button. The picture file must exist at that path, or the program crashes with a `TclError` when it starts. Also keep the image in a variable that stays alive, or Tkinter may drop it.
+`PhotoImage` loads a picture for a button. The picture file must exist at that path, or the program crashes with a `TclError` when it starts. Also keep the image in a variable that stays alive, or Tkinter may drop it. In the button below, `compound="top"` puts the picture above the text.
 
 ```python
 pic1 = tk.PhotoImage(file="pic/1.png")
 button1 = tk.Button(root, text="Thai Tea 40THB", image=pic1, compound="top")
 button1.grid(row=3, column=1, padx=10, pady=10)
 ```
-
-`compound="top"` puts the picture above the text.
 
 ## Handy tips
 

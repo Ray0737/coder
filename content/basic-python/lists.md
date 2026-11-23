@@ -17,7 +17,7 @@ empty = []
 
 ## Index: the locker number
 
-Each item has a position called an **index**. It starts at **0**, not 1, so the first locker is number 0. Negative numbers count from the end: `-1` is the last item.
+Each item has a position called an **index**. It starts at **0**, not 1, so the first locker is number 0. Negative numbers count from the end: `-1` is the last item. Asking for a position that does not exist, such as `playlist[10]`, stops the program with `IndexError: list index out of range`.
 
 ```python
 print(playlist[0])     # Blue, the first song
@@ -25,9 +25,9 @@ print(playlist[3])     # Echo
 print(playlist[-1])    # Echo, the last song
 ```
 
-Asking for a position that does not exist, such as `playlist[10]`, stops the program with `IndexError: list index out of range`.
+## Swap an item and count them
 
-You can swap what is inside a locker by assigning to its index, and `len()` tells you how many lockers there are:
+You can swap what is inside a locker by assigning to its index, and `len()` tells you how many lockers there are.
 
 ```python
 playlist[1] = "Moonlight"       # Sunrise is replaced
@@ -43,6 +43,12 @@ Press the buttons and watch the row change. The number above each item is its in
 listops
 ```
 
+> [!compare] Think of it like a music playlist. `append` adds a song to the end, `pop(0)` plays and removes the first song, `insert(1, x)` slots a song in as the second track, and `sort()` puts the songs in A to Z order.
+
+## The list methods
+
+These are the methods the buttons use. Two of them, `sort()` and `reverse()`, change the list itself instead of giving back a new one.
+
 | Method | What it does |
 |---|---|
 | `append(x)` | add `x` to the end |
@@ -53,11 +59,9 @@ listops
 | `sort()` | put the items in order, changing the list itself |
 | `reverse()` | flip the order, changing the list itself |
 
-> [!compare] Think of it like a music playlist. `append` adds a song to the end, `pop(0)` plays and removes the first song, `insert(1, x)` slots a song in as the second track, and `sort()` puts the songs in A to Z order.
-
 ## Slicing: a piece of the row
 
-A **slice** copies a section of a list. `[start:stop]` takes from `start` up to, but **not including**, `stop`.
+A **slice** copies a section of a list. `[start:stop]` takes from `start` up to, but **not including**, `stop`. `nums[1:3]` starts at index 1 and stops before index 3, so you get 20 and 30. Leaving out the start (`nums[:2]`) means from the beginning, and leaving out the end (`nums[2:]`) means to the end, and a slice is a new list, so the original does not change.
 
 ```python
 nums = [10, 20, 30, 40, 50]
@@ -68,7 +72,7 @@ print(nums[2:])      # [30, 40, 50]  to the end
 
 ## Building a list from input
 
-Start with an empty list and `append` each answer. This is the pattern behind most programs that collect data.
+Start with an empty list and `append` each answer. This is the pattern behind most programs that collect data. In the code, `cart` starts with two items and each `append` adds whatever the user types to the end, so after two prompts the list holds four items. The final `print` shows the whole list.
 
 ```python
 cart = ["rice", "eggs"]
@@ -79,7 +83,8 @@ print(cart)
 
 > [!tip] `sort()` changes the list and gives back nothing. If you write `x = playlist.sort()`, then `x` is `None`. To keep the original and get a sorted copy, use `sorted(playlist)`.
 
-A list is only one of the ways Python holds data. Tuples, dictionaries, sets, text and `range` are the others, and the **Tuples and dicts** chapter compares them all.
+> [!more] TLDR: other ways Python holds data
+> A list is only one of the ways Python holds data. Tuples, dictionaries, sets, text and `range` are the others, and the **Tuples and dicts** chapter compares them all.
 
 ## Handy tips
 

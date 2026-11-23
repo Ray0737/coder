@@ -7,22 +7,22 @@ summary: Make Python talk, ask the user a question, and turn the answer into a n
 
 ## print(): Python speaks
 
-Think of `print()` as the display board in a shop. You decide what goes on the board, and everybody who walks past can read it. Put text in quotes and Python shows it on the screen.
+Think of `print()` as the display board in a shop. You decide what goes on the board, and everybody who walks past can read it. Put text in quotes and Python shows it on the screen, and each `print()` starts a new line.
 
 ```python
 print("Hello, world")
 print("My favourite fruit is mango")
 ```
 
-Each `print()` starts a new line. Numbers do not need quotes.
+## Numbers and strings
+
+Numbers do not need quotes. Text in quotes is called a **string**, and `"42"` is text that looks like a number while `42` is a real number. They behave differently, and you will see why soon.
 
 ```python
 print(42)
 print(3.14)
 print("Total:", 42)
 ```
-
-Text in quotes is called a **string**. `"42"` is text that looks like a number, and `42` is a real number. They behave differently, and you will see why soon.
 
 ## Variables: labelled boxes
 
@@ -36,7 +36,7 @@ A variable is a lunchbox with a label on the lid. The label is the **name** and 
 
 ## f-strings: a form letter with blanks
 
-An f-string is a form letter: "Dear ____, you scored ____ points." The blanks are the `{ }`, and Python fills each one from the variable with that name. Put an `f` before the quote and wrap each variable in `{ }`.
+An f-string is a form letter: "Dear ____, you scored ____ points." The blanks are the `{ }`, and Python fills each one from the variable with that name. Put an `f` before the quote and wrap each variable in `{ }`, then change the blanks in the diagram below and watch the sentence change.
 
 ```python
 name = "Falcons"
@@ -44,17 +44,13 @@ score = 95
 print(f"{name} scored {score} points")
 ```
 
-Change the blanks and watch the sentence change:
-
 ```widget
 fstring
 ```
 
-### The older ways you will still see
+## The older % way
 
-Before f-strings, Python had two other ways to fill the blanks. You will meet them in older code and in many tutorials, so it helps to recognise them. Use f-strings when you write new code, because they are shorter and easier to read.
-
-**The `%` way.** Put a code where each blank goes, then give the values after a `%`, in the same order. The code says what kind of value belongs in that blank.
+Before f-strings, Python had two other ways to fill the blanks. You will meet them in older code and in many tutorials, so it helps to recognise them, but use f-strings when you write new code because they are shorter and easier to read. The `%` way puts a code where each blank goes, and the code says what kind of value belongs there.
 
 | Code | Fills the blank with | Example |
 |---|---|---|
@@ -63,6 +59,10 @@ Before f-strings, Python had two other ways to fill the blanks. You will meet th
 | `%f` | a decimal number | `"%f" % 3.5` gives 3.500000 |
 | `%.2f` | a decimal rounded to 2 places | `"%.2f" % 3.14159` gives 3.14 |
 
+## Using the % way
+
+Give the values after a `%`, in the same order as the blanks. With more than one value, put them in brackets. If the code does not match the value, for example `%d` with text, Python stops with an error. The first value fills the first code and the second fills the second, so the order matters. Here `%s` takes the text, `%d` takes the whole number, and `%.2f` rounds 87.456 to 87.46.
+
 ```python
 name = "Falcons"
 score = 95
@@ -70,9 +70,9 @@ print("%s scored %d points" % (name, score))
 print("Average: %.2f" % 87.456)      # Average: 87.46
 ```
 
-With more than one value, put them in brackets. If the code does not match the value, for example `%d` with text, Python stops with an error.
+## The .format() way
 
-**The `.format()` way.** The blanks are `{ }` again, but the values come afterwards inside `.format()`.
+The blanks are `{ }` again, but the values come afterwards inside `.format()`. All three styles print the same sentence, and the only difference is where the values sit: inside the text for f-strings, after a `%` for the old style, and inside `.format()` for this one.
 
 ```python
 print("{} scored {} points".format(name, score))
@@ -80,37 +80,37 @@ print("{0} scored {1} points".format(name, score))
 print("Average: {:.2f}".format(87.456))
 ```
 
-All three print the same sentence. The only difference is where the values sit: inside the text for f-strings, after a `%` for the old style, and inside `.format()` for the third.
-
 ## input(): Python listens
 
-`input()` is a cashier asking "How many would you like?" and then waiting for your answer. It shows a question, waits for the user to type, and gives you back what they typed.
+`input()` is a cashier asking "How many would you like?" and then waiting for your answer. It shows a question, waits for the user to type, and gives you back what they typed. The text inside the brackets is the question, and you should leave a space at the end so the answer does not touch it.
 
 ```python
 name = input("What is your name? ")
 print(f"Nice to meet you, {name}")
 ```
 
-The text inside the brackets is the question. Leave a space at the end so the answer does not touch it.
-
 ## The catch: input() always gives text
 
 > [!aha] When you fill in a paper form, the number you write is only *ink* until somebody reads it as a number. `input()` hands you the ink. `int()` is you reading it as a number.
 
-This is the mistake almost everyone makes once. `input()` returns a **string**, even when the user types a number.
+This is the mistake almost everyone makes once. `input()` returns a **string**, even when the user types a number, and Python cannot add a number to text.
 
 ```python
 age = input("How old are you? ")
 print(age + 1)        # this crashes
 ```
 
-Python cannot add a number to text. Type into the box and see for yourself:
+## See it happen
+
+Type into the box and see for yourself what each line does with your text.
 
 ```widget
 inputtype
 ```
 
-Turn the text into a number first. Use `int()` for whole numbers, such as ages and scores, and `float()` for decimals, such as heights and prices.
+## Fix it with int() and float()
+
+Turn the text into a number first. Use `int()` for whole numbers, such as ages and scores, and `float()` for decimals, such as heights and prices. If the user types something that is not a number, such as `abc`, `int()` stops with an error, and you will learn how to handle that later in the course.
 
 ```python
 age = int(input("How old are you? "))
@@ -120,11 +120,9 @@ height = float(input("Height in metres: "))
 print(f"Double your height is {height * 2}")
 ```
 
-If the user types something that is not a number, such as `abc`, `int()` stops with an error. You will learn how to handle that later in the course.
-
 ## type(): the label on a parcel
 
-`type()` is the label on a parcel: *fragile*, *liquid*, *this way up*. It does not change the parcel. It just tells you what you are holding. When something behaves strangely, print its type. It is the fastest way to catch a string where you expected a number.
+`type()` is the label on a parcel: *fragile*, *liquid*, *this way up*. It does not change the parcel. It just tells you what you are holding. When something behaves strangely, print its type. It is the fastest way to catch a string where you expected a number. In the code, `input()` gives a string, so the first `type()` prints `<class 'str'>`. After `int(value)` the same name holds a number and prints `<class 'int'>`, because casting does not change the old value but makes a new one that you store back.
 
 ```python
 value = input("Type a number: ")
@@ -136,7 +134,7 @@ print(type(value))            # <class 'int'>
 
 ## The basic data types
 
-Every value has a **type**, and `type()` tells you which. These are the built-in single-value types:
+Every value has a **type**, and `type()` tells you which. These are the built-in single-value types.
 
 | Type | What it holds | Example |
 |---|---|---|
@@ -147,7 +145,11 @@ Every value has a **type**, and `type()` tells you which. These are the built-in
 | `NoneType` | "nothing here yet", written `None` | `result = None` |
 | `complex` | a number with an imaginary part (rare) | `2 + 3j` |
 
-Switching a value from one type to another is called **casting**:
+> [!tip] Single values are only half the story. The types that hold **many** values, such as lists, tuples, dictionaries and sets, come in the next chapters, and the Tuples and dicts chapter compares them in one table.
+
+## Casting: switching types
+
+Switching a value from one type to another is called **casting**. Each line converts one value: `float(10)` adds a decimal point, `int(3.9)` cuts off the decimals without rounding, `int("123")` turns text into a number, `str(456)` turns a number into text, and `bool(0)` is False because zero and empty text count as false.
 
 ```python
 print(float(10))      # 10.0
@@ -157,11 +159,9 @@ print(str(456))       # "456", number to text
 print(bool(0))        # False, 0 and "" count as False
 ```
 
-> [!tip] Single values are only half the story. The types that hold **many** values, such as lists, tuples, dictionaries and sets, come in the next chapters, and the Tuples and dicts chapter compares them in one table.
-
 ## math: borrow a tool
 
-A **module** is a toolbox in the garage. You do not carry every tool around all day. You `import` the toolbox when you need it, and the `math` module has maths helpers.
+A **module** is a toolbox in the garage. You do not carry every tool around all day. You `import` the toolbox when you need it, and the `math` module has maths helpers. In the code, `{area:.2f}` rounds to 2 decimal places and `**` means "to the power of". Line by line, `import math` opens the toolbox, `float(input(...))` reads the radius as a decimal, `math.pi * radius ** 2` is the circle area formula πr², and the f-string prints it rounded to 2 places.
 
 ```python
 import math
@@ -171,8 +171,6 @@ area = math.pi * radius ** 2
 print(f"Area = {area:.2f}")
 print(f"Square root of 49 = {math.sqrt(49)}")
 ```
-
-`{area:.2f}` rounds to 2 decimal places. `**` means "to the power of".
 
 ## Handy tips
 

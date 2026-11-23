@@ -1569,3 +1569,4 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 .wg canvas+.wgsay{margin-top:16px}
 .wg .wgsay+.evlog{margin-top:14px}
 .wg canvas+.evlog{margin-top:16px}
+.cmp th{white-space:nowrap}

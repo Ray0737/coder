@@ -15,6 +15,8 @@ import numpy as np
 
 ## Making arrays
 
+Build an array from a list, from a list of lists for a grid, or with a helper that fills it for you. `np.array` turns a list into an array, and a list of lists becomes a grid. `zeros` and `ones` make arrays filled with 0 or 1, `arange` counts like `range`, `linspace` gives a set number of evenly spaced values between two ends, and `reshape` rearranges the same numbers into rows and columns.
+
 ```python
 a = np.array([1, 2, 3])                 # from a list
 b = np.array([[1, 2, 3], [4, 5, 6]])    # a list of lists makes a 2D grid
@@ -26,7 +28,9 @@ print(np.linspace(0, 1, 5))             # [0.   0.25 0.5  0.75 1.  ]  5 evenly s
 print(np.arange(1, 7).reshape(2, 3))    # reshape a row into 2 rows of 3
 ```
 
-Every array knows its own shape and type:
+## Shape and type
+
+Every array knows its own shape and type.
 
 | Attribute | Meaning | For `b` above |
 |---|---|---|
@@ -37,7 +41,7 @@ Every array knows its own shape and type:
 
 ## Maths on the whole array
 
-This is the big idea. With a list you need a loop. With an array you just write the maths.
+This is the big idea. With a list you need a loop. With an array you just write the maths. In the code, `prices * 2` doubles every item at once, `prices + 5` adds 5 to every item, and `prices ** 2` squares every item. No loop is written, because NumPy loops for you.
 
 ```python
 prices = np.array([10, 20, 30])
@@ -53,7 +57,13 @@ print([1, 2] * 2)              # [1, 2, 1, 2]   the list is repeated
 print(np.array([1, 2]) * 2)    # [2 4]          every number doubled
 ```
 
-Two arrays of the same shape combine item by item: `np.array([1, 2, 3]) + np.array([10, 20, 30])` gives `[11 22 33]`. This is the speed-up too: the loop runs inside NumPy's fast code, not in slow Python.
+## Two arrays together
+
+Two arrays of the same shape combine item by item. This is the speed-up too: the loop runs inside NumPy's fast code, not in slow Python.
+
+```python
+print(np.array([1, 2, 3]) + np.array([10, 20, 30]))    # [11 22 33]
+```
 
 ## Try the operations
 
@@ -65,7 +75,7 @@ arrayviz
 
 ## Picking items: indexing and slicing
 
-Indexes start at 0, as in lists, but a grid needs two numbers: row, then column.
+Indexes start at 0, as in lists, but a grid needs two numbers: row, then column. The colon means "all of them", so `a[:, 1]` reads as "every row, column 1". In the code, `a[1, 2]` is row 1 and column 2, which is 7, `a[0]` is the whole first row, `a[:, 1]` is the second column, and `a[0:2, 1:3]` is the block of rows 0 to 1 and columns 1 to 2.
 
 ```python
 a = np.arange(1, 13).reshape(3, 4)    # [[1 2 3 4] [5 6 7 8] [9 10 11 12]]
@@ -76,11 +86,9 @@ print(a[:, 1])        # [ 2  6 10], the whole second column
 print(a[0:2, 1:3])    # rows 0-1 and columns 1-2: [[2 3] [6 7]]
 ```
 
-The colon means "all of them", so `a[:, 1]` reads as "every row, column 1".
-
 ## Masks: pick by a condition
 
-A comparison on an array gives an array of `True` and `False`. Use it as an index to keep only the matching items. This replaces a loop with an `if`.
+A comparison on an array gives an array of `True` and `False`. Use it as an index to keep only the matching items. This replaces a loop with an `if`. `scores >= 60` checks every score and gives True or False for each, which is the mask. Using the mask as an index keeps only the True items, so `scores[mask]` is `[90 72 85]`, and the last line assigns, so every score under 50 is raised to 50.
 
 ```python
 scores = np.array([48, 90, 72, 55, 85])
@@ -104,7 +112,7 @@ Functions like `sum`, `mean`, `max` take an `axis`. The axis is the direction th
 
 ## Broadcasting: different shapes, still works
 
-NumPy stretches a smaller array to fit a bigger one, when the shapes allow it. A single number stretches to everything, and a row stretches down the rows:
+NumPy stretches a smaller array to fit a bigger one, when the shapes allow it. A single number stretches to everything, and a row stretches down the rows, so each column gets its own number added. This is how you subtract the average from every column in one line.
 
 ```python
 a = np.arange(1, 13).reshape(3, 4)
@@ -113,8 +121,6 @@ print(a + np.array([10, 20, 30, 40]))
 #  [15 26 37 48]
 #  [19 30 41 52]]
 ```
-
-Each column got its own number added. This is how you subtract the average from every column in one line.
 
 ## Why a picture is an array
 
@@ -128,11 +134,17 @@ img[0, 0] = [255, 0, 0]                     # make the top-left pixel blue (BGR)
 
 > [!warn] `uint8` cannot go past 255. It **wraps around**: `np.array([250], dtype=np.uint8) + 10` gives `[4]`, not 260. When you brighten a picture, convert to a bigger type first, or use `np.clip(img.astype(int) + 50, 0, 255)`.
 
-This is why NumPy is the language of the Computer Vision class: cropping a picture is just slicing, `img[y1:y2, x1:x2]`.
+## Cropping is slicing
+
+This is why NumPy is the language of the Computer Vision class: cropping a picture is just slicing.
+
+```python
+crop = img[y1:y2, x1:x2]       # rows first, then columns
+```
 
 ## A neuron in one line
 
-The weighted sum of a neuron from the AI chapters is a **dot product**: multiply matching numbers and add them up.
+The weighted sum of a neuron from the AI chapters is a **dot product**: multiply matching numbers and add them up. Whole layers of a network are the same thing done for many neurons at once with a matrix, written `x @ W`. In the code, `x` is the inputs, `w` the weights and `b` the bias. `np.dot(x, w)` multiplies each input by its weight and adds them up, and `+ b` adds the bias, which gives 1·0.5 + 2·(−1) + 3·2 + 0.5 = 5.0.
 
 ```python
 x = np.array([1, 2, 3])          # inputs
@@ -141,8 +153,6 @@ b = 0.5                          # bias
 
 print(np.dot(x, w) + b)          # 5.0  =  1*0.5 + 2*-1 + 3*2 + 0.5
 ```
-
-Whole layers of a network are the same thing done for many neurons at once with a matrix, written `x @ W`.
 
 ## Handy functions
 

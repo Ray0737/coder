@@ -7,6 +7,8 @@ summary: Turn lists and arrays into line, bar, scatter and histogram charts, lab
 
 ## Install and import
 
+Install it once with `pip install matplotlib`, then import it. `plt` is the short name everybody uses.
+
 ```bash
 pip install matplotlib
 ```
@@ -15,11 +17,9 @@ pip install matplotlib
 import matplotlib.pyplot as plt
 ```
 
-`plt` is the short name everybody uses.
-
 ## Your first plot
 
-Give it a list of x values and a list of y values. `plt.show()` opens the window.
+Give it a list of x values and a list of y values, and `plt.show()` opens the window. Always add a **title** and **axis labels**, because a chart with no labels is a puzzle, not information. `plt.plot(hours, score)` draws a line through each (hours, score) pair. The next three lines add the title and the two axis labels, and `plt.show()` comes last, because it opens the window and waits.
 
 ```python
 import matplotlib.pyplot as plt
@@ -34,8 +34,6 @@ plt.ylabel("Score")
 plt.show()
 ```
 
-Always add a **title** and **axis labels**. A chart with no labels is a puzzle, not information.
-
 ## Choose the right chart
 
 Try each kind on the same data. Turn the labels and the grid on and off and watch the code change.
@@ -44,6 +42,12 @@ Try each kind on the same data. Turn the labels and the grid on and off and watc
 plotbuilder
 ```
 
+> [!compare] Think of it like choosing a container. A line is a road, bars are shelves of different heights, scatter dots are stars in the sky, and a histogram is sorting marbles into jars by size and counting each jar. The data is the same, and the container decides which question it answers.
+
+## The four charts
+
+Each chart answers a different question, so pick it from the question you are asking.
+
 | Chart | Call | Use it to show |
 |---|---|---|
 | line | `plt.plot(x, y)` | how something **changes** over time or steps |
@@ -51,9 +55,9 @@ plotbuilder
 | scatter | `plt.scatter(x, y)` | whether two things are **related** |
 | histogram | `plt.hist(values, bins=5)` | how values are **spread out** |
 
-> [!compare] Think of it like choosing a container. A line is a road, bars are shelves of different heights, scatter dots are stars in the sky, and a histogram is sorting marbles into jars by size and counting each jar. The data is the same, and the container decides which question it answers.
+## Bars with text names
 
-For text categories, give `bar` the names as x:
+For text categories, give `bar` the names as x. Here `fruit` holds the category names and `sales` the bar heights, and `color` sets the colour of the bars.
 
 ```python
 fruit = ["apple", "banana", "cherry"]
@@ -64,7 +68,7 @@ plt.show()
 
 ## Several lines and a legend
 
-Call `plot` more than once, give each a `label`, and add `plt.legend()`. A training curve is the classic example:
+Call `plot` more than once, give each a `label`, and add `plt.legend()`. A training curve is the classic example, and when the validation line starts rising while the training line keeps falling, the model is **overfitting**, which the AI chapters explain. Each `plot` call draws one line, the `label` names it for the legend, and `plt.legend()` draws the key. In these numbers the training loss keeps falling to 0.25 while the validation loss turns upwards after epoch 4.
 
 ```python
 epochs = [1, 2, 3, 4, 5]
@@ -79,9 +83,9 @@ plt.legend()
 plt.show()
 ```
 
-When the validation line starts rising while the training line keeps falling, the model is **overfitting**, which the AI chapters explain.
-
 ## Style and size
+
+A few calls set the size, the line style, the grid and the range of the axes. `figsize` sets the width and height in inches, and `color`, `linestyle` and `marker` style the line. `plt.grid(True)` adds light guide lines, `plt.xlim` fixes the x range, and `tight_layout()` stops the labels being cut off at the edges.
 
 ```python
 plt.figure(figsize=(8, 4))                  # width and height in inches
@@ -102,7 +106,7 @@ plt.show()
 
 ## Showing a picture: imshow
 
-An image is an array, and `imshow` draws an array. This is how you view a picture or a heat map:
+An image is an array, and `imshow` draws an array. This is how you view a picture or a heat map: `np.random.default_rng(0).random((10, 10))` makes a 10 by 10 grid of random numbers, and the 0 is a seed so it is the same every run. `imshow` colours each cell by its number using the `viridis` scale, and `colorbar()` adds the key that shows which colour means which number.
 
 ```python
 import numpy as np
@@ -117,7 +121,7 @@ plt.show()
 
 ## Several charts in one window
 
-`subplots` gives you a grid of small charts. Draw on each one with its own `ax`:
+`subplots` gives you a grid of small charts. Draw on each one with its own `ax`, whose calls are `set_title`, `set_xlabel` and `set_ylabel`, not `title` and `xlabel`. `plt.subplots(1, 2)` returns the figure and two axes, which the code names `left` and `right`. Each one is drawn on separately, a line on the left and bars on the right, and `tight_layout()` keeps them from overlapping.
 
 ```python
 fig, (left, right) = plt.subplots(1, 2, figsize=(9, 3))   # 1 row, 2 charts
@@ -129,11 +133,9 @@ plt.tight_layout()
 plt.show()
 ```
 
-On an `ax` the calls are `set_title`, `set_xlabel` and `set_ylabel`, not `title` and `xlabel`.
-
 ## No screen? Save instead
 
-On a Raspberry Pi over SSH, or a server with no display, `plt.show()` cannot open a window. Tell Matplotlib to draw without one and write a file:
+On a Raspberry Pi over SSH, or a server with no display, `plt.show()` cannot open a window. Tell Matplotlib to draw without one and write a file, and put the `matplotlib.use` line **before** `import matplotlib.pyplot`. `Agg` is a back end that draws into memory with no window, and `savefig` writes the result to `out.png`, which you can then open or copy to your computer.
 
 ```python
 import matplotlib
@@ -143,8 +145,6 @@ import matplotlib.pyplot as plt
 plt.plot([1, 2, 3], [3, 1, 2])
 plt.savefig("out.png")
 ```
-
-The `matplotlib.use` line must come **before** `import matplotlib.pyplot`.
 
 ## Try it
 

@@ -7,7 +7,7 @@ summary: Name a piece of code once, give it inputs, get a result back, and reuse
 
 ## def: write the recipe once
 
-A function is a recipe card. You write the steps once under a name, then "cook" it whenever you like by calling the name. `def` starts the recipe, the names in brackets are the **parameters** (the ingredients it needs), and the indented lines are the steps.
+A function is a recipe card. You write the steps once under a name, then "cook" it whenever you like by calling the name. `def` starts the recipe, the names in brackets are the **parameters** (the ingredients it needs), and the indented lines are the steps. Writing `def` does **not** run anything, because the code only runs when you call the function.
 
 ```python
 def print_pet(name, kind, age):
@@ -17,8 +17,6 @@ print_pet("Biscuit", "hamster", 2)      # call it
 print_pet("Pepper", "parrot", 5)        # call it again
 ```
 
-Writing `def` does **not** run anything. The code only runs when you call the function.
-
 ## Inputs go in, one value comes out
 
 Put numbers in, get an answer out. The `return` word hands the answer back so you can store it or use it.
@@ -26,6 +24,10 @@ Put numbers in, get an answer out. The `return` word hands the answer back so yo
 ```widget
 funcmachine
 ```
+
+## return: the answer comes back
+
+The function below turns weight and height into a BMI and returns it, so the caller can store it or use it in a sum. In the code, `bmi_calculator(w, h)` first turns the height from centimetres into metres, then returns the weight divided by the height squared. The call `bmi_calculator(60, 170)` runs it with those values, and `bmi = ...` catches the returned number so the f-string can print it with 2 decimals.
 
 ```python
 def bmi_calculator(w, h):
@@ -40,7 +42,7 @@ print(f"Your BMI: {bmi:.2f}")
 
 ## Calling with names
 
-You can pass values by position, or by name. With names the order does not matter.
+You can pass values by position, or by name. With names the order does not matter. The first call passes `"Notebook"` and `30` by position, so they land in `name` and `price` in order. The second names each value, so `price=25` can come first and still reach the right parameter.
 
 ```python
 def describe_item(name, price):
@@ -52,7 +54,7 @@ describe_item(price=25, name="Pencil")    # by name
 
 ## Default values
 
-Give a parameter a default and it becomes optional. If the caller leaves it out, the default is used.
+Give a parameter a default and it becomes optional. If the caller leaves it out, the default is used. `name="Guest"` gives the parameter a value even when the caller gives none. `greet("Falcons")` replaces it, while `greet()` falls back to "Guest".
 
 ```python
 def greet(name="Guest"):
@@ -64,7 +66,7 @@ print(greet())          # Hello, Guest!
 
 ## A function that decides
 
-A function can hold a whole `if` ladder. This one is the four-function calculator from class.
+A function can hold a whole `if` ladder. This one is the four-function calculator from class. `calculator` takes two numbers and an operator and uses a chain of `if`s with a `return` in each, so the first match ends the function. The code underneath reads both numbers and the operator from the user and prints whatever the function returns.
 
 ```python
 def calculator(n1, n2, op):
@@ -83,7 +85,9 @@ operator = input("Choose operator (+ - * /): ")
 print(calculator(num1, num2, operator))
 ```
 
-Passing a **list** into a function works the same. This one finds the smallest and biggest in a list, using the list skills from earlier:
+## Passing a list in
+
+Passing a **list** into a function works the same. This one finds the smallest and biggest in a list, using the list skills from earlier. `sorted(nlist)` makes a sorted copy, so index 0 is the smallest and index -1 is the biggest. Returning `ordered[0], ordered[-1]` sends back two values as a tuple, and `low, high = ...` unpacks them into two variables.
 
 ```python
 def find_max_min(nlist):
@@ -116,7 +120,7 @@ print_info(city="London", population=9000000)
 
 ## lambda: a function with no name
 
-A **lambda** is a one-line function you do not bother to name. It is handy for short jobs, especially with `map` and `filter`.
+A **lambda** is a one-line function you do not bother to name. It is handy for short jobs, especially with `map` and `filter`: `map` applies the function to every item, and `filter` keeps only the items for which the function says `True`. `lambda x: x + 1` is the same as a tiny `def` that returns `x + 1`. With `map` the next lambda squares every number, and with `filter` it keeps only the even ones, because `x % 2 == 0` is True for even numbers. `list(...)` turns the result into a list you can print.
 
 ```python
 add_one = lambda x: x + 1
@@ -126,8 +130,6 @@ numbers = [1, 2, 3, 4, 5]
 print(list(map(lambda x: x * x, numbers)))          # [1, 4, 9, 16, 25]
 print(list(filter(lambda x: x % 2 == 0, numbers)))  # [2, 4]
 ```
-
-`map` applies the function to every item, and `filter` keeps only the items for which the function says `True`.
 
 > [!tip] If a function does more than one thing, split it. A function named `calculate_bmi` that also asks the user and prints the answer is hard to reuse. Let one function calculate, and let the main code ask and print.
 

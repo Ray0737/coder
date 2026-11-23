@@ -14,7 +14,9 @@ for fruit in ["apple", "banana", "cherry"]:
     print(fruit)
 ```
 
-Text is a collection of letters too:
+## for over text
+
+Text is a collection of letters too, so a `for` loop can walk through a word one letter at a time.
 
 ```python
 for ch in "Python":
@@ -29,6 +31,10 @@ When you just want to repeat something a number of times, use `range()`. It make
 rangeviz
 ```
 
+## The forms of range
+
+Leave out `start` and it begins at 0, leave out `step` and it counts by 1, and a negative step counts down.
+
 | Form | Gives |
 |---|---|
 | `range(5)` | 0, 1, 2, 3, 4 |
@@ -36,12 +42,18 @@ rangeviz
 | `range(0, 19, 2)` | 0, 2, 4, ... 18 |
 | `range(10, 0, -3)` | 10, 7, 4, 1 |
 
+## range in a loop
+
+Put a `range` after `in` and the loop runs once for each number it makes, here every third number up to 100.
+
 ```python
 for i in range(0, 101, 3):     # every third number up to 100
     print(i)
 ```
 
-When you need the position **and** the item, `enumerate` hands you both:
+## enumerate: position and item
+
+When you need the position **and** the item, `enumerate` hands you both.
 
 ```python
 for index, value in enumerate(["a", "b", "c"]):
@@ -50,7 +62,7 @@ for index, value in enumerate(["a", "b", "c"]):
 
 ## while: keep going until the answer is no
 
-A `while` loop does not count. It checks a question before every round, and keeps going while the answer is `True`. It is like stirring soup until it boils: you do not know how many stirs it takes.
+A `while` loop does not count. It checks a question before every round, and keeps going while the answer is `True`. It is like stirring soup until it boils: you do not know how many stirs it takes. In the code, `x += 1` is short for `x = x + 1`, and the same trick works for `-=`, `*=`, `/=` and the others.
 
 ```python
 count = 0
@@ -61,15 +73,19 @@ while count < 3:
 
 > [!warn] If nothing inside a `while` loop ever makes the condition false, it runs **forever**. If that happens in the terminal, press `Ctrl+C` to stop it.
 
-`x += 1` is short for `x = x + 1`. The same trick works for `-=`, `*=`, `/=` and the others.
-
 ## break and continue
+
+Three small words steer a loop from the inside: `break` leaves it, `continue` skips to the next round, and `pass` does nothing.
 
 | Word | What it does | Real-life picture |
 |---|---|---|
 | `break` | leave the loop right now | walking out of the exam room when you are done |
 | `continue` | skip the rest of this round, start the next | skipping a song and playing the next one |
 | `pass` | do nothing (a placeholder) | an empty seat held for someone |
+
+## break and continue in code
+
+The first loop stops completely at 5, and the second only skips the single round where `i` is 2. In the first loop `i` counts 0, 1, 2, 3, 4 and then `break` ends the loop the moment `i` reaches 5, so 5 is never printed. In the second loop `continue` skips only the round where `i` is 2, so it prints 0 1 3 4.
 
 ```python
 for i in range(10):
@@ -85,7 +101,7 @@ for i in range(5):
 
 ## A loop that waits for the user
 
-A very common pattern is "keep asking until the user types q". Write `while True`, and use `break` to leave.
+A very common pattern is "keep asking until the user types q". Write `while True`, and use `break` to leave. Each round asks for text. If it is `q` the loop stops, and otherwise `float(text)` turns it into a number and `append` stores it. After the loop, `if numbers:` checks the list is not empty before averaging, so typing `q` straight away does not divide by zero.
 
 ```python
 numbers = []
@@ -101,9 +117,54 @@ else:
     print("No data")
 ```
 
+## A menu inside a menu: a cafe program
+
+Real programs often have a **main menu** that opens a **sub menu**, and each menu is its own `while True` loop. This cafe program from class shows it. The outer loop is the main menu: it shows "Register member, Order and pay, Exit" again and again until the user exits. When the user picks Order and pay, the program enters an **inner** loop, the order menu, which keeps asking for a drink until the user picks 0 to pay. The key rule is that `break` leaves only the loop it is written in. After `payment()` the inner `break` ends the order menu and the program returns to the main menu for the next customer, and the outer `break` ends the whole program. Three dictionaries hold the prices, the drink names and the cups ordered, so every drink uses the same one line, and `payment()` turns them into a receipt with a 10% discount for registered members. The menu choice is kept as text, so typing a letter just prints the warning, and after paying the cup counts are set back to 0 for the next customer.
+
+```python
+price = {"1": 50, "2": 65, "3": 45}              # menu number (as text): price in THB
+names = {"1": "Tea", "2": "Cocoa", "3": "Coffee"}
+qty = {"1": 0, "2": 0, "3": 0}                   # cups ordered of each
+members = []
+
+def payment(username):
+    total = 0
+    for k in qty:
+        total += price[k] * qty[k]
+        print(f"{names[k]}: {qty[k]} cups = {price[k] * qty[k]} THB")
+    discount = total * 0.10 if username in members else 0     # members get 10% off
+    print(f"Total: {total} THB | Discount: {discount} THB | Pay: {total - discount} THB")
+
+while True:                                      # main menu: repeats until Exit
+    print("1. Register member  2. Order and pay  3. Exit")
+    action = input("Choose an action: ")
+    if action == "1":
+        members.append(input("Member name: "))
+    elif action == "2":
+        username = input("Name: ")
+        print("1: Tea 50 | 2: Cocoa 65 | 3: Coffee 45 | 0: Pay")
+        while True:                              # order menu: repeats until 0
+            menu = input("Choose a menu: ")      # kept as text, so letters cannot crash it
+            if menu == "0":
+                payment(username)
+                for k in qty:
+                    qty[k] = 0                   # the next customer starts fresh
+                break                            # leaves the order menu only
+            elif menu in price:
+                qty[menu] += 1
+            else:
+                print("Please choose 0 to 3 only")
+    elif action == "3":
+        break                                    # leaves the main menu: the program ends
+    else:
+        print("Please choose 1, 2 or 3")
+```
+
+> [!compare] Think of it like a lift in a building. The main menu is the ground floor lobby and the order menu is a floor you ride up to. Paying takes you back down to the lobby, and only walking out of the front door (Exit) leaves the building.
+
 ## Counting with a dictionary
 
-Looping over text and counting each letter is a famous exercise. It uses a dictionary, which the next chapters explain, but here is the idea:
+Looping over text and counting each letter is a famous exercise. It uses a dictionary, which the next chapters explain, but here is the idea: `count` starts empty. For each letter that is not a space, `count.get(ch, 0)` returns how many times the letter was seen so far (0 if it is new), and the code stores that plus 1. The last loop goes through the letters in alphabetical order and prints each with its total.
 
 ```python
 text = input("Enter something: ")
@@ -118,7 +179,7 @@ for ch in sorted(count):
 
 ## A loop inside a loop: drawing shapes
 
-A loop can contain another loop. The outer loop picks the **row**, and the inner loop fills in that row. Printing shapes in the terminal is the best way to see it.
+A loop can contain another loop. The outer loop picks the **row**, and the inner loop fills in that row. Printing shapes in the terminal is the best way to see it. This one prints a staircase, where `"-" * 3` gives `---` and `end=""` stops `print` from jumping to a new line. In the code, each row first prints `9 - i` dashes, then the inner loop prints the numbers 1 to `i` on the same line, and the bare `print()` ends the row.
 
 ```python
 for i in range(1, 10):
@@ -128,7 +189,9 @@ for i in range(1, 10):
     print()                           # end the row
 ```
 
-This prints a staircase. `"-" * 3` gives `---`, and `end=""` stops `print` from jumping to a new line.
+## A hollow triangle
+
+The same idea with spaces and stars draws a triangle of the height you type. `h` is the height. For each row `i`, `space = h - i` spaces push the stars to the right place. The first row is a single star, the last row is a full line of `2h - 1` stars, and every row in between is a star, some spaces and a second star, which makes the hollow middle.
 
 ```python
 h = int(input("Enter the height of the triangle: "))
@@ -162,6 +225,9 @@ for i in range(1, h + 1):
 3. Ask for numbers until the user types `q`, then print the largest and the smallest.
 4. Print a triangle of `*` that is 5 rows tall, growing one star per row.
 5. What is the difference between `break` and `continue`? Write one example of each.
+6. In the cafe program, which `break` ends the whole program, and which one only returns to the main menu? What would happen if the pay branch had no `break`?
+7. Add a fourth drink to the order menu, then a menu option that shows the total so far without paying.
+8. Make the discount depend on the total, for example 10% only when the bill is over 100 THB.
 
 ## Quick recap
 
@@ -173,3 +239,4 @@ for i in range(1, h + 1):
 | `break` | leaving the room | exits the loop |
 | `continue` | skipping a song | jumps to the next round |
 | nested loop | rows and columns | the outer picks the row, the inner fills it |
+| menu inside a menu | a lift with floors | an outer `while True` for the main menu, an inner one for the order menu, and `break` leaves only the loop it is in |

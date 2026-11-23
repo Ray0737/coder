@@ -7,7 +7,7 @@ summary: Bundle data and the actions on it into one object, then build new class
 
 ## Class and object: a blueprint and a house
 
-A **class** is the blueprint, and an **object** is a house built from it. One blueprint can build many houses, and each house has its own paint colour. In Python, the blueprint describes what facts each object keeps (**attributes**) and what it can do (**methods**).
+A **class** is the blueprint, and an **object** is a house built from it. One blueprint can build many houses, and each house has its own paint colour. In Python, the blueprint describes what facts each object keeps (**attributes**) and what it can do (**methods**). In the code, `class Phone:` starts the blueprint, `__init__` stores the brand and price on the new object, and `showdata` prints them. `Phone("Nova", 12000)` builds one phone object, and `phone1.showdata()` asks that object to print its own data.
 
 ```python
 class Phone:
@@ -23,7 +23,9 @@ phone1 = Phone("Nova", 12000)
 phone1.showdata()
 ```
 
-Three things to notice:
+## Reading the constructor
+
+Three things in the code above are worth noticing.
 
 - `__init__` is the **constructor**. Python calls it automatically when you write `Phone(...)`, and it sets up the object's first facts.
 - `self` means "this very object". `self.brand = brand` stores the brand inside this object.
@@ -36,6 +38,10 @@ A method can change the facts the object keeps. Here a businessman has `hp`, `mo
 ```widget
 objectviz
 ```
+
+## The Businessman class
+
+This is the class behind the diagram, with one method for each button. The class keeps three numbers: `work` lowers HP and happiness and raises money, `sleep` does the opposite, and `showdata` prints all three. The object `man1` starts at 100 each, and after one `work()` it shows HP 90, Money 110 and Happiness 80.
 
 ```python
 class Businessman:
@@ -66,7 +72,7 @@ man1.showdata()       # HP: 90, Money: 110, Happiness: 80
 
 ## Many objects, one class
 
-Because each object keeps its own data, two objects never interfere with each other.
+Because each object keeps its own data, two objects never interfere with each other. `man1` and `man2` are two separate objects built from the same class with different starting numbers. Calling `work()` on `man1` changes only `man1`, so `man2.showdata()` still shows its original values.
 
 ```python
 man1 = Businessman(100, 100, 100)
@@ -76,7 +82,9 @@ man1.showdata()       # changed
 man2.showdata()       # untouched
 ```
 
-A **class attribute** is shared by every object. It is written directly inside the class, not in `__init__`:
+## A class attribute
+
+A **class attribute** is shared by every object. It is written directly inside the class, not in `__init__`. `species` is written inside the class but outside `__init__`, so every `Dog` shares it, while `name` and `age` are set per dog with `self`. `bark` is a method that returns a sentence using that dog's own name.
 
 ```python
 class Dog:
@@ -92,7 +100,7 @@ class Dog:
 
 ## Inheritance: a new class from an old one
 
-A new class can **inherit** everything from an existing one and then add or change things. Think of a child who has the parent's features but learns new tricks. The child is written with the parent's name in brackets.
+A new class can **inherit** everything from an existing one and then add or change things. Think of a child who has the parent's features but learns new tricks. The child is written with the parent's name in brackets. In the code, `GoldenRetriever(Dog)` inherits from `Dog`. Its `__init__` calls `super().__init__` to let `Dog` set the name and age and then adds its own `color`, it overrides `bark` with a different sentence, and it adds a new `retrieve` method. `goldie.species` still works because it is inherited.
 
 ```python
 class GoldenRetriever(Dog):
@@ -112,12 +120,16 @@ print(goldie.retrieve("ball"))
 print(goldie.species)         # inherited from Dog
 ```
 
+## super() and overriding
+
+Two ideas make inheritance work.
+
 - `super()` means "my parent class", so `super().__init__(...)` runs the parent's setup first.
 - **Overriding** means the child writes a method with the same name as the parent's. The child's version wins. The same call, `bark()`, behaves differently depending on which object it is used on. That is called **polymorphism**.
 
 ## Encapsulation: keep some things private
 
-Sometimes you do not want other code to change a value directly. Two underscores at the front of a name mark it as private, and you give the outside world a method to use instead.
+Sometimes you do not want other code to change a value directly. Two underscores at the front of a name mark it as private, and you give the outside world a method to use instead. A bank does not let you reach into the vault. You ask the teller (`deposit`), and the teller checks the rules first, which is why the check `amount > 0` sits inside the method.
 
 ```python
 class Account:
@@ -136,8 +148,6 @@ acc.deposit(50)
 print(acc.get_balance())      # 150
 # acc.__balance               # AttributeError: it is hidden
 ```
-
-A bank does not let you reach into the vault. You ask the teller (`deposit`), and the teller checks the rules first. That is why the check `amount > 0` sits inside the method.
 
 ## The four ideas in one table
 

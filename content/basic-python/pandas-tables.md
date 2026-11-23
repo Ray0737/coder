@@ -17,7 +17,7 @@ import pandas as pd
 
 ## A DataFrame: the table
 
-A **DataFrame** is a table. Each column has a name, and each row has a number called the **index**. You can build one from a dictionary, where each key is a column:
+A **DataFrame** is a table. Each column has a name, and each row has a number called the **index**. You can build one from a dictionary, where each key is a column. A single column on its own is a **Series**, a labelled list, and `NaN` means "not a number", Pandas' mark for a missing value.
 
 ```python
 import pandas as pd
@@ -38,18 +38,15 @@ print(df)
 3   mango     25   30.0
 ```
 
-A single column on its own is a **Series**: a labelled list. `NaN` means "not a number", Pandas' mark for a missing value.
 
 ## Load a file
 
-Real data lives in a file. `read_csv` loads a CSV (comma separated values) file, and `to_csv` saves one.
+Real data lives in a file. `read_csv` loads a CSV (comma separated values) file, and `to_csv` saves one. `pd.read_excel("file.xlsx")` reads Excel files, and needing it will tell you to also install `openpyxl`.
 
 ```python
 df = pd.read_csv("iris.csv")
 df.to_csv("clean.csv", index=False)      # index=False leaves out the row numbers
 ```
-
-`pd.read_excel("file.xlsx")` reads Excel files. Needing it will tell you to also install `openpyxl`.
 
 ## First look at any new table
 
@@ -65,11 +62,17 @@ Do these five before anything else. They answer "what did I just load?".
 
 ## Ask the table a question
 
-The same questions work every time: pick a column, filter rows, sort, group. Press each one:
+The same questions work every time: pick a column, filter rows, sort, group. Press each one.
 
 ```widget
 dfviz
 ```
+
+> [!compare] Think of it like a spreadsheet with a magic remote. Pick a column is clicking the column letter, filter is "show only rows where...", sort is clicking the header arrow, and groupby is a pivot table that makes one row per group.
+
+## The common questions in code
+
+The condition works because, like NumPy, `df["price"] > 10` gives a column of `True` and `False`, and the outer brackets keep the rows marked `True`. It is the mask from the NumPy chapter. `df["price"]` is one column, a list of column names in double brackets gives a smaller table, a condition keeps the matching rows, two conditions combine with `&` or `|`, and `sort_values` orders the rows.
 
 ```python
 df["price"]                          # one column (a Series)
@@ -81,11 +84,9 @@ df.sort_values("price", ascending=False)       # biggest first
 
 > [!warn] When you combine conditions, wrap each one in its own **brackets** and use `&` and `|`, not the words `and` and `or`. Writing `df[df["a"] > 1 and df["b"] > 2]` stops with `ValueError: The truth value of a Series is ambiguous`.
 
-The condition works because, like NumPy, `df["price"] > 10` gives a column of `True` and `False`, and the outer brackets keep the rows marked `True`. It is the mask from the NumPy chapter.
-
-> [!compare] Think of it like a spreadsheet with a magic remote. Pick a column is clicking the column letter, filter is "show only rows where...", sort is clicking the header arrow, and groupby is a pivot table that makes one row per group.
-
 ## Picking by label or by position
+
+`loc` picks by the names on the table, and `iloc` picks by counting from 0.
 
 | Call | Picks by | Example | Gives |
 |---|---|---|---|
@@ -104,7 +105,7 @@ print(df["price"].mean())         # 20.5
 
 ## Missing values
 
-Real data always has gaps. Find them, then decide: fill them or drop them.
+Real data always has gaps. Find them, then decide: fill them or drop them. `isna().sum()` counts the gaps in each column. You can then fill them with a fixed number (`fillna(0)`), fill them with the column's average, or throw away every row that has a gap with `dropna()`.
 
 ```python
 print(df.isna().sum())            # missing values per column (stock: 1)
@@ -118,23 +119,21 @@ df = df.dropna()                                         # or drop rows that hav
 
 ## Count and group
 
+`value_counts` counts the rows of each value, and `groupby` splits the table into groups, calculates for each group, and joins the answers, so `df.groupby("species").mean()` is the table shown in the diagram above.
+
 ```python
 df["species"].value_counts()               # how many rows of each value
 df.groupby("species")["petal_length"].mean()   # average petal length for each species
 ```
 
-`groupby` splits the table into groups, calculates for each group, and joins the answers. `df.groupby("species").mean()` is the table shown in the widget above.
-
 ## From table to model
 
-For machine learning, you split the table into the **features** (the inputs) and the **label** (the answer), as in the Data handling chapter:
+For machine learning, you split the table into the **features** (the inputs) and the **label** (the answer), as in the Data handling chapter. Many libraries accept these directly, or as arrays with `X.to_numpy()`.
 
 ```python
 X = df[["sepal_length", "petal_length"]]     # features: a table of inputs
 y = df["species"]                            # label: a column of answers
 ```
-
-Many libraries accept these directly, or as arrays with `X.to_numpy()`.
 
 ## Try it
 

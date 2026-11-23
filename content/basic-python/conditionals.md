@@ -18,7 +18,9 @@ A condition is a yes-or-no question. Python answers it with a **boolean**: `True
 
 > [!warn] One `=` **stores** a value (`age = 15`). Two `==` **ask** whether two values are equal (`age == 15`). Mixing them up is the most common beginner mistake.
 
-You can join questions with `and`, `or` and `not`:
+## Joining questions
+
+You can join questions with `and`, `or` and `not`.
 
 ```python
 print(5 > 3 and 2 > 1)     # True: both must be true
@@ -28,7 +30,7 @@ print(not 5 > 3)           # False: flips the answer
 
 ## if, elif, else
 
-`if` asks the first question. `elif` (else if) asks the next one only if the earlier ones failed. `else` catches everything left over. The lines that belong to each branch are **indented** by four spaces, and the colon `:` ends the question line.
+`if` asks the first question. `elif` (else if) asks the next one only if the earlier ones failed. `else` catches everything left over. The lines that belong to each branch are **indented** by four spaces, and the colon `:` ends the question line. In the program, `int(input(...))` turns the typed text into a whole number first. Python then checks `num > 0`, and if that is false it checks `num == 0`, and only when both fail does it run the `else`, so exactly one of the three print lines runs.
 
 ```python
 num = int(input("Enter an integer: "))
@@ -48,6 +50,12 @@ Python reads an `if` / `elif` chain from the top and stops at the **first** ques
 gradeladder
 ```
 
+> [!compare] Think of it like a bouncer checking a line of rules: "Over 80? Straight in. No? Over 75? Table 2. No? Over 70?" Once you are placed, the bouncer stops asking. That is why the **order** matters: put `>= 50` first and everyone above 50 would get Grade 1.
+
+## The grade code
+
+The same ladder as a program, with the highest grade checked first. `input` gives text, `float` makes it a decimal and `round` turns it into a whole score. The checks run from the highest grade down, so a score of 82 stops at the first branch and never reaches the others, and anything below 70 falls through to `else`.
+
 ```python
 gpa = round(float(input("Enter the score (x/100): ")))
 if gpa >= 80:
@@ -60,11 +68,9 @@ else:
     print("Grade 0")
 ```
 
-> [!compare] Think of it like a bouncer checking a line of rules: "Over 80? Straight in. No? Over 75? Table 2. No? Over 70?" Once you are placed, the bouncer stops asking. That is why the **order** matters: put `>= 50` first and everyone above 50 would get Grade 1.
-
 ## A decision inside a decision
 
-An `if` can sit inside another `if`. The inner question is only asked when the outer one was true. The member discount exercise works like this:
+An `if` can sit inside another `if`. The inner question is only asked when the outer one was true. The member discount exercise works like this: The outer `if` asks whether the user is a member. Only if they said Yes does the program ask for the bill, and then an inner `if/elif/else` picks the discount: 15% from 5000, 10% from 1000, otherwise 5%. A non-member skips all of that and reaches the final `else`.
 
 ```python
 member = input("Are you a member? (Yes/No): ")
@@ -83,7 +89,7 @@ else:
 
 ## Check before you convert
 
-Remember that `int("abc")` crashes. Text has its own yes-or-no questions you can ask first:
+Remember that `int("abc")` crashes. Text has its own yes-or-no questions you can ask first, so ask before you convert. `text.isdigit()` is True only when every character is a digit, so `"15"` passes while `"abc"` and `"1.5"` do not. Only then is it safe to call `int(text)`, and otherwise the program prints a message instead of crashing.
 
 ```python
 text = input("Enter your age: ")
@@ -92,6 +98,10 @@ if text.isdigit():                  # only digits 0-9?
 else:
     print("Please type a whole number")
 ```
+
+## The text questions
+
+These are the yes-or-no questions a piece of text can answer about itself.
 
 | Question | True when |
 |---|---|
@@ -102,7 +112,7 @@ else:
 
 ## Math you will need: // and %
 
-Two operators are very useful in conditions. `//` is **floor division** (how many whole times does it fit) and `%` is the **remainder**. The banknote exercise uses both: `withdraw % 100 == 0` checks the amount is a multiple of 100, and `//` counts the notes.
+Two operators are very useful in conditions. `//` is **floor division** (how many whole times does it fit) and `%` is the **remainder**. The banknote exercise uses both: `withdraw % 100 == 0` checks the amount is a multiple of 100, and `//` counts the notes. The code starts with 2700 baht: `2700 // 1000` is 2 notes, and `2700 % 1000` leaves 700 still to pay out. The same two steps repeat for 500 and 100, so each note size takes as many as fit and passes the remainder down to the next.
 
 ```python
 withdraw = 2700
