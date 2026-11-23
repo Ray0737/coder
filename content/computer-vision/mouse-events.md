@@ -7,7 +7,7 @@ summary: Make an OpenCV window react to clicks and movement with a callback func
 
 ## The callback
 
-`cv.setMouseCallback(window_name, callback)` attaches your function to a window. OpenCV then calls it with exactly five arguments, in this order, every time the mouse does anything over that window:
+`cv.setMouseCallback(window_name, callback)` attaches your function to a window. OpenCV then calls it with exactly five arguments, in this order, every time the mouse does anything over that window. `flags` and `param` are often unused, but they must stay in the function's signature or OpenCV cannot call it.
 
 | Argument | What it holds |
 |---|---|
@@ -16,11 +16,9 @@ summary: Make an OpenCV window react to clicks and movement with a callback func
 | `flags` | Which buttons or modifier keys (Ctrl, Shift) are held |
 | `param` | Anything extra you passed to `setMouseCallback` |
 
-`flags` and `param` are often unused, but they must stay in the function's signature or OpenCV cannot call it.
-
 > [!compare] Think of it like leaving your phone number with a shop. You do not stand at the counter asking "is my order ready?" every minute. The shop rings you the moment something happens, and tells you what it was.
 
-The events you will use most:
+The events you will use most are below. Try it on the picture further down: move the mouse, then left and right click, and watch what the callback would receive.
 
 | Constant | When it fires |
 |---|---|
@@ -30,13 +28,13 @@ The events you will use most:
 | `cv.EVENT_MBUTTONDOWN` | Middle button pressed |
 | `cv.EVENT_LBUTTONDBLCLK` | Left double-click |
 
-Try it on the picture below. Move the mouse, then left and right click, and watch what the callback would receive.
-
 ```widget
 mouseclick
 ```
 
 ## A click-to-draw program
+
+Three things have to happen in this order: show the window (it must exist), attach the callback, then call `waitKey`. Without `waitKey` the program ends instantly and no event ever arrives.
 
 ```python
 canvas = cv.imread('assets/img.jpg', 1)
@@ -54,7 +52,8 @@ cv.waitKey(0)                            # keeps the window alive for events
 cv.destroyAllWindows()
 ```
 
-Three things have to happen in this order: show the window (it must exist), attach the callback, then call `waitKey`. Without `waitKey` the program ends instantly and no event ever arrives. The same idea builds the shape-drawing exercises in your folder: a rectangle starts on `LBUTTONDOWN`, grows on `MOUSEMOVE` and finishes on `LBUTTONUP`. A pixel colour picker reads `img[y, x]` inside the callback.
+> [!more] TLDR: where else this pattern is used
+> The same idea builds the shape-drawing exercises in your folder: a rectangle starts on `LBUTTONDOWN`, grows on `MOUSEMOVE` and finishes on `LBUTTONUP`. A pixel colour picker reads `img[y, x]` inside the callback.
 
 > [!warn] The `x, y` the callback receives are in (x, y) order, but indexing the image takes (row, column). To read the colour under the mouse, write `img[y, x]`, not `img[x, y]`.
 

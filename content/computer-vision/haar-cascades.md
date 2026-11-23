@@ -16,7 +16,13 @@ github-logo | Get the cascade files | The ready-made .xml files (faces, eyes, sm
 Haar cascades on GitHub | https://github.com/opencv/opencv/tree/4.x/data/haarcascades | The official folder of pre-trained cascades
 ```
 
+## Finding faces with it
+
+Load the file, turn the frame grey (cascades want grayscale), and call `detectMultiScale`. It returns a list of `(x, y, w, h)` boxes, one per detected face: the top-left corner, then width and height.
+
 ```python
+import cv2 as cv
+
 face_cascade = cv.CascadeClassifier('haarcascade_frontalface_default.xml')
 gray  = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)          # cascades want grayscale
 faces = face_cascade.detectMultiScale(gray, 1.3, 5)    # scaleFactor, minNeighbors
@@ -24,8 +30,6 @@ faces = face_cascade.detectMultiScale(gray, 1.3, 5)    # scaleFactor, minNeighbo
 for (x, y, w, h) in faces:                             # one box per face
     cv.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 ```
-
-It returns a list of `(x, y, w, h)` boxes, one per detected face: the top-left corner, then width and height.
 
 ## What one of its tests looks like
 
@@ -35,18 +39,23 @@ Each yes/no test in the cascade is a **Haar feature**: a few rectangles on the w
 haarfeature
 ```
 
-One feature on its own is a weak clue. The idea behind OpenCV's cascades, from Viola and Jones in 2001, is to **chain** thousands of these tests and let training choose which ones matter. Early gates use a few cheap features to throw most windows away. Only windows that pass them reach the later, stricter ones, which is the "cascade" in the name.
-
 > [!aha] A Haar feature is just "sum of the light part minus sum of the dark part". No curves, no shapes, only arithmetic on pixel brightness, repeated very fast over every window.
 
+> [!more] TLDR: why one feature is not enough
+> One feature on its own is a weak clue. The idea behind OpenCV's cascades, from Viola and Jones in 2001, is to **chain** thousands of these tests and let training choose which ones matter. Early gates use a few cheap features to throw most windows away. Only windows that pass them reach the later, stricter ones, which is the "cascade" in the name.
+
 ## The two settings that matter
+
+Two numbers tune the scan. `scaleFactor` is how much the picture shrinks between scans, so faces of different sizes fit the window, and `minNeighbors` is how many overlapping hits must agree before a spot counts.
 
 | Setting | What it controls | Too low | Too high |
 |---|---|---|---|
 | `scaleFactor` (e.g. 1.3) | How much the picture shrinks between scans, so faces of different sizes fit the window | Slow, many tiny steps | Fast, but can skip a face size |
 | `minNeighbors` (e.g. 5) | How many overlapping hits must agree before a spot counts | Stray spots become false faces | Real faces get thrown away |
 
-A real face triggers many overlapping hits at slightly different positions and sizes. A stray patch that merely looks a bit face-like triggers only one or two. So `minNeighbors` is a **vote threshold**: the bar chart counts the hits at each spot, and any bar below the dashed line is thrown away. Raise it and the strays go first, then the real face. The `scaleFactor` slider changes how many window sizes are tried, which changes how many votes every spot collects.
+## Votes: why minNeighbors works
+
+A real face triggers many overlapping hits at slightly different positions and sizes, while a stray patch that merely looks a bit face-like triggers only one or two. So `minNeighbors` is a **vote threshold**: the bar chart counts the hits at each spot, and any bar below the dashed line is thrown away. Raise it and the strays go first, then the real face. The `scaleFactor` slider changes how many window sizes are tried, which changes how many votes every spot collects.
 
 ```widget
 haardiagram
@@ -54,9 +63,12 @@ haardiagram
 
 ## Beyond a rectangle: masks
 
-A box is only the start. Draw a filled ellipse onto a black mask at each face, then use the bitwise operations from the last chapter:
+A box is only the start. Draw a filled ellipse onto a black mask at each face, then use the bitwise operations from the last chapter. Your folder has both versions: `face_mask_show_only_webcam.py` shows only the face, and `face_hide_webcam.py` blanks the face and shows everything else.
 
 ```python
+import cv2 as cv
+import numpy as np
+
 mask = np.zeros(frame.shape[:2], dtype=np.uint8)
 for x, y, w, h in faces:
     cv.ellipse(mask, (x + w // 2, y + h // 2), (w // 2, h // 2), 0, 0, 360, 255, -1)
@@ -65,13 +77,13 @@ show_only_face = cv.bitwise_and(frame, frame, mask=mask)
 hide_face      = cv.bitwise_and(frame, frame, mask=cv.bitwise_not(mask))
 ```
 
-Your folder has both: `face_mask_show_only_webcam.py` shows only the face, and `face_hide_webcam.py` blanks the face and shows everything else. Eyes work the same way with the eye cascade, usually searched only inside each face box.
+## Eyes inside the face
 
-### Eyes inside the face
-
-Searching for eyes in the whole frame finds false ones. Cut out each face first, then search only inside it:
+Eyes work the same way with the eye cascade, but searching for them in the whole frame finds false ones. Cut out each face first, then search only inside it. The eye positions come back **relative to the crop**, so drawing on `roi_color` puts the boxes in the right place on the full frame.
 
 ```python
+import cv2 as cv
+
 eye_cascade = cv.CascadeClassifier('haarcascade_eye_tree_eyeglasses.xml')
 for (x, y, w, h) in faces:
     roi_gray  = gray[y:y + h, x:x + w]                 # the face, as a crop
@@ -80,11 +92,14 @@ for (x, y, w, h) in faces:
         cv.rectangle(roi_color, (ex, ey), (ex + ew, ey + eh), (255, 0, 0), 2)
 ```
 
-The eye positions come back **relative to the crop**, so drawing on `roi_color` puts the boxes in the right place on the full frame.
-
 ## Strengths and limits
 
-Haar cascades are quick and need no GPU, so they run on a Raspberry Pi. They work best on **front-facing** faces in decent light, and they struggle with tilted heads, side views and strong shadows. That is the main reason people moved to learned detectors like YOLO.
+Haar cascades are quick and need no GPU, so they run on a Raspberry Pi, but they only cope with easy conditions. That is the main reason people moved to learned detectors like YOLO.
+
+| Strong at | Weak at |
+|---|---|
+| Speed: quick, and no GPU needed, so it runs on a Raspberry Pi | Tilted heads and side views |
+| **Front-facing** faces in decent light | Strong shadows |
 
 ## Try it
 

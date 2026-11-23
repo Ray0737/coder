@@ -7,11 +7,9 @@ summary: Spot movement by comparing each frame with the one before it: whatever 
 
 ## The idea: subtract the last frame
 
-If nothing moves, two frames in a row are almost identical, so their difference is almost zero everywhere. If a ball rolls across the picture, the pixels where it **was** and where it **is now** change a lot, and everything else stays still. That leftover is a map of the movement.
+If nothing moves, two frames in a row are almost identical, so their difference is almost zero everywhere. If a ball rolls across the picture, the pixels where it **was** and where it **is now** change a lot, and everything else stays still. That leftover is a map of the movement. The steps below use tools you already know, and in the diagram you can move the ball between frames: the right-hand picture is the difference, and lowering the threshold makes camera noise start to look like movement.
 
 > [!compare] Think of it like the "spot the difference" puzzle where you hold two photos on top of each other. Anything that is the same disappears, and only what moved sticks out.
-
-The steps use tools you already know:
 
 | Step | Function | Why |
 |---|---|---|
@@ -22,55 +20,54 @@ The steps use tools you already know:
 | 5 | `findContours`, then a size check | One contour per moving object, ignoring specks |
 | 6 | `boundingRect` and `rectangle` | Draw a box round each one |
 
-Move the ball between frames below. The right-hand picture is the difference. Lower the threshold and camera noise starts to look like movement.
-
 ```widget
 motiondiff
 ```
 
 ## The code
 
-```python
-cap = cv.VideoCapture(0)
-prev = None
-
-while True:
-    ret, frame = cap.read()
-    if not ret:
-        break
-
-    gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
-    gray = cv.GaussianBlur(gray, (21, 21), 0)          # smooth away noise
-
-    if prev is None:                                   # first frame: nothing to compare yet
-        prev = gray
-        continue
-
-    diff   = cv.absdiff(prev, gray)                    # |this frame - last frame|
-    thresh = cv.threshold(diff, 25, 255, cv.THRESH_BINARY)[1]
-    thresh = cv.dilate(thresh, None, iterations=2)
-
-    contours, _ = cv.findContours(thresh, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-    moving = False
-    for c in contours:
-        if cv.contourArea(c) < 500:                    # too small: noise
-            continue
-        x, y, w, h = cv.boundingRect(c)
-        cv.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-        moving = True
-
-    cv.putText(frame, 'MOVING' if moving else 'still', (10, 30),
-               cv.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
-    cv.imshow('Movement', frame)
-    prev = gray                                        # this frame is next time's "last frame"
-    if cv.waitKey(30) & 0xFF == ord('q'):
-        break
-
-cap.release()
-cv.destroyAllWindows()
-```
-
-Two details are easy to miss. On the first frame there is no "previous" yet, so the loop stores it and moves on. And the last line, `prev = gray`, makes sure each frame is compared with the one just before it.
+> [!more] Code: the full movement loop
+> Two details are easy to miss. On the first frame there is no "previous" yet, so the loop stores it and moves on. And the last line, `prev = gray`, makes sure each frame is compared with the one just before it.
+>
+> ```python
+> cap = cv.VideoCapture(0)
+> prev = None
+>
+> while True:
+>     ret, frame = cap.read()
+>     if not ret:
+>         break
+>
+>     gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+>     gray = cv.GaussianBlur(gray, (21, 21), 0)          # smooth away noise
+>
+>     if prev is None:                                   # first frame: nothing to compare yet
+>         prev = gray
+>         continue
+>
+>     diff   = cv.absdiff(prev, gray)                    # |this frame - last frame|
+>     thresh = cv.threshold(diff, 25, 255, cv.THRESH_BINARY)[1]
+>     thresh = cv.dilate(thresh, None, iterations=2)
+>
+>     contours, _ = cv.findContours(thresh, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+>     moving = False
+>     for c in contours:
+>         if cv.contourArea(c) < 500:                    # too small: noise
+>             continue
+>         x, y, w, h = cv.boundingRect(c)
+>         cv.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+>         moving = True
+>
+>     cv.putText(frame, 'MOVING' if moving else 'still', (10, 30),
+>                cv.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2)
+>     cv.imshow('Movement', frame)
+>     prev = gray                                        # this frame is next time's "last frame"
+>     if cv.waitKey(30) & 0xFF == ord('q'):
+>         break
+>
+> cap.release()
+> cv.destroyAllWindows()
+> ```
 
 > [!warn] A light switching on, a camera adjusting its exposure or a curtain waving all change a lot of pixels without anything "moving". Frame differencing only knows that something changed, not what. For a sunlit room, a background model works better (below).
 

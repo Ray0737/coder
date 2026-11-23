@@ -22,7 +22,7 @@ hsv  = cv.cvtColor(img, cv.COLOR_BGR2HSV)    # for colour tracking
 bgr  = cv.cvtColor(hsv, cv.COLOR_HSV2BGR)    # and back again
 ```
 
-Matplotlib expects RGB, so passing it a raw OpenCV image swaps red and blue (skin turns blue, the sky turns orange). Convert with `COLOR_BGR2RGB` first.
+> [!warn] Matplotlib expects RGB, so passing it a raw OpenCV image swaps red and blue (skin turns blue, the sky turns orange). Convert with `COLOR_BGR2RGB` first.
 
 ## Why HSV is the one for finding a colour
 
@@ -51,36 +51,33 @@ hsv  = cv.cvtColor(img, cv.COLOR_BGR2HSV)
 mask = cv.inRange(hsv, np.array([35, 50, 50]), np.array([85, 255, 255]))   # green
 ```
 
-The mask on its own only says where the colour is. The next chapters use it with bitwise operations to cut the colour out of the original picture, and to combine several colours at once (for example white, yellow and green for lane lines).
-
-### Several colours at once, live
-
-This is `hsv_multi_color_mask_webcam.py`: three masks (white, yellow and green) joined with `bitwise_or` and applied to every webcam frame.
-
-```python
-capture = cv.VideoCapture(0)
-while capture.isOpened():
-    ret, frame = capture.read()
-    if not ret:
-        break
-    hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
-
-    white_mask  = cv.inRange(hsv, np.array([0, 0, 200]),   np.array([180, 40, 255]))
-    mask_yellow = cv.inRange(hsv, np.array([20, 100, 100]), np.array([32, 255, 255]))
-    green_mask  = cv.inRange(hsv, np.array([35, 50, 50]),   np.array([85, 255, 255]))
-
-    pre    = cv.bitwise_or(mask_yellow, green_mask)
-    pre2   = cv.bitwise_or(pre, white_mask)             # yellow OR green OR white
-    result = cv.bitwise_and(frame, frame, mask=pre2)
-
-    cv.imshow('Frame', result)
-    if cv.waitKey(33) & 0xFF == ord('d'):
-        break
-capture.release()
-cv.destroyAllWindows()
-```
-
-White has a very low saturation (almost no colour) and a high value, so its range is `[0, 0, 200]` to `[180, 40, 255]`: any hue, but only the pale, bright pixels.
+> [!more] Code: several colours at once, live
+> The mask on its own only says where the colour is. The next chapter uses it with bitwise operations to cut the colour out of the original picture, and to combine several colours at once. This is `hsv_multi_color_mask_webcam.py`: three masks (white, yellow and green) joined with `bitwise_or` and applied to every webcam frame.
+>
+> ```python
+> capture = cv.VideoCapture(0)
+> while capture.isOpened():
+>     ret, frame = capture.read()
+>     if not ret:
+>         break
+>     hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
+>
+>     white_mask  = cv.inRange(hsv, np.array([0, 0, 200]),   np.array([180, 40, 255]))
+>     mask_yellow = cv.inRange(hsv, np.array([20, 100, 100]), np.array([32, 255, 255]))
+>     green_mask  = cv.inRange(hsv, np.array([35, 50, 50]),   np.array([85, 255, 255]))
+>
+>     pre    = cv.bitwise_or(mask_yellow, green_mask)
+>     pre2   = cv.bitwise_or(pre, white_mask)             # yellow OR green OR white
+>     result = cv.bitwise_and(frame, frame, mask=pre2)
+>
+>     cv.imshow('Frame', result)
+>     if cv.waitKey(33) & 0xFF == ord('d'):
+>         break
+> capture.release()
+> cv.destroyAllWindows()
+> ```
+>
+> White has a very low saturation (almost no colour) and a high value, so its range is `[0, 0, 200]` to `[180, 40, 255]`: any hue, but only the pale, bright pixels.
 
 ## Colour channels: take a picture apart
 

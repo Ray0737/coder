@@ -23,13 +23,14 @@ A digital image is a grid of tiny squares called **pixels**. In a greyscale imag
 pixelgrid
 ```
 
-A colour image keeps **three** numbers per pixel, one each for blue, green and red, called **channels**. So a 480 × 640 colour photo is a block of numbers with shape `(480, 640, 3)`: 480 rows, 640 columns, 3 channels. A video is the same thing repeated: a stream of images called **frames**, often 30 every second.
-
 > [!compare] Think of it like a mosaic made of coloured tiles. From across the room you see a picture. Up close, each tile is just one colour, and the picture only exists in how the tiles sit together.
+
+> [!more] TLDR: colour images and video
+> A colour image keeps **three** numbers per pixel, one each for blue, green and red, called **channels**. So a 480 × 640 colour photo is a block of numbers with shape `(480, 640, 3)`: 480 rows, 640 columns, 3 channels. A video is the same thing repeated: a stream of images called **frames**, often 30 every second.
 
 ## The four steps almost every vision program follows
 
-Whatever the project, most vision programs run the same loop:
+Whatever the project, most vision programs run the same loop, and the rest of this course walks along it with **OpenCV**, a free library for Python, starting with how to read a picture and ending with detectors that find faces and objects in a live camera. The Raspberry Pi course then puts the same ideas on a small board that drives real hardware.
 
 | Step | What happens | Example |
 |---|---|---|
@@ -37,8 +38,6 @@ Whatever the project, most vision programs run the same loop:
 | 2. Prepare | Make it easier to work with | Shrink it, crop it, change colour space, blur away noise |
 | 3. Find | Pick out what you care about | Edges, a colour, a face, an object |
 | 4. Act | Use the result | Draw a box, count things, move a servo |
-
-The rest of this course walks along that loop with **OpenCV**, a free library for Python, starting with how to read a picture and ending with detectors that find faces and objects in a live camera. The Raspberry Pi course then puts the same ideas on a small board that drives real hardware.
 
 ## Is computer vision machine learning?
 
@@ -53,19 +52,6 @@ The rest of this course walks along that loop with **OpenCV**, a free library fo
 
 > [!aha] Hand-built rules are fast and easy to explain, but they break when the light or angle changes. Learned models cope with the mess of the real world, but they need data to train on. Most real projects use both: rules to prepare the picture, a trained model to find things in it.
 
-### From pixels to a trained model
-
-When a classic (non-deep) model learns from pictures, the work happens in three stages. This is called the **preprocessing, feature extraction and training pipeline**:
-
-1. **Preprocess:** clean the picture so every example looks alike. Convert it to grayscale with `cvtColor`, blur it with `GaussianBlur` to remove noise, and resize it to one standard size.
-2. **Extract features:** turn the cleaned picture into numbers that describe it. That might be edges from `Canny`, outlines from `findContours`, a colour mask, or a histogram of local patterns like LBPH uses.
-3. **Train:** give those feature numbers and their labels to a model, such as an SVM or k-nearest-neighbours, and let it learn which features go with which label.
-4. **Predict:** run new pictures through the *same* preprocessing and feature steps, then ask the trained model for an answer.
-
-The same cleaning has to happen at training time and at prediction time, or the model sees numbers it was never taught. A deep-learning model such as YOLO skips stage 2, because the network learns its own features from the raw picture.
-
-Learned vision is the same idea as the neural networks in the AI Development course. In fact, the CNN chapter there is the model family behind most modern image recognition.
-
 ## Try it
 
 1. A greyscale photo is 100 pixels wide and 80 tall. How many numbers is that? How many if it is in colour?
@@ -73,7 +59,6 @@ Learned vision is the same idea as the neural networks in the AI Development cou
 3. A webcam sends 30 frames per second at 640 × 480, in colour. Roughly how many numbers is that every second?
 4. Name one thing a person does easily with a photo that is hard for a computer, and say why.
 5. Is "keep only the green pixels" machine learning? Is a face detector? Explain the difference.
-6. Why must new pictures go through the same preprocessing as the training pictures before the model sees them?
 
 ## Quick recap
 

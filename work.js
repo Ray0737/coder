@@ -88,6 +88,7 @@ async function showWork() {
   const f = wItems.find(x => wId(x) === id);
   if (!f) {
     setHead('Work', 'Coder › Work');
+    wmain.className = 'welcome';
     wmain.innerHTML = `
       <h1>Coder</h1>
       <p class="lead">Code, circuits, robots and AI, one chapter at a time</p>
@@ -96,7 +97,7 @@ async function showWork() {
           <section>
             <h3>Start</h3>
             <ul class="links">
-              <li><a href="#" data-open="main">${icon('folder-open')}Browse work</a></li>
+              <li><a href="#" data-open="main">${icon('folder-open')}Browse notes</a></li>
               <li><a href="#" data-cmd>${icon('magnifying-glass')}Go to a chapter</a></li>
               <li><a href="#" data-group="Basic Python">${icon('terminal-window')}Open Python</a></li>
               <li><a href="#" data-group="AI Development">${icon('brain')}Open AI Development</a></li>
@@ -114,10 +115,25 @@ async function showWork() {
             <a href="#" data-group="Basic Python">${icon('terminal-window')}<span><b>Start with Python</b>From print() up to a Tkinter app</span></a>
             <a href="#" data-group="Circuits, Arduino &amp; GPIO">${icon('cpu')}<span><b>Circuits to robots</b>Ohm's law, Arduino, ESP32, Raspberry Pi</span></a>
             <a href="#" data-group="AI Development">${icon('brain')}<span><b>AI Development</b>From AI vs ML up to LLMs</span></a>
+            <a href="#" data-open="main">${icon('lightbulb')}<span><b>How notes work</b>Each chapter is one file, read top to bottom</span></a>
           </section>
         </div>
       </div>
-      <p class="startup">${icon('list-checks')}Pick a file in Work to begin</p>`;
+      <div class="cols more">
+        <section>
+          <h3>Our Major</h3>
+          <ul class="links">
+            <li><a href="major.html">${icon('graduation-cap')}About the major</a><span class="dim">What it is and its classes</span></li>
+            <li><a href="projects.html">${icon('cube')}Projects</a><span class="dim">What we built in class</span></li>
+            <li><a href="materials.html">${icon('books')}Materials</a><span class="dim">Class files and code</span></li>
+          </ul>
+        </section>
+        <section>
+          <h3>Your data</h3>
+          <p class="note">Chapters done, your notes and the chapters you opened stay in this browser. Nothing is sent anywhere. Open a chapter from <a href="#" data-open="main">Main</a> to read or write its notes.</p>
+        </section>
+      </div>
+      <p class="startup">${icon('list-checks')}Pick a file in Main to begin</p>`;
     const recent = $('#recent');
     if (recent) recent.innerHTML = (load('coder:recent') || [])
       .map(s => all.find(x => slug(x.g) + '/' + slug(x.n) === s)).filter(Boolean)
@@ -127,6 +143,7 @@ async function showWork() {
     $$('#wmain [data-cmd]').forEach(a => a.onclick = e => { e.preventDefault(); cmd.focus(); });
     return;
   }
+  wmain.className = 'welcome wide';
   const folder = notes.find(n => slug(n[0]) === f.cs);
   setHead(f.file, `Coder › Work › ${folder[0]} › ${f.file}`);
   const a = $(`#tree a[href="work.html#${id}"]`);

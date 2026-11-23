@@ -26,9 +26,12 @@ For a hand, point 0 is the wrist, and the other 20 run along each finger from th
 landmarkmap
 ```
 
-Under the hood, MediaPipe works in two steps. First a model finds where the palm is, and then a second model looks at that crop to place the 21 points. That is why it is quick: the heavy second model only studies a small patch.
+> [!more] TLDR: why it is quick
+> Under the hood, MediaPipe works in two steps. First a model finds where the palm is, and then a second model looks at that crop to place the 21 points. That is why it is quick: the heavy second model only studies a small patch.
 
 ## Using it
+
+`result.hand_landmarks[0]` is a list of 21 points for the first hand. Each has `x` and `y` as fractions from 0 to 1 of the frame size, so multiply by the width and height to get pixels. The model file `hand_landmarker.task` has to sit next to your script, and the frame must be converted from OpenCV's BGR to the RGB that MediaPipe expects.
 
 ```python
 import cv2 as cv
@@ -56,24 +59,20 @@ with HandLandmarker.create_from_options(options) as landmarker:
             cv.circle(frame, (x, y), 4, (0, 255, 0), -1)
 ```
 
-`result.hand_landmarks[0]` is a list of 21 points for the first hand. Each has `x` and `y` as fractions from 0 to 1 of the frame size, so multiply by the width and height to get pixels. The model file `hand_landmarker.task` has to sit next to your script.
-
 > [!warn] Like every OpenCV-to-other-library handover, the colour order matters. OpenCV gives BGR and MediaPipe expects RGB, so convert with `cv.COLOR_BGR2RGB` before you pass the frame in.
 
-### Is a finger up?
+## Is a finger up?
 
-Landmarks are just numbers, so a gesture is arithmetic on them. In image coordinates **y grows downward**, so a raised fingertip has a *smaller* y than the joint below it:
+Landmarks are just numbers, so a gesture is arithmetic on them. In image coordinates **y grows downward**, so a raised fingertip has a *smaller* y than the joint below it. Do the same for 12, 16 and 20 (against 10, 14 and 18) and you can count raised fingers. The thumb sticks out sideways, so compare x for it instead of y.
 
 ```python
 tip, pip = result.hand_landmarks[0][8], result.hand_landmarks[0][6]
 index_up = tip.y < pip.y          # fingertip above its middle joint
 ```
 
-Do the same for 12, 16 and 20 (against 10, 14 and 18) and you can count raised fingers. The thumb sticks out sideways, so compare x for it instead of y.
+## MediaPipe or YOLO?
 
-## What MediaPipe is good at, and what YOLO is good at
-
-They solve different problems, and a real project often uses both.
+They solve different problems, and a real project often uses both, so pick the tool by the question. "Is there a bottle, and where?" is YOLO, and "which finger is pointing?" is MediaPipe. Neither is better overall.
 
 | | MediaPipe | YOLO |
 |---|---|---|
@@ -85,13 +84,19 @@ They solve different problems, and a real project often uses both.
 | Weak at | Anything outside its built-in tasks, such as your own product | Fine detail inside an object, and needing data to train |
 | Typical use | Pointing, gestures, posture, face effects | Counting, finding items, vehicles, inventory |
 
-Pick the tool by the question. Pick the job below and see which one fits.
+## Which tool for the job?
 
-```widget
-toolpicker
-```
+Match the job to the tool. Haar is the tiny, quick option for front-facing faces, MediaPipe gives landmarks with no training, and YOLO finds objects, including ones you teach it.
 
-> [!aha] The question decides the tool. "Is there a bottle, and where?" is YOLO. "Which finger is pointing?" is MediaPipe. Neither is better overall. They answer different questions.
+| Job | Use | Why |
+|---|---|---|
+| Count the cars on a road | YOLO | It finds many objects of a common kind in one frame, and cars are in the classes a pretrained YOLO already knows |
+| Tell which fingers are held up | MediaPipe | It gives the 21 hand landmarks straight away, with no training. Compare each fingertip with the joint below it |
+| Find your own water bottle on a desk | YOLO | MediaPipe only knows what Google trained it for. YOLO can be trained on pictures of your bottle, as your own class |
+| Check a person's posture while exercising | MediaPipe | Its pose model tracks 33 body landmarks, which is what you need for angles at the knee, hip or elbow |
+| Find front-facing faces very fast on a Pi, with no training | Haar | A cascade is tiny, quick and needs no training. For more head angles, MediaPipe's face detection is the upgrade |
+| Make a servo follow your fingertip | MediaPipe | Landmark 8 is the index fingertip. Its x position becomes the servo angle |
+| Spot a missing item on a shelf of your own products | YOLO | Train YOLO on labelled pictures of your products, and count the boxes it returns |
 
 ## Try it
 

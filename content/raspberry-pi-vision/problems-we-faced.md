@@ -16,24 +16,26 @@ summary: The errors you will actually meet on the Pi, what causes each one, and 
 
 ## What each fix looks like
 
-**Wrong environment.** Activate the project's virtual environment first, then install or run:
+### Wrong environment
+
+Activate the project's virtual environment first, then install or run. Prefer fixing the root cause, not forcing it, because `--break-system-packages` switches off the safety check, so only use it when you really mean to change the system Python.
 
 ```bash
 source venv/bin/activate
 pip install rpi_lcd
 ```
 
-Prefer fixing the root cause, not forcing it. `--break-system-packages` switches off the safety check, so only use it when you really mean to change the system Python.
+### No display
 
-**No display.** Prefix the command with `DISPLAY=:0`, and keep a screen-share or VNC window open so the picture has somewhere to appear:
+Prefix the command with `DISPLAY=:0`, and keep a screen-share or VNC window open so the picture has somewhere to appear. Or remove the `cv.imshow` and `cv.waitKey` calls and run headless.
 
 ```bash
 DISPLAY=:0 python3 w7b.py
 ```
 
-Or remove the `cv.imshow` and `cv.waitKey` calls and run headless.
+### Camera busy
 
-**Camera busy.** Find who holds it and free it:
+Find who holds it and free it.
 
 ```bash
 lsusb
@@ -42,7 +44,9 @@ fuser /dev/video0
 kill <pid>
 ```
 
-**I2C empty grid.** Switch I2C on, reboot, and check the bus and the wiring:
+### I2C empty grid
+
+Switch I2C on, reboot, and check the bus and the wiring.
 
 ```bash
 sudo raspi-config        # Interface Options, I2C, Enable

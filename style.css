@@ -1517,10 +1517,10 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 .bpsay .bpl code{font-size:12px;line-height:1.5}
 .bpsay .wgcap{display:block;margin:0}
 
-/* maths in dropdowns: ```math blocks are centred plain lines (no box), and inline `code` inside a dropdown reads as plain maths too */
+/* maths in dropdowns: ```math blocks are centred plain lines (no box), and inline `code` inside an AI Development dropdown reads as plain maths too (other classes keep normal code) */
 .mathb{margin:12px 0;text-align:center;font:15px/1.9 "Cambria Math","STIX Two Math","Latin Modern Math",Georgia,serif;color:var(--text)}
 .mathb>div{white-space:pre-wrap}
-details.more p code,details.more li code,details.more td code{background:none;padding:0;color:var(--text);font:1.06em "Cambria Math","STIX Two Math","Latin Modern Math",Georgia,serif}
+.lesson[data-cls="ai-development"] details.more p code,.lesson[data-cls="ai-development"] details.more li code,.lesson[data-cls="ai-development"] details.more td code{background:none;padding:0;color:var(--text);font:1.06em "Cambria Math","STIX Two Math","Latin Modern Math",Georgia,serif}
 
 /* AI Development diagrams: one text size, taken from the MLP diagrams (11px labels, 9px small ticks) */
 [data-cls="ai-development"] .wg svg text{font-size:11px}
@@ -1531,17 +1531,41 @@ details.more p code,details.more li code,details.more td code{background:none;pa
 .cmgrid{gap:10px;margin:12px 0 20px}
 .cmcell{padding:16px 10px;gap:8px}
 
-/* features / label table: coloured group headings, zebra rows, the label column in peach, and the unknown row picked out */
-.fltab{padding:6px 0 8px;overflow-x:auto}
-.fltab .flr{padding:9px 18px;gap:8px 12px}
-.fltab .flg{padding-top:10px;padding-bottom:0}
-.fltab .flg .flb{padding-bottom:7px;font-size:12px;border-bottom:2px solid currentColor}
-.fltab .flg .flb:first-child{color:var(--mauve)}
-.fltab .flg .flb:last-child{color:var(--peach)}
-.fltab .flh{padding-top:10px;border-bottom:1px solid var(--s0);margin-bottom:2px}
-.fltab .flh span:last-child{color:var(--peach)}
-.fltab .fd:nth-child(even){background:color-mix(in srgb,var(--mantle) 70%,transparent)}
-.fltab .fd span:last-child{color:var(--peach);font-weight:700}
-.fltab .flq{background:color-mix(in srgb,var(--peach) 11%,transparent);border-radius:8px;margin:4px 8px 0;padding:9px 10px}
-.fltab .flq span:last-child{font-size:16px;line-height:1}
+/* features / label table: plain, thin lines only, no colours, no zebra rows */
+.fltab{padding:4px 0 6px;overflow-x:auto}
+.fltab .flr{padding:8px 14px;gap:8px 12px}
+.fltab .flg{padding-top:8px;padding-bottom:0;color:var(--o0)}
+.fltab .flg .flb{padding-bottom:6px;font-size:11px;border-bottom:1px solid var(--s1)}
+.fltab .flh{padding-top:6px;border-bottom:1px solid var(--s1);margin-bottom:0;color:var(--o1)}
+.fltab .fd{color:var(--text)}
+.fltab .fd+.fd{border-top:1px solid var(--s0)}
+.fltab .flq{border-top:1px dashed var(--s1);margin-top:2px}
+.fltab .flq span:last-child{font-size:13px;line-height:1.5}
 .stk{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:12px}.stk i{color:var(--o0);font-style:normal;font-size:12px}.stkb{display:flex;flex-direction:column;gap:3px;padding:8px 12px;background:var(--base);border-radius:8px;font-size:11px;color:var(--text)}.stkb b{font-weight:inherit}.stkb small{color:var(--o0);font-size:10px}
+/* Computer Vision and Raspberry Pi diagrams: same controls and small text as the MLP chapter */
+.wg .wgrow{align-items:center;gap:6px 12px}
+.wg .wgrow label{font-size:12px}
+.wg .wgrow input[type=range]{width:110px}
+.wg .wgrow b{display:inline-block;min-width:3em;font-size:12px;font-weight:400;color:var(--text);font-variant-numeric:tabular-nums}
+.wg .seg2{padding:4px 8px;margin-right:0;border-radius:6px;background:var(--s0);color:var(--sub1);font-size:12px;font-weight:400;transition:background .15s,color .15s}
+.wg .seg2:not(.on):hover{background:var(--s1);color:var(--text)}
+.wg .seg2.on,.wg .seg2.pk{background:var(--mauve);color:var(--crust);font-weight:400}
+.wg .wgsay{margin:10px 0 0;font-size:11px;line-height:1.6;color:var(--o1)}
+.wg .wgsay code,.wg .wgsay b{font-size:11px}
+.wg .dropviz{gap:10px;margin-top:10px}
+.wg .dropviz figcaption{font-size:11px;color:var(--o1)}
+.wg .hwd{font-size:12px;line-height:1.6}
+.wg .hwd>b{font-size:13px;font-weight:400}
+.wg .tpb{padding:4px 8px;border-radius:6px;background:var(--s0);font-weight:400}
+.wg .tpb.on{font-weight:400}
+.wg .hwd,.wg .hwd p,.wg .hwd span,.wg .hwd .hwt div{font-size:11px;line-height:1.6}
+.wg .hwd>b{font-size:12px}
+.wg .gpd,.wg .gpd p{font-size:11px;line-height:1.6}
+.csrow{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+.csrow figure{margin:0;background:var(--crust);border-radius:10px;padding:10px;text-align:center}
+.csrow figcaption{font-size:11px;color:var(--o1);margin-bottom:4px}
+.csrow canvas{width:100%;height:auto;display:block}
+@media(max-width:560px){.csrow{grid-template-columns:1fr}}
+.wg canvas+.wgsay{margin-top:16px}
+.wg .wgsay+.evlog{margin-top:14px}
+.wg canvas+.evlog{margin-top:16px}

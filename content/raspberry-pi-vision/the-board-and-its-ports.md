@@ -7,11 +7,7 @@ summary: A tour of the Raspberry Pi 4 board: the chips in the middle and every p
 
 ## A computer on a card
 
-Your course uses a **Raspberry Pi 4**. Its main chip is a Broadcom **BCM2711**: four 64-bit ARM Cortex-A72 processor cores and the graphics, in one package. Next to it sits the RAM, and a wireless chip with dual-band Wi-Fi and Bluetooth 5.0. It is a real computer, but a small and low-powered one, which is why later chapters shrink the pictures and the model before running them.
-
-Because it is a full computer, it runs a full operating system: **Linux**, and specifically **Debian**. The Raspberry Pi OS you flash onto the card is built on Debian, and your course folder was set up on Debian GNU/Linux 13 (trixie), 64-bit. That is why the commands in this course, such as `ls`, `sudo apt install` and `pip`, are ordinary Linux commands, and why the Pi behaves like a small Linux PC and not like a microcontroller running a single program.
-
-Click any part of the board to see what it is for.
+Your course uses a **Raspberry Pi 4**. Its main chip is a Broadcom **BCM2711**: four 64-bit ARM Cortex-A72 processor cores and the graphics, in one package. Next to it sits the RAM, and a wireless chip with dual-band Wi-Fi and Bluetooth 5.0. It is a real computer, but a small and low-powered one, which is why later chapters shrink the pictures and the model before running them. Click any part of the board below to see what it is for.
 
 ```widget
 piboard
@@ -19,7 +15,12 @@ piboard
 
 > [!compare] Think of it like a small flat with the front door in different places. The ports are the doors and windows: power comes in one door, video leaves through another, and the GPIO header is the big workshop door along the top where all the electronics come in.
 
+> [!more] TLDR: it runs Linux
+> Because it is a full computer, it runs a full operating system: **Linux**, and specifically **Debian**. The Raspberry Pi OS you flash onto the card is built on Debian, and your course folder was set up on Debian GNU/Linux 13 (trixie), 64-bit. That is why the commands in this course, such as `ls`, `sudo apt install` and `pip`, are ordinary Linux commands, and why the Pi behaves like a small Linux PC and not like a microcontroller running a single program.
+
 ## The ports
+
+The table lists every connector on the board. These are the standard specifications for a Pi 4 Model B, and the amount of RAM depends on the model you have, so check the label or run `free -h` in the terminal.
 
 | Port | Count | What it is for |
 |---|---|---|
@@ -33,8 +34,6 @@ piboard
 | DSI connector | 1 | A flat ribbon for the official touchscreen |
 | microSD slot | 1 | The "hard drive". On the underside of the board |
 | 40-pin GPIO header | 1 | The connection to LEDs, buttons, sensors, motors and the LCD |
-
-The board specifications above are the standard ones for a Pi 4 Model B. The amount of RAM depends on the model you have, so check the label or run `free -h` in the terminal.
 
 ## The one that matters most: GPIO
 

@@ -10,12 +10,22 @@ The parts go in this order: first the ones the Pi **controls** (an LED, its brig
 ## Output, input and pull-up
 
 ```python
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(18, GPIO.OUT)                                  # an output: an LED
-GPIO.output(18, GPIO.HIGH)                                # switch it on
+import RPi.GPIO as GPIO
+import time
 
+GPIO.setmode(GPIO.BCM)                                    # number pins by GPIO (BCM) name
+GPIO.setup(18, GPIO.OUT)                                  # an output: an LED
 GPIO.setup(23, GPIO.IN, pull_up_down=GPIO.PUD_UP)         # an input: a button
-pressed = GPIO.input(23) == GPIO.LOW                      # pressed reads LOW
+
+try:
+    while True:
+        pressed = GPIO.input(23) == GPIO.LOW              # pressed reads LOW
+        GPIO.output(18, GPIO.HIGH if pressed else GPIO.LOW)   # LED follows the button
+        time.sleep(0.05)
+except KeyboardInterrupt:
+    print("\nStopped by user.")            # Ctrl+C lands here
+finally:
+    GPIO.cleanup()                         # always runs, releases the pins
 ```
 
 A button wired between a pin and **GND** needs a pull-up. Without one, the pin is left "floating" and reads random noise. With the internal pull-up on, the pin sits at HIGH, and pressing the button connects it to ground so it reads **LOW**. That is why a press reads 0.
@@ -23,11 +33,24 @@ A button wired between a pin and **GND** needs a pull-up. Without one, the pin i
 ## The LED and its resistor
 
 ```python
+import RPi.GPIO as GPIO
+import time
+
 LED_PIN = 18                  # GPIO18 > 220 ohm > LED anode (+), cathode (-) > GND
+
+GPIO.setmode(GPIO.BCM)
 GPIO.setup(LED_PIN, GPIO.OUT)
-GPIO.output(LED_PIN, GPIO.HIGH)
-time.sleep(1)
-GPIO.output(LED_PIN, GPIO.LOW)
+
+try:
+    while True:
+        GPIO.output(LED_PIN, GPIO.HIGH)
+        time.sleep(1)
+        GPIO.output(LED_PIN, GPIO.LOW)
+        time.sleep(1)
+except KeyboardInterrupt:
+    print("\nStopped by user.")            # Ctrl+C lands here
+finally:
+    GPIO.cleanup()                         # always runs, releases the pins
 ```
 
 The **220 ohm resistor** keeps the current to a safe level. Without it the LED, or the pin, can be damaged.
@@ -37,9 +60,24 @@ The **220 ohm resistor** keeps the current to a safe level. Without it the LED, 
 A pin is only ever fully HIGH or fully LOW. **PWM** (pulse width modulation) flips it on and off very quickly, and the share of the time it is on, the **duty cycle**, acts like a level. An LED at 50% duty looks half as bright, and a motor at 50% runs at about half speed. A servo reads the pulse width as an angle.
 
 ```python
+import RPi.GPIO as GPIO
+import time
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(13, GPIO.OUT)            # the pin must be an output first
 pwm = GPIO.PWM(13, 1000)            # GPIO13 at 1000 Hz
-pwm.start(0)
-pwm.ChangeDutyCycle((brightness / 255) * 100)   # map 0-255 to 0-100 %
+pwm.start(0)                        # start at 0% duty
+
+try:
+    while True:
+        for brightness in range(0, 256, 5):
+            pwm.ChangeDutyCycle((brightness / 255) * 100)   # map 0-255 to 0-100 %
+            time.sleep(0.02)
+except KeyboardInterrupt:
+    print("\nStopped by user.")            # Ctrl+C lands here
+finally:
+    pwm.stop()                             # stop the PWM before cleanup
+    GPIO.cleanup()                         # always runs, releases the pins
 ```
 
 ## The same idea in two languages
@@ -62,10 +100,17 @@ import time
 
 GPIO.setmode(GPIO.BCM)          # init: number pins by GPIO name
 GPIO.setup(18, GPIO.OUT)        # init: the pin is an output
-GPIO.output(18, GPIO.HIGH)      # on
-time.sleep(1)                   # seconds, not milliseconds
-GPIO.output(18, GPIO.LOW)       # off
-GPIO.cleanup()                  # release the pin when done
+
+try:
+    while True:
+        GPIO.output(18, GPIO.HIGH)      # on
+        time.sleep(1)                   # seconds, not milliseconds
+        GPIO.output(18, GPIO.LOW)       # off
+        time.sleep(1)
+except KeyboardInterrupt:
+    print("\nStopped by user.")            # Ctrl+C lands here
+finally:
+    GPIO.cleanup()                         # always runs, releases the pins
 ```
 
 ```cpp
@@ -84,12 +129,27 @@ void loop() {
 On Arduino one call, `analogWrite`, does PWM. On the Pi you make a PWM object, start it, and change its duty cycle, which is 0 to 100 and not 0 to 255.
 
 ```python
+import RPi.GPIO as GPIO
+import time
+
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(13, GPIO.OUT)        # init: the pin must be an output first
 pwm = GPIO.PWM(13, 1000)        # init: pin, frequency in Hz
 pwm.start(0)                    # init: start at 0% duty
-pwm.ChangeDutyCycle(50)         # 0-100 percent
-pwm.stop()                      # at the end, before GPIO.cleanup()
+
+try:
+    while True:
+        for duty in range(0, 101, 5):       # fade up, 0-100 percent
+            pwm.ChangeDutyCycle(duty)
+            time.sleep(0.03)
+        for duty in range(100, -1, -5):     # fade down
+            pwm.ChangeDutyCycle(duty)
+            time.sleep(0.03)
+except KeyboardInterrupt:
+    print("\nStopped by user.")            # Ctrl+C lands here
+finally:
+    pwm.stop()                             # stop the PWM before cleanup
+    GPIO.cleanup()                         # always runs, releases the pins
 ```
 
 ```cpp
@@ -103,7 +163,9 @@ A pin cannot run a motor. A motor draws far more current than a pin can give, an
 
 > [!compare] Think of it like a quiet manager and a powerful crane. The manager (the Pi) only gives instructions: "up", "down", "slower". The crane (the driver) has its own engine and does the lifting.
 
-**How the pins work.** If `IN1` and `IN2` **match**, the motor stops. If they are **crossed** (one HIGH, one LOW), it runs, and the HIGH one sets the direction. `ENA` is the speed, a PWM signal at 1000 Hz: 0% is off and 100% is full power. Inside, an H-bridge of four switches does the reversing.
+### How the pins work
+
+If `IN1` and `IN2` **match**, the motor stops. If they are **crossed** (one HIGH, one LOW), it runs, and the HIGH one sets the direction. `ENA` is the speed, a PWM signal at 1000 Hz: 0% is off and 100% is full power. Inside, an H-bridge of four switches does the reversing.
 
 | IN1 | IN2 | Result |
 |---|---|---|
@@ -112,7 +174,9 @@ A pin cannot run a motor. A motor draws far more current than a pin can give, an
 | HIGH | LOW | Crossed: forward |
 | LOW | HIGH | Crossed: backward |
 
-**Wiring it to a 2-cell lithium battery.** A 2-cell (2S) pack with two wires is just a **+** and a **-**. It powers the motor through the driver, **not** the Pi. A full pack is about 8.4 V (7.4 V nominal), and the L298N loses roughly 2 V inside, so the motor gets a little over 6 V.
+### Wiring it to a 2-cell lithium battery
+
+A 2-cell (2S) pack with two wires is just a **+** and a **-**. It powers the motor through the driver, **not** the Pi. A full pack is about 8.4 V (7.4 V nominal), and the L298N loses roughly 2 V inside, so the motor gets a little over 6 V.
 
 > [!warn] **Danger: lithium batteries can overheat, smoke, burn and even explode.** Touching the two wires together is a short circuit that can start a fire in seconds. Wire with the battery **disconnected** and connect it **last**, never swap + and -, and never leave bare ends loose or a charging pack unattended or puncture or crush it. If it gets hot, smells, hisses, smokes or swells, **stop at once**, move it away from anything flammable and do not use or charge it again.
 
@@ -128,29 +192,41 @@ A pin cannot run a motor. A motor draws far more current than a pin can give, an
 motorwiring
 ```
 
-**Before you power on**
+### Before you power on
 
 - Take the small jumper cap off `ENA`, or PWM cannot slow the motor.
 - Power the Pi from its own USB-C supply, and never join the driver's `+5V` to the Pi's 5V pin.
 - Charge the pack only with a charger made for it, keep it above about 6 V (3 V per cell), and keep the motor's current, including when it stalls, within the L298N's limit of about 2 A per channel.
 
-**The code.** The pins are the same as on Arduino. Only the PWM call differs.
+### The code
+
+The pins are the same as on Arduino, and only the PWM call differs.
 
 ```python
+import RPi.GPIO as GPIO
+import time
+
 IN1, IN2, ENA = 18, 12, 13
+
 GPIO.setmode(GPIO.BCM)
-GPIO.setwarnings(False)             # init: hide "channel already in use" warnings
+GPIO.setwarnings(False)                 # init: hide "channel already in use" warnings
 GPIO.setup([ENA, IN1, IN2], GPIO.OUT)   # init: all three are outputs
-pwm_motor = GPIO.PWM(ENA, 1000)     # init: speed pin at 1000 Hz
-pwm_motor.start(0)                  # init: start stopped
+pwm_motor = GPIO.PWM(ENA, 1000)         # init: speed pin at 1000 Hz
+pwm_motor.start(0)                      # init: start stopped
 
-GPIO.output(IN1, GPIO.HIGH)         # IN1
-GPIO.output(IN2, GPIO.LOW)          # IN2: forward
-pwm_motor.ChangeDutyCycle(40)       # ENA speed, 0-100
+try:
+    GPIO.output(IN1, GPIO.HIGH)         # IN1
+    GPIO.output(IN2, GPIO.LOW)          # IN2: forward
+    pwm_motor.ChangeDutyCycle(40)       # ENA speed, 0-100
+    time.sleep(3)                       # run for 3 seconds
 
-# at the end: stop the motor first, then release the pins
-pwm_motor.stop()
-GPIO.cleanup()
+    GPIO.output(IN1, GPIO.LOW)          # IN1 and IN2 match: stop
+    pwm_motor.ChangeDutyCycle(0)
+except KeyboardInterrupt:
+    print("\nStopped by user.")            # Ctrl+C lands here
+finally:
+    pwm_motor.stop()                       # stop the motor first, then release the pins
+    GPIO.cleanup()                         # always runs, releases the pins
 ```
 
 ```cpp
@@ -166,19 +242,32 @@ void loop() {
 }
 ```
 
-The course has two motor exercises. In `w5a.py` two buttons drive it: forward on `GPIO19` and backward on `GPIO26`, with the internal pull-up, and the motor stops when you let go. In `w5b.py` you type commands: `F` forward, `B` backward, `S` stop, and `+` or `-` to change the speed by 10%.
+> [!more] TLDR: the two motor exercises in the course
+> In `w5a.py` two buttons drive it: forward on `GPIO19` and backward on `GPIO26`, with the internal pull-up, and the motor stops when you let go. In `w5b.py` you type commands: `F` forward, `B` backward, `S` stop, and `+` or `-` to change the speed by 10%.
 
 ## Servo: signal `GPIO18`
 
 Arduino's `Servo` library takes an angle. On the Pi you turn the angle into a duty cycle yourself.
 
 ```python
+import RPi.GPIO as GPIO
+import time
+
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(18, GPIO.OUT)        # init: the signal pin is an output
 servo = GPIO.PWM(18, 50)        # init: 50 Hz, the rate every hobby servo expects
 servo.start(0)                  # init: no pulses yet, so the arm does not jump
-servo.ChangeDutyCycle(2 + angle / 18.0)    # angle 0-180 -> duty 2-12 %
-servo.stop()                    # at the end, then GPIO.cleanup()
+
+try:
+    while True:
+        for angle in (0, 90, 180, 90):                 # sweep 0-180 degrees
+            servo.ChangeDutyCycle(2 + angle / 18.0)    # angle 0-180 -> duty 2-12 %
+            time.sleep(1)
+except KeyboardInterrupt:
+    print("\nStopped by user.")            # Ctrl+C lands here
+finally:
+    servo.stop()                           # stop the pulses before cleanup
+    GPIO.cleanup()                         # always runs, releases the pins
 ```
 
 ```cpp
@@ -195,9 +284,21 @@ void loop() {
 ## Push button: `GPIO23` to GND with the pull-up
 
 ```python
+import RPi.GPIO as GPIO
+import time
+
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(23, GPIO.IN, pull_up_down=GPIO.PUD_UP)   # init: input with pull-up
-pressed = GPIO.input(23) == GPIO.LOW        # pressed reads LOW
+
+try:
+    while True:
+        pressed = GPIO.input(23) == GPIO.LOW        # pressed reads LOW
+        print("pressed" if pressed else "released")
+        time.sleep(0.2)
+except KeyboardInterrupt:
+    print("\nStopped by user.")            # Ctrl+C lands here
+finally:
+    GPIO.cleanup()                         # always runs, releases the pins
 ```
 
 ```cpp
@@ -227,11 +328,20 @@ GPIO.setup(24, GPIO.IN)                                              # init: Ech
 GPIO.output(23, False)                                               # init: Trig starts LOW
 time.sleep(0.5)                                                      # init: let the sensor settle
 
-GPIO.output(23, True); time.sleep(0.00001); GPIO.output(23, False)   # 10 microsecond ping
-while GPIO.input(24) == 0: pulse_start = time.time()                 # echo begins
-while GPIO.input(24) == 1: pulse_end = time.time()                   # echo ends
-speed_cm = (331 + 0.6 * 25) * 100                                   # speed of sound in cm/s at 25 degrees C
-distance = (pulse_end - pulse_start) * speed_cm // 2                 # cm, halved: there and back
+try:
+    while True:
+        GPIO.output(23, True); time.sleep(0.00001); GPIO.output(23, False)   # 10 microsecond ping
+        pulse_start = pulse_end = time.time()
+        while GPIO.input(24) == 0: pulse_start = time.time()         # echo begins
+        while GPIO.input(24) == 1: pulse_end = time.time()           # echo ends
+        speed_cm = (331 + 0.6 * 25) * 100                            # speed of sound in cm/s at 25 degrees C
+        distance = (pulse_end - pulse_start) * speed_cm / 2          # cm, halved: there and back
+        print(f"{distance:.1f} cm")
+        time.sleep(0.5)
+except KeyboardInterrupt:
+    print("\nStopped by user.")            # Ctrl+C lands here
+finally:
+    GPIO.cleanup()                         # always runs, releases the pins
 ```
 
 ```cpp
@@ -250,17 +360,25 @@ void loop() {
 
 ## 16x2 LCD over I2C: `SDA` `GPIO2`, `SCL` `GPIO3`
 
+The LCD needs a library that is not part of the `requirements.txt` set: install it inside the venv with `pip install rpi_lcd`, and switch on I2C first. The Environment chapter lists the package for every part. If `i2cdetect` shows a different address, or your screen is 16x2 and the text wraps oddly, pass the settings in: `LCD(address=0x3F, width=16, rows=2)`.
+
 ```python
 from rpi_lcd import LCD
+import time
 
-lcd = LCD()                     # init: I2C bus 1, address 0x27 by default
-lcd.text("Count: 5", 2)         # text, line number (starts at 1)
-lcd.clear()                     # at the end, blank the screen
+lcd = LCD()                     # init: I2C bus 1, address 0x27 (I2C pins GPIO2 and GPIO3 are fixed, so no setmode)
+
+try:
+    count = 0
+    while True:
+        lcd.text(f"Count: {count}", 1)      # text, line number (starts at 1)
+        count += 1
+        time.sleep(1)
+except KeyboardInterrupt:
+    print("\nStopped by user.")            # Ctrl+C lands here
+finally:
+    lcd.clear()                            # always runs, blanks the screen
 ```
-
-If `i2cdetect` shows a different address, or your screen is 16x2 and the text wraps oddly, pass the settings in: `LCD(address=0x3F, width=16, rows=2)`.
-
-The LCD needs a library that is not part of the `requirements.txt` set: install it inside the venv with `pip install rpi_lcd`, and switch on I2C first. The Environment chapter lists the package for every part.
 
 ```cpp
 #include <Wire.h>

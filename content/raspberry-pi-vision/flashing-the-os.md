@@ -30,13 +30,11 @@ Your folder's reference build is **Debian GNU/Linux 13 (trixie)**, the 64-bit (a
 
 ## Check it worked
 
-Once the Pi is on your network you can find it by the hostname you chose. From another computer:
+Once the Pi is on your network you can find it by the hostname you chose. From another computer, try the command below: if it asks for a password and then shows a command prompt, the flash worked. The next chapter covers connecting properly, with a screen or without.
 
 ```bash
 ssh <username>@<hostname>.local
 ```
-
-If it asks for a password and then shows a command prompt, the flash worked. The next chapter covers connecting properly, with a screen or without.
 
 ## Two settings worth knowing
 

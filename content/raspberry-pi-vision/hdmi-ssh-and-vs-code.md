@@ -21,17 +21,13 @@ Connect a monitor to a **micro-HDMI** port with a micro-HDMI to HDMI cable, plus
 
 ### SSH (Secure Shell)
 
-SSH opens a command line on the Pi from another computer.
+SSH opens a command line on the Pi from another computer. It asks for the password you set when you flashed the card, and everything you type then runs on the Pi, not on your laptop. When you type the password, **nothing appears on screen**, not even dots. That is normal, so just type it and press Enter. The first time you connect, SSH also asks whether to trust the Pi: type `yes`. If you see `Permission denied`, the username or the password is wrong, and remember the username is the Pi's one that you set when you flashed the card, not your laptop's.
 
 ```bash
 ssh <pi-username>@<pi-ip-or-hostname>.local
 ```
 
-It asks for the password you set when you flashed the card. Everything you type then runs on the Pi, not on your laptop.
-
 > [!compare] Think of it like a phone call to the Pi. You hear and speak only through the command line. You cannot see the Pi's screen, but you can tell it to do anything a person at the keyboard could.
-
-> [!tip] About the password: when you type it, **nothing appears on screen**, not even dots. That is normal, so just type it and press Enter. The first time you connect, SSH also asks whether to trust the Pi: type `yes`. If you see `Permission denied`, the username or the password is wrong. Remember the username is the Pi's one that you set when you flashed the card, not your laptop's.
 
 ### When SSH will not connect, or drops
 
@@ -47,27 +43,24 @@ SSH travels over your network, so most SSH problems are network problems.
 
 With the **Remote - SSH** extension, VS Code on your laptop connects to the Pi and edits files that live on the Pi. The editor looks and feels local, but the files, the terminal and the running code are all on the Pi.
 
-> [!tip] On some computers VS Code will not let you add the Pi from its "Add New SSH Host" box. When that happens, write the host into the SSH config file yourself. Press Ctrl+Shift+P, run **Remote-SSH: Open SSH Configuration File**, and pick your own config file (usually `.ssh/config` in your user folder).
-
-Then add an entry like this. `User` is the **Pi's** username, not your laptop's:
-
-```text
-Host pi
-    HostName <pi-ip-or-hostname>.local
-    User <pi-username>
-```
-
-Save it, run **Remote-SSH: Connect to Host**, and choose `pi`.
+> [!more] TLDR: when VS Code will not add the Pi
+> On some computers VS Code will not let you add the Pi from its "Add New SSH Host" box. When that happens, write the host into the SSH config file yourself. Press Ctrl+Shift+P, run **Remote-SSH: Open SSH Configuration File**, and pick your own config file (usually `.ssh/config` in your user folder). Then add an entry like this, where `User` is the **Pi's** username, not your laptop's:
+>
+> ```text
+> Host pi
+>     HostName <pi-ip-or-hostname>.local
+>     User <pi-username>
+> ```
+>
+> Save it, run **Remote-SSH: Connect to Host**, and choose `pi`.
 
 ## The catch: windows need a screen
 
-A program that opens a picture with `cv.imshow()` needs a display to draw on. Over SSH there is none. Unless you fix it, you get:
+A program that opens a picture with `cv.imshow()` needs a display to draw on, and over SSH there is none. Unless you fix it, you get the error below, followed by `Aborted (core dumped)`. The Aborted line is the same problem, not a second one: Qt cannot find a screen, so the whole process stops. The Pi still has a virtual desktop running as display `:0` even with no monitor, and there are two ways to look at it.
 
 ```text
 qt.qpa.xcb: could not connect to display
 ```
-
-followed by `Aborted (core dumped)`. The Aborted line is the same problem, not a second one: Qt cannot find a screen, so the whole process stops. The Pi still has a virtual desktop running as display `:0` even with no monitor, and there are two ways to look at it.
 
 | Option | How |
 |---|---|
@@ -78,7 +71,8 @@ followed by `Aborted (core dumped)`. The Aborted line is the same problem, not a
 DISPLAY=:0 python3 w6.py
 ```
 
-The `DISPLAY=:0` tells the program which screen to use, and the screen-share or VNC window is how you actually see it. If you do not need to see the window, delete the `cv.imshow` and `cv.waitKey` calls and run headless instead.
+> [!more] TLDR: what DISPLAY=:0 does, and running headless
+> The `DISPLAY=:0` tells the program which screen to use, and the screen-share or VNC window is how you actually see it. If you do not need to see the window, delete the `cv.imshow` and `cv.waitKey` calls and run headless instead.
 
 ## Try it
 

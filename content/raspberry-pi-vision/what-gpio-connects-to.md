@@ -7,14 +7,12 @@ summary: The 40-pin header on the Pi: which pins are power, ground and general G
 
 ## The 40-pin header
 
-The header has 40 pins in two rows. Not all are GPIO. Many are power or ground, and a few have special jobs. Every pin has two names, and mixing them up is the commonest mistake:
+The header has 40 pins in two rows. Not all are GPIO. Many are power or ground, and a few have special jobs. Every pin has two names, and mixing them up is the commonest mistake. Your scripts use **BCM numbers**, set with `GPIO.setmode(GPIO.BCM)`, so `GPIO18` is physical pin 12. Click a pin in the diagram below to see its job, and try the "Used in the course" tab.
 
 | Numbering | What it means | Example |
 |---|---|---|
 | **Physical** (board) | Counting along the pins from 1 to 40 | Pin 12 |
 | **BCM** (Broadcom) | The chip's own GPIO number | GPIO18 |
-
-Your scripts use **BCM numbers**, set with `GPIO.setmode(GPIO.BCM)`. So `GPIO18` is physical pin 12. Click a pin below to see its job, and try the "Used in the course" tab.
 
 ```widget
 gpiopins

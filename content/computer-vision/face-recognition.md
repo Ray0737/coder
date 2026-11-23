@@ -5,13 +5,29 @@ summary: Detecting a face says "someone is there". Recognising it says "that is 
 
 > [!aha] Detection and recognition are two different questions. A Haar cascade asks "is there a face here?". A recogniser asks "whose face is it?". The recogniser needs to be trained on the people you want it to know.
 
+## Detection or recognition?
+
+**LBPH** (Local Binary Patterns Histograms) is a classic recogniser built into OpenCV. It needs no deep learning and no GPU, and it answers a different question from the Haar cascade that finds the face first.
+
+| | Detection (Haar) | Recognition (LBPH) |
+|---|---|---|
+| Question | Is there a face here? | Whose face is it? |
+| Needs training on your people | No, the `.xml` ships ready-made | Yes, it learns the faces you give it |
+| Returns | A box `(x, y, w, h)` | An `id` and a `confidence` |
+
 ## Three steps: capture, train, recognise
 
-**LBPH** (Local Binary Patterns Histograms) is a classic recogniser built into OpenCV. It needs no deep learning and no GPU. The pipeline in your folder is three scripts you run in order:
+The pipeline in your folder is three scripts you run in order. Pick a step to follow a face through it, and at the door choose Ray or a friend to see who gets named.
 
 ```widget
 lbphpipe
 ```
+
+> [!compare] Think of it like teaching a new classmate to know your friends. First you point at each friend while they stand in front of the camera and say their name (capture). Then the classmate studies those photos (train). Later, at the door, they glance at each arrival and say a name, or say "I don't know them" (recognise).
+
+## The three scripts
+
+Each step is its own script, and each one hands its result to the next through files on disk.
 
 | Step | Script | What it does |
 |---|---|---|
@@ -19,11 +35,14 @@ lbphpipe
 | 2. Train | `step2_train_recognizer.py` | Loads every sample, collects (face, id) pairs, trains the recognizer and saves `classifier.xml` |
 | 3. Recognise | `step3_recognize_live.py` | Loads `classifier.xml`, finds faces in the live webcam with the same Haar cascade, then names each one |
 
-> [!compare] Think of it like teaching a new classmate to know your friends. First you point at each friend while they stand in front of the camera and say their name (capture). Then the classmate studies those photos (train). Later, at the door, they glance at each arrival and say a name, or say "I don't know them" (recognise).
-
 ## The code
 
+`cv.face` only exists in the contrib build, so install `opencv-contrib-python`, not plain `opencv-python`. `train` takes a list of grayscale face crops (they can be different sizes) and a matching list of integer ids, one per face, and `predict` returns the best-matching `id` and a `confidence`.
+
 ```python
+import cv2 as cv
+import numpy as np
+
 clf = cv.face.LBPHFaceRecognizer_create()
 clf.train(faces, np.array(ids))          # step 2: list of face crops + a number per face
 clf.write('classifier.xml')
@@ -34,11 +53,13 @@ id, confidence = clf.predict(face_crop)
 name = NAMES.get(id, 'unknown') if confidence <= 70 else 'unknown'
 ```
 
-`cv.face` only exists in the contrib build, so install `opencv-contrib-python`, not plain `opencv-python`. `train` takes a list of grayscale face crops (they can be different sizes) and a matching list of integer ids, one per face. `predict` returns the best-matching `id` and a `confidence`.
-
 ## The trap: low confidence is good
 
-For LBPH, `confidence` is a **distance**: how far this face is from the closest face it learned. **Lower means a better match**, and 0 would be perfect. That is the opposite of most "confidence" scores in machine learning, where higher is better, so do not reuse that instinct here. A common rule is "70 or less means known, otherwise unknown", but the right line depends on your data. Slide the threshold above and watch who gets named.
+For LBPH, `confidence` is a **distance**: how far this face is from the closest face it learned. **Lower means a better match**, and 0 would be perfect. That is the opposite of most "confidence" scores in machine learning, where higher is better, so do not reuse that instinct here. A common rule is "70 or less means known, otherwise unknown", but the right line depends on your data. Slide the threshold and watch who gets named.
+
+```widget
+lbphthresh
+```
 
 > [!warn] Set the threshold too loose and strangers get named as people you know. Set it too tight and you stop being recognised in a dim room. Test it on your own faces, in your own lighting.
 

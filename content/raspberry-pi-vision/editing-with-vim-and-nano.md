@@ -7,7 +7,7 @@ summary: Two text editors that work in the terminal, one easy and one powerful, 
 
 ## nano: the easy one
 
-Open or create a file with `nano filename`. Type as you would in any editor. The shortcuts are shown along the bottom of the screen, where `^` means Ctrl.
+Open or create a file with `nano filename`. Type as you would in any editor. The shortcuts are shown along the bottom of the screen, where `^` means Ctrl. If you only remember one editor, make it nano.
 
 | Keys | What it does |
 |---|---|
@@ -20,8 +20,6 @@ Open or create a file with `nano filename`. Type as you would in any editor. The
 ```bash
 nano w2a.py
 ```
-
-If you only remember one editor, make it nano.
 
 ## vim: the powerful one
 

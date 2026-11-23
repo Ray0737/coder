@@ -7,13 +7,11 @@ summary: Keep each project's Python and packages in their own box, so installing
 
 ## Why an environment
 
-The Pi has a Python that the operating system itself depends on. Installing packages straight into it can break system tools, so recent Debian systems refuse to let you:
+The Pi has a Python that the operating system itself depends on. Installing packages straight into it can break system tools, so recent Debian systems refuse to let you, with the error below. This is on purpose (it is called PEP 668), and the fix is not to force it but to work inside an environment of your own.
 
 ```text
 error: externally-managed-environment
 ```
-
-This is on purpose (it is called PEP 668). The fix is not to force it, but to work inside an environment of your own.
 
 > [!compare] Think of it like a lunchbox per project. You pack exactly what each one needs, and nothing leaks into the school bag, which is the system Python. Open the wrong box and you find the wrong sandwich: the wrong version of a library.
 
@@ -28,17 +26,20 @@ Your `Code - Raspi` folder is set up around **Python 3.11.9**, managed with `pye
 | `mediapipe` | 0.10.9 | Hand tracking |
 | `RPi.GPIO` | 0.7.1 | Pins and PWM |
 
-These are listed in `requirements.txt`. The Python version matters because `mediapipe==0.10.9` has a prebuilt file (a wheel) for Python 3.11 on the 64-bit Pi. On another Python version pip may try to build it from source, which is slow and often fails with `fatal error: Python.h: No such file or directory`.
+> [!more] TLDR: why Python 3.11 exactly
+> These are listed in `requirements.txt`. The Python version matters because `mediapipe==0.10.9` has a prebuilt file (a wheel) for Python 3.11 on the 64-bit Pi. On another Python version pip may try to build it from source, which is slow and often fails with `fatal error: Python.h: No such file or directory`.
 
 ## One command to set up
+
+The script checks that you have Python 3.11.x, creates `venv/` if it is missing, installs everything from `requirements.txt`, and finally checks that `cv2`, `mediapipe`, `numpy` and `RPi.GPIO` all import. It is safe to run again, because it reuses the environment instead of rebuilding it.
 
 ```bash
 ./setup.sh
 ```
 
-The script checks that you have Python 3.11.x, creates `venv/` if it is missing, installs everything from `requirements.txt`, and finally checks that `cv2`, `mediapipe`, `numpy` and `RPi.GPIO` all import. It is safe to run again, because it reuses the environment instead of rebuilding it.
-
 ## Or by hand
+
+The same setup takes a handful of commands, followed by a one-line check that everything imports. Leave the environment with `deactivate`.
 
 ```bash
 pyenv install 3.11.9        # skip if you already have it
@@ -51,13 +52,9 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-Check it with:
-
 ```bash
 python3 -c "import cv2, mediapipe, numpy, RPi.GPIO; print('all good')"
 ```
-
-Leave the environment with `deactivate`.
 
 ## Packages for each part
 
@@ -81,18 +78,17 @@ Leave the environment with `deactivate`.
 
 > [!warn] Activate the venv before every `pip install`, or the package lands in the wrong place and your script says `No module named ...`. `sudo apt install` does not need the venv, because it installs for the whole system.
 
-The `i2c-tools` line is the one your README does not spell out: it uses `i2cdetect` but never says where the command comes from. If the command is not found, that package is what is missing.
+> [!more] TLDR: the i2c-tools line
+> The `i2c-tools` line is the one your README does not spell out: it uses `i2cdetect` but never says where the command comes from. If the command is not found, that package is what is missing.
 
 ## Switching on interfaces: `raspi-config`
 
-A few parts talk to the Pi through a built-in interface that is **switched off by default**, so installing the library is not enough. You switch interfaces on in the Pi's settings tool, `raspi-config`, which needs `sudo`:
+A few parts talk to the Pi through a built-in interface that is **switched off by default**, so installing the library is not enough. You switch interfaces on in the Pi's settings tool, `raspi-config`, which needs `sudo`. Move around its menu with the arrow keys, Enter to choose and Tab to reach Select and Finish, and use the table to see which parts need which interface.
 
 ```bash
 sudo raspi-config        # Interface Options, then the interface you need, then Enable
 sudo reboot              # the change only takes effect after a reboot
 ```
-
-Move around its menu with the arrow keys, Enter to choose and Tab to reach Select and Finish. Which parts need which interface:
 
 | Part | Interface to enable | How to check it worked |
 |---|---|---|
@@ -104,7 +100,8 @@ Move around its menu with the arrow keys, Enter to choose and Tab to reach Selec
 
 > [!warn] If `i2cdetect` shows an empty grid, the usual cause is that I2C is still off, or the Pi was not rebooted after turning it on. Your README also suggests `lsmod | grep i2c_`, which should list `i2c_dev` and `i2c_bcm2835` once the interface is on.
 
-The course only needs I2C switched on, and only for the LCD. The other interfaces in the menu, such as SPI and the serial port, are not used by any script here.
+> [!more] TLDR: which interfaces the course uses
+> The course only needs I2C switched on, and only for the LCD. The other interfaces in the menu, such as SPI and the serial port, are not used by any script here.
 
 ## Which one am I in?
 
@@ -117,7 +114,8 @@ Your folder has more than one environment: `venv/`, an older `env/` built on the
 
 > [!warn] If you see `ModuleNotFoundError: No module named 'ultralytics'` even though you installed it, you are almost certainly in the wrong environment. Run `source venv/bin/activate` and try again.
 
-The same applies in VS Code. If `cv2` is underlined red but works in the terminal, choose the right interpreter with **Python: Select Interpreter**.
+> [!more] TLDR: the same problem in VS Code
+> If `cv2` is underlined red but works in the terminal, choose the right interpreter with **Python: Select Interpreter**.
 
 ## Try it
 

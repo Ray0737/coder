@@ -315,14 +315,13 @@ const widgets = {
     const art = ['00111100', '01000010', '10100101', '10000001', '10100101', '10011001', '01000010', '00111100'];
     const px = art.flatMap(r => [...r].map(c => (c === '1' ? 0 : 255)));
     el.innerHTML = `<p class="wgt">Try it: click a pixel to change its number</p>
-      <div class="wgrow"><button type="button" class="seg2" id="w-px-r">Reset</button></div>
       <div class="pxg" id="w-px"></div><p class="wgsay" id="w-px-say"></p>`;
     const paint = () => {
       $('#w-px').innerHTML = px.map((v, i) => `<button type="button" class="pxc" data-i="${i}" style="background:rgb(${v},${v},${v});color:${v > 127 ? '#111' : '#eee'}">${v}</button>`).join('');
       $('#w-px-say').innerHTML = `This picture is <b>8 × 8 = 64 numbers</b>: <code>img.shape = (8, 8)</code>. 0 is black, 255 is white. A colour picture of the same size needs 3 numbers per pixel, <code>(8, 8, 3)</code>, which is 192.`;
     };
     $('#w-px').onclick = e => { const b = e.target.closest('.pxc'); if (b) { const i = +b.dataset.i; px[i] = px[i] >= 255 ? 0 : Math.min(255, px[i] + 64); paint(); } };
-    $('#w-px-r').onclick = () => { art.flatMap(r => [...r].map(c => (c === '1' ? 0 : 255))).forEach((v, i) => px[i] = v); paint(); };
+    el._reset = () => { art.flatMap(r => [...r].map(c => (c === '1' ? 0 : 255))).forEach((v, i) => px[i] = v); paint(); };
     paint();
   },
   // OpenCV stores colour as (B, G, R); show what a mix means and what you get if the order is mixed up
@@ -462,7 +461,7 @@ const widgets = {
     }
     const apply = (v, t, k) => { const hi = v > t; return k === 'BINARY' ? (hi ? 255 : 0) : k === 'BINARY_INV' ? (hi ? 0 : 255) : k === 'TRUNC' ? (hi ? t : v) : k === 'TOZERO' ? (hi ? v : 0) : (hi ? 0 : v); };
     el.innerHTML = `<p class="wgt">Try it: pick a rule and a cut-off</p>
-      <div class="wgrow" id="w-th-tabs">${types.map((n, i) => `<button type="button" class="seg2${i ? '' : ' on'}" data-k="${n}">${n}</button>`).join('')}</div>
+      <div class="wgrow" id="w-th-tabs">${types.map((n, i) => `<button type="button" class="seg2${i ? '' : ' on'}" data-k="${n}">${n.toLowerCase().replace('tozero', 'to zero').replace(/_/g, ' ').replace(/^./, c => c.toUpperCase())}</button>`).join('')}</div>
       <div class="wgrow"><label>thresh <input id="w-th-t" type="range" min="0" max="255" value="150"></label><b id="w-th-v">150</b></div>
       <div class="dropviz"><figure><figcaption>Grayscale image</figcaption><canvas id="w-th-a" width="${W}" height="${H}"></canvas></figure><figure><figcaption>Result</figcaption><canvas id="w-th-b" width="${W}" height="${H}"></canvas></figure></div>
       <p class="wgsay"><code id="w-th-code"></code></p><p class="wgsay" id="w-th-say"></p>`;
@@ -529,7 +528,7 @@ const widgets = {
     const lab = (val, diag) => { const L = new Int32Array(W * H).fill(-1); let n = 0; for (let s = 0; s < W * H; s++) { if (fg[s] !== val || L[s] >= 0) continue; const st = [s]; L[s] = n; while (st.length) { const c = st.pop(), cx = c % W, cy = (c / W) | 0; for (let j = -1; j <= 1; j++) for (let i = -1; i <= 1; i++) { if (!(i || j) || (!diag && i && j)) continue; const xx = cx + i, yy = cy + j; if (xx < 0 || yy < 0 || xx >= W || yy >= H) continue; const q = yy * W + xx; if (fg[q] === val && L[q] < 0) { L[q] = n; st.push(q); } } } n++; } return [L, n]; };
     const [FL, nf] = lab(1, true), [BL, nb] = lab(0, false), outside = BL[0];
     el.innerHTML = `<p class="wgt">Try it: how many contours?</p>
-      <div class="wgrow" id="w-ct-tabs"><button type="button" class="seg2 on" data-k="EXTERNAL">RETR_EXTERNAL</button><button type="button" class="seg2" data-k="LIST">RETR_LIST</button></div>
+      <div class="wgrow" id="w-ct-tabs"><button type="button" class="seg2 on" data-k="EXTERNAL">External only</button><button type="button" class="seg2" data-k="LIST">List all</button></div>
       <div class="dropviz"><figure><figcaption>Binary image (white shapes)</figcaption><canvas id="w-ct-a" width="${W * S}" height="${H * S}"></canvas></figure><figure><figcaption>Contours drawn</figcaption><canvas id="w-ct-b" width="${W * S}" height="${H * S}"></canvas></figure></div>
       <p class="wgsay"><code id="w-ct-code"></code></p><p class="wgsay" id="w-ct-say"></p>`;
     let k = 'EXTERNAL';
@@ -559,7 +558,7 @@ const widgets = {
     const R = (x, y) => x > 15 && x < 115 && y > 15 && y < 115, C = (x, y) => (x - 100) ** 2 + (y - 100) ** 2 < 55 * 55;
     const scene = (x, y) => (y > 105 ? [111, 191, 115] : (x - 40) ** 2 + (y - 35) ** 2 < 15 * 15 ? [247, 209, 84] : x > 60 && x < 130 && y > 60 ? [217, 83, 79] : [143, 199, 242]);
     el.innerHTML = `<p class="wgt">Try it: combine two shapes</p>
-      <div class="wgrow" id="w-bw-tabs">${ops.map((n, i) => `<button type="button" class="seg2${i ? '' : ' on'}" data-k="${n}">${n}</button>`).join('')}</div>
+      <div class="wgrow" id="w-bw-tabs">${ops.map((n, i) => `<button type="button" class="seg2${i ? '' : ' on'}" data-k="${n}">${n.charAt(0) + n.slice(1).toLowerCase()}</button>`).join('')}</div>
       <div class="dropviz"><figure><figcaption id="w-bw-c1">Rectangle</figcaption><canvas id="w-bw-a" width="${S}" height="${S}"></canvas></figure><figure><figcaption id="w-bw-c2">Circle</figcaption><canvas id="w-bw-b" width="${S}" height="${S}"></canvas></figure><figure><figcaption>Result</figcaption><canvas id="w-bw-r" width="${S}" height="${S}"></canvas></figure></div>
       <p class="wgsay"><code id="w-bw-code"></code></p><p class="wgsay" id="w-bw-say"></p>`;
     let k = 'AND';
@@ -640,38 +639,6 @@ const widgets = {
       $('#w-hc-code').textContent = `faces = face_cascade.detectMultiScale(gray, ${sf.toFixed(2)}, ${n})`;
     };
     el.addEventListener('input', run); run();
-  },
-  // LBPH: the confidence is a distance, so LOWER is a better match
-  lbphpipe(el) {
-    const rows = [['Ray, normal light', 34], ['Ray, dim room', 62], ['Friend (never trained)', 88], ['Stranger', 131]];
-    el.innerHTML = `<div class="steps"><div><b>1 Capture</b><span>~100 face crops per person saved to <code>data/</code></span></div><i>&rarr;</i><div><b>2 Train</b><span><code>clf.train(faces, ids)</code> then <code>classifier.xml</code></span></div><i>&rarr;</i><div><b>3 Recognize</b><span><code>clf.predict(face)</code> gives (id, confidence)</span></div></div>
-      <p class="wgt" style="margin-top:16px">Try it: where do you draw the line?</p>
-      <div class="wgrow"><label>Threshold <input id="w-lb-t" type="range" min="20" max="150" value="70"></label><b id="w-lb-v">70</b></div>
-      <div class="lbl" id="w-lb"></div><p class="wgsay">Remember: for LBPH the confidence is a <b>distance</b>. <b>Lower is a better match</b>, and 0 would be perfect.</p>`;
-    const run = () => {
-      const t = +$('#w-lb-t').value; $('#w-lb-v').textContent = t;
-      $('#w-lb').innerHTML = rows.map(([n, d]) => `<div class="lbr"><span>${n}</span><div class="lbb"><i style="width:${d / 150 * 100}%;background:var(--${d <= t ? 'green' : 'red'})"></i><u style="left:${t / 150 * 100}%"></u></div><b style="color:var(--${d <= t ? 'green' : 'red'})">${d <= t ? 'Ray (id 1)' : 'unknown'} <small>${d}</small></b></div>`).join('');
-    };
-    $('#w-lb-t').oninput = run; run();
-  },
-  // YOLO: every box comes with a confidence; conf= decides which boxes are kept
-  yolobox(el) {
-    const W = 320, H = 190;
-    const objs = [['car', 20, 108, 78, 42, '#d9534f', .92], ['truck', 128, 92, 98, 58, '#89b4fa', .78], ['car', 248, 120, 52, 32, '#f9e2af', .41], ['bike', 10, 152, 34, 28, '#cba6f7', .27]];
-    el.innerHTML = `<p class="wgt">Try it: change the confidence cut-off</p>
-      <div class="wgrow"><label>conf <input id="w-yo-c" type="range" min="0" max="100" value="50"></label><b id="w-yo-v">0.50</b></div>
-      <canvas id="w-yo" width="${W}" height="${H}"></canvas><p class="wgsay" id="w-yo-say"></p><p class="wgsay"><code id="w-yo-code"></code></p>`;
-    const run = () => {
-      const c = +$('#w-yo-c').value / 100; $('#w-yo-v').textContent = c.toFixed(2);
-      const g = $('#w-yo').getContext('2d'); g.fillStyle = '#313244'; g.fillRect(0, 0, W, H); g.fillStyle = '#89b4fa'; g.fillRect(0, 0, W, 70); g.fillStyle = '#45475a'; g.fillRect(0, 95, W, 95);
-      g.fillStyle = '#f9e2af'; for (let x = 0; x < W; x += 50) g.fillRect(x, 140, 28, 3);
-      let n = 0;
-      objs.forEach(([name, x, y, w, h, col, p]) => { g.fillStyle = col; g.fillRect(x + 4, y + 4, w - 8, h - 8);
-        if (p >= c) { n++; g.lineWidth = 2; g.strokeStyle = '#a6e3a1'; g.strokeRect(x, y, w, h); g.fillStyle = '#a6e3a1'; g.fillRect(x, y - 14, 74, 14); g.fillStyle = '#11111b'; g.font = '10px sans-serif'; g.fillText(`${name} ${p.toFixed(2)}`, x + 4, y - 3); } });
-      $('#w-yo-say').innerHTML = `<b>${n}</b> of ${objs.length} detections kept. ${c < .3 ? 'Low cut-off: more boxes, but some are guesses.' : c > .85 ? 'High cut-off: only the surest box is left, and real objects get missed.' : 'A middle cut-off keeps the confident boxes.'}`;
-      $('#w-yo-code').textContent = `results = model(frame, conf=${c.toFixed(2)}, imgsz=320)`;
-    };
-    $('#w-yo-c').oninput = run; run();
   },
   // hand landmarks: 21 points, landmark 8 is the index fingertip; its x position drives a servo angle
   handlandmarks(el) {
@@ -790,30 +757,33 @@ const widgets = {
   },
   // the OpenCV coordinate system: (0, 0) is the TOP-LEFT pixel and y grows downward; compare with a maths graph
   coordsys(el) {
-    const GW = 16, GH = 10, C = 20, L = 44, T = 34, W = L + GW * C + 20, H = T + GH * C + 34;
+    const GW = 16, GH = 10, C = 18, L = 40, T = 34, W = L + GW * C + 20, H = T + GH * C + 34;
     el.innerHTML = `<p class="wgt">Try it: hover and click the grid</p>
-      <div class="wgrow" id="w-cs-tabs"><button type="button" class="seg2 on" data-k="cv">OpenCV image</button><button type="button" class="seg2" data-k="math">Maths graph</button></div>
-      <canvas id="w-cs" width="${W}" height="${H}" style="cursor:crosshair"></canvas>
+      <div class="csrow"><figure><figcaption>OpenCV image</figcaption><canvas id="w-cs-cv" width="${W}" height="${H}" style="cursor:crosshair"></canvas></figure>
+        <figure><figcaption>Maths graph</figcaption><canvas id="w-cs-math" width="${W}" height="${H}" style="cursor:crosshair"></canvas></figure></div>
       <div class="evlog" id="w-cs-out"></div>`;
-    let mode = 'cv', hov = null, pin = null;
-    const cv = $('#w-cs'), g = cv.getContext('2d');
-    const draw = () => {
+    // one shared point, always stored the OpenCV way: [x, row from the top]
+    let hov = null, pin = null;
+    const cvs = { cv: $('#w-cs-cv'), math: $('#w-cs-math') };
+    const draw = mode => {
+      const g = cvs[mode].getContext('2d');
       g.fillStyle = '#181825'; g.fillRect(0, 0, W, H);
       const cx = x => L + x * C, cy = row => T + row * C; // row = display row from the top
       g.strokeStyle = '#313244'; g.lineWidth = 1;
       for (let i = 0; i <= GW; i++) { g.beginPath(); g.moveTo(cx(i), T); g.lineTo(cx(i), T + GH * C); g.stroke(); }
       for (let j = 0; j <= GH; j++) { g.beginPath(); g.moveTo(L, cy(j)); g.lineTo(L + GW * C, cy(j)); g.stroke(); }
       g.font = '10px sans-serif'; g.fillStyle = '#a6adc8'; g.textAlign = 'center';
-      for (let x = 0; x < GW; x += 5) g.fillText(x, cx(x) + C / 2, T - 6);
-      g.fillText(GW - 1, cx(GW - 1) + C / 2, T - 6);
+      const xl = mode === 'cv' ? T - 6 : T + GH * C + 14;
+      for (let x = 0; x < GW; x += 5) g.fillText(x, cx(x) + C / 2, xl);
+      g.fillText(GW - 1, cx(GW - 1) + C / 2, xl);
       g.textAlign = 'right';
       const yl = r => mode === 'cv' ? r : GH - 1 - r;
-      for (let r = 0; r < GH; r += (r === 0 ? 5 : 5)) g.fillText(yl(r), L - 6, cy(r) + C / 2 + 3);
+      for (let r = 0; r < GH; r += 5) g.fillText(yl(r), L - 6, cy(r) + C / 2 + 3);
       g.fillText(yl(GH - 1), L - 6, cy(GH - 1) + C / 2 + 3);
       // axes
       g.strokeStyle = '#89b4fa'; g.fillStyle = '#89b4fa'; g.lineWidth = 2; g.textAlign = 'left';
       const oy = mode === 'cv' ? T : T + GH * C;
-      g.beginPath(); g.moveTo(L, oy); g.lineTo(L + GW * C + 14, oy); g.stroke(); g.textAlign = 'right'; g.fillText('x (columns) →', W - 6, oy + (mode === 'cv' ? -20 : 18)); g.textAlign = 'left';
+      g.beginPath(); g.moveTo(L, oy); g.lineTo(L + GW * C + 14, oy); g.stroke(); g.textAlign = 'right'; g.fillText('x (columns) →', W - 6, mode === 'cv' ? oy - 20 : oy + 28); g.textAlign = 'left';
       g.strokeStyle = '#f38ba8'; g.fillStyle = '#f38ba8';
       g.beginPath(); g.moveTo(L, T + (mode === 'cv' ? 0 : -14)); g.lineTo(L, T + GH * C + (mode === 'cv' ? 14 : 0)); g.stroke();
       g.save(); g.translate(12, T + GH * C / 2); g.rotate(-Math.PI / 2); g.textAlign = 'center'; g.fillText(mode === 'cv' ? 'y (rows), grows DOWN' : 'y, grows UP', 0, 0); g.restore();
@@ -824,42 +794,22 @@ const widgets = {
       // points
       const mark = (pt, col, fillA) => { if (!pt) return; const r = mode === 'cv' ? pt[1] : GH - 1 - pt[1]; g.fillStyle = fillA; g.fillRect(cx(pt[0]), cy(r), C, C); g.strokeStyle = col; g.lineWidth = 2; g.strokeRect(cx(pt[0]) + 1, cy(r) + 1, C - 2, C - 2); };
       mark(hov, '#cdd6f4', 'rgba(205,214,244,.18)'); mark(pin, '#a6e3a1', 'rgba(166,227,161,.35)');
+    };
+    const redraw = () => {
+      draw('cv'); draw('math');
       const pt = pin || hov;
-      if (!pt) { $('#w-cs-out').innerHTML = 'Move the mouse over the grid. Each square is one pixel of a ' + GW + ' &times; ' + GH + ' picture.'; return; }
+      if (!pt) { $('#w-cs-out').innerHTML = 'Move the mouse over either grid. Each square is one pixel of a ' + GW + ' &times; ' + GH + ' picture, and the same pixel lights up on both.'; return; }
       const [x, y] = pt, my = GH - 1 - y;
-      $('#w-cs-out').innerHTML = mode === 'cv'
-        ? `drawing / mouse:  (x, y) = (${x}, ${y})<br>NumPy index:      img[${y}, ${x}]   <i>row first</i><br>img.shape = (${GH}, ${GW})   <i>(height, width)</i>`
-        : `maths graph:   (x, y) = (${x}, ${my})<br>the same pixel in OpenCV is (x, y) = (${x}, ${y}): y is counted from the TOP, not the bottom`;
+      $('#w-cs-out').innerHTML = `OpenCV:  (x, y) = (${x}, ${y})   NumPy index img[${y}, ${x}] <i>row first</i>, img.shape = (${GH}, ${GW}) <i>(height, width)</i><br>Maths graph:  (x, y) = (${x}, ${my})   y is counted from the BOTTOM here, but from the TOP in OpenCV`;
     };
-    const at = e => { const r = cv.getBoundingClientRect(), px = (e.clientX - r.left) * W / r.width, py = (e.clientY - r.top) * H / r.height, x = Math.floor((px - L) / C), row = Math.floor((py - T) / C); return x >= 0 && x < GW && row >= 0 && row < GH ? [x, mode === 'cv' ? row : GH - 1 - row] : null; };
-    cv.onmousemove = e => { hov = at(e); draw(); }; cv.onmouseleave = () => { hov = null; draw(); };
-    cv.onclick = e => { const p = at(e); pin = p && pin && p[0] === pin[0] && p[1] === pin[1] ? null : p; draw(); };
-    $('#w-cs-tabs').onclick = e => { const b = e.target.closest('button'); if (b) { mode = b.dataset.k; $$('#w-cs-tabs button').forEach(t => t.classList.toggle('on', t === b)); draw(); } };
-    el._reset = () => { mode = 'cv'; hov = pin = null; $$('#w-cs-tabs button').forEach(t => t.classList.toggle('on', t.dataset.k === 'cv')); draw(); };
-    draw();
-  },
-  // YOLO model sizes: same family, bigger means more accurate but slower and heavier (relative, not a benchmark)
-  yolosizes(el) {
-    const sz = [
-      ['n', 'Nano', 2, 5, 1, 'The smallest and fastest. The one for a Raspberry Pi, a phone or a quick experiment. Misses more, especially small objects.', 'yolo11n.pt'],
-      ['s', 'Small', 3, 4, 2, 'A step up in accuracy for a little more work. Fine for a laptop CPU or a Pi when nano is not accurate enough.', 'yolo11s.pt'],
-      ['m', 'Medium', 4, 3, 3, 'A good all-rounder when you have a laptop with a graphics card or a modest GPU.', 'yolo11m.pt'],
-      ['l', 'Large', 4.5, 2, 4, 'For when accuracy matters more than speed and you have a proper GPU.', 'yolo11l.pt'],
-      ['x', 'Extra large', 5, 1, 5, 'The most accurate and the heaviest. A big GPU or the cloud, not a small board.', 'yolo11x.pt'],
-    ];
-    el.innerHTML = `<p class="wgt">Try it: pick a model size</p>
-      <div class="wgrow" id="w-ys-tabs">${sz.map((z, i) => `<button type="button" class="seg2${i ? '' : ' on'}" data-k="${z[0]}">${z[0]} ${z[1]}</button>`).join('')}</div>
-      <div class="ysb" id="w-ys"></div><p class="wgsay" id="w-ys-say"></p><p class="wgsay"><code id="w-ys-code"></code></p>`;
-    const run = k => {
-      const z = sz.find(q => q[0] === k);
-      $$('#w-ys-tabs button').forEach(b => b.classList.toggle('on', b.dataset.k === k));
-      const bar = (n, v, c) => `<div class="ysr"><span>${n}</span><div><i style="width:${v / 5 * 100}%;background:var(--${c})"></i></div></div>`;
-      $('#w-ys').innerHTML = bar('Accuracy', z[2], 'green') + bar('Speed', z[3], 'blue') + bar('Size and memory', z[4], 'peach');
-      $('#w-ys-say').innerHTML = `<b>${z[1]}.</b> ${z[5]} The bars are relative, to compare sizes with each other. They are not benchmark numbers.`;
-      $('#w-ys-code').textContent = `model = YOLO("${z[6]}")`;
-    };
-    $('#w-ys-tabs').onclick = e => { const b = e.target.closest('button'); if (b) run(b.dataset.k); };
-    el._reset = () => run('n'); run('n');
+    const at = (e, mode) => { const r = cvs[mode].getBoundingClientRect(), px = (e.clientX - r.left) * W / r.width, py = (e.clientY - r.top) * H / r.height, x = Math.floor((px - L) / C), row = Math.floor((py - T) / C); return x >= 0 && x < GW && row >= 0 && row < GH ? [x, mode === 'cv' ? row : GH - 1 - row] : null; };
+    ['cv', 'math'].forEach(m => {
+      cvs[m].onmousemove = e => { hov = at(e, m); redraw(); };
+      cvs[m].onmouseleave = () => { hov = null; redraw(); };
+      cvs[m].onclick = e => { const p = at(e, m); pin = p && pin && p[0] === pin[0] && p[1] === pin[1] ? null : p; redraw(); };
+    });
+    el._reset = () => { hov = pin = null; redraw(); };
+    redraw();
   },
   // hover the 21 MediaPipe hand landmarks to see their index and name
   landmarkmap(el) {

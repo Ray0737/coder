@@ -7,20 +7,18 @@ summary: Join edge pixels into whole outlines, count the shapes in a picture and
 
 ## From edges to shapes
 
-A contour is the outline of a shape: a list of (x, y) points tracing where one region meets another. Where Canny gives you a picture of edge pixels, `cv.findContours` links the dots into organised shapes. It follows straight on from the last chapter:
+A contour is the outline of a shape: a list of (x, y) points tracing where one region meets another. Where Canny gives you a picture of edge pixels, `cv.findContours` links the dots into organised shapes. It follows straight on from the last chapter, and the first input must be a single-channel black-and-white image, so it works with `canny` or with `thresh`. It returns `contours`, a tuple of arrays with one array of points for each shape, and `hierarchy`, which describes which shapes sit inside others.
 
 ```python
 contours, hierarchy = cv.findContours(canny, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 print(len(contours), 'shapes found')
 ```
 
-The first input must be a single-channel black-and-white image, so it works with `canny` or with `thresh`. It returns `contours`, a tuple of arrays, one array of points for each shape, and `hierarchy`, which describes which shapes sit inside others.
-
 > [!compare] Think of it like tracing round cookie cutters on paper. Each cutter leaves one closed outline. A ring-shaped cutter leaves two: one round the outside and one round the hole.
 
 ## Which contours do you get?
 
-The `mode` argument decides what comes back. Switch between two of them on a picture with a ring in it:
+The `mode` argument decides what comes back, so switch between two of them on a picture with a ring in it. The third argument, `method`, decides how much detail each contour keeps.
 
 ```widget
 contourviz
@@ -33,8 +31,6 @@ contourviz
 | `RETR_TREE` | Every contour, plus the full nesting (a hole inside a shape inside another) |
 | `RETR_CCOMP` | Every contour, in a two-level hierarchy |
 
-The third argument, `method`, decides how much detail each contour keeps:
-
 | Method | What it stores |
 |---|---|
 | `CHAIN_APPROX_NONE` | Every single point along the boundary: most accurate, most memory |
@@ -42,12 +38,12 @@ The third argument, `method`, decides how much detail each contour keeps:
 
 ## Draw them
 
+`contourIdx` picks one contour by number, or `-1` for all of them. The colour is `(B, G, R)`, so `(0, 0, 255)` is red, and a thickness of `cv.FILLED` fills the shape in. The canvas needs three channels to hold a colour, so use `img.shape`, not `img.shape[:2]`, which only makes a one-channel canvas.
+
 ```python
 blank = np.zeros(img.shape, dtype='uint8')               # 3-channel black canvas
 cv.drawContours(blank, contours, -1, (0, 0, 255), 2)     # -1 = all, red, 2 px
 ```
-
-`contourIdx` picks one contour by number, or `-1` for all of them. The colour is `(B, G, R)`, so `(0, 0, 255)` is red. A thickness of `cv.FILLED` fills the shape in. The canvas needs three channels to hold a colour, so use `img.shape`, not `img.shape[:2]`, which only makes a one-channel canvas.
 
 > [!warn] Write the arguments with commas: `(-1, (0, 0, 255), 2)`. A missing comma, as in `-1(0, 0, 255)`, makes Python try to "call" the number -1 and gives a syntax error.
 

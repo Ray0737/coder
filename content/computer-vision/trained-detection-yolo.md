@@ -28,11 +28,20 @@ yolosizes
 
 > [!compare] Think of it like cars. A nano model is a scooter: light, quick to start and happy on a small road, but it carries little. An extra-large model is a lorry: it carries a lot, but it needs a big road and a lot of fuel. Pick the smallest one that does the job.
 
-Your Pi scripts use `yolo11n.pt`, the nano model, because a Raspberry Pi has no GPU. The name tells you two more things. The number is the version (`yolov8n.pt` is the older generation, `yolo11n.pt` the newer one), and the pretrained files were trained on **COCO**, a dataset of 80 everyday object classes (person, car, bottle and so on). That is why a pretrained YOLO can find a person or a car straight away, but has never heard of your own water bottle brand until you train it.
+## Reading a model file name
 
-The same package also offers other tasks under the same naming, such as classification, segmentation (an outline instead of a box) and pose (body points). A detection model has no suffix, and the others add one, for example `yolo11n-pose.pt`.
+Your Pi scripts use `yolo11n.pt`, the nano model, because a Raspberry Pi has no GPU. Every part of the name tells you something, and the pretrained files were trained on **COCO**, a dataset of 80 everyday object classes (person, car, bottle and so on). That is why a pretrained YOLO can find a person or a car straight away, but has never heard of your own water bottle brand until you train it.
+
+| Part | Meaning |
+|---|---|
+| `yolo11` | The version. `yolov8n.pt` is the older generation, `yolo11n.pt` the newer one |
+| `n` | The size: nano, small, medium, large or extra large |
+| `-pose`, `-seg`, `-cls` | A different task under the same naming: pose (body points), segmentation (an outline instead of a box) or classification. A detection model has no suffix, for example `yolo11n-pose.pt` |
+| `.pt` | The saved weights file |
 
 ## What YOLO is good at, and what it is not
+
+YOLO answers "what is in the picture and where?". It does not tell you what shape that thing is in, and for "where is each joint of this hand?" a different tool is better, which is MediaPipe in the next chapter.
 
 | YOLO is good at | YOLO is weak at |
 |---|---|
@@ -41,14 +50,14 @@ The same package also offers other tasks under the same naming, such as classifi
 | Speed: one pass over the frame, so it can run live | Small or far-away objects, especially on the nano model |
 | Everyday classes straight out of the box (people, cars, bottles) | Running on very small hardware unless you use a small model and a small `imgsz` |
 
-> [!aha] YOLO answers "what is in the picture and where?". It does not tell you what shape that thing is in. For "where is each joint of this hand?", a different tool is better, and that is MediaPipe, the next chapter.
-
 ## Using a trained model
 
-YOLO runs through the `ultralytics` package.
+YOLO runs through the `ultralytics` package. Every detection in `results[0].boxes` carries three things: `box.cls` (the class number, turned into a name with `model.names[...]`), `box.conf` (the confidence from 0 to 1) and `box.xyxy` (the two corners of the box). `conf=0.5` throws away anything the model is less than 50% sure of, and `imgsz=320` sets the working resolution, where **smaller is faster but less accurate** and 320 is a common choice for real-time use on a CPU such as a Raspberry Pi.
 
 ```python
+import cv2 as cv
 from ultralytics import YOLO
+
 model = YOLO('best.pt')                  # your own weights, or 'yolo11n.pt' (downloads itself)
 
 cap = cv.VideoCapture(0)
@@ -61,35 +70,39 @@ while cap.isOpened():
     cv.imshow('YOLO', frame)
     if cv.waitKey(1) & 0xFF == ord('q'):
         break
+cap.release()
+cv.destroyAllWindows()
 ```
 
-Every detection in `results[0].boxes` carries three things: `box.cls` (the class number, turned into a name with `model.names[...]`), `box.conf` (the confidence from 0 to 1) and `box.xyxy` (the two corners of the box). `conf=0.5` throws away anything the model is less than 50% sure of. Move the cut-off below and see which boxes survive.
+## The confidence cut-off
+
+Move the confidence cut-off and see which boxes survive. It is a trade, not a score to maximise.
 
 ```widget
 yolobox
 ```
 
-`imgsz=320` sets the working resolution. **Smaller is faster but less accurate**, and 320 is a common choice for real-time use on a CPU such as a Raspberry Pi.
-
 > [!aha] Confidence is a trade, not a score to maximise. Set it low and you catch more real objects but also more false boxes. Set it high and the boxes you see are trustworthy, but real objects get missed.
 
 ## Training your own detector
 
-Fine-tuning starts from a pretrained model and teaches it your own classes:
+Fine-tuning starts from a pretrained model and teaches it your own classes. `data` points to a `data.yaml` that lists the training and validation image folders and the class names, and a Roboflow export in "YOLOv11" format works directly. `epochs` is how many full passes over the data, `imgsz` is the training resolution (bigger is more accurate but slower) and `batch` is how many images per step, limited by your memory. Training ends by writing `runs/detect/train/weights/best.pt`, the file you load for detection.
 
 ```python
+from ultralytics import YOLO
+
 model = YOLO('yolo11n.pt')
 model.train(data='vehicles-openimages/data.yaml', epochs=30, imgsz=640, batch=4)
 ```
 
-`data` points to a `data.yaml` that lists the training and validation image folders and the class names. A Roboflow export in "YOLOv11" format works directly. `epochs` is how many full passes over the data, `imgsz` is the training resolution (bigger is more accurate but slower) and `batch` is how many images per step, limited by your memory. Training ends by writing `runs/detect/train/weights/best.pt`, the file you load for detection.
+## The vehicle example in your folder
 
 Your folder's `train_vehicle_detector.py` does exactly this for vehicles. The dataset is too big to ship with the code, so export it from Roboflow into a `vehicles-openimages/` folder next to the script first.
 
 ## Try it
 
 1. What is the main difference between how a Haar cascade and YOLO scan a picture?
-2. In the widget, which confidence value shows only the single surest detection?
+2. In the diagram, which confidence value keeps only the single surest detection? Which value shows a false box but still misses real objects?
 3. Why is `imgsz=320` a good choice on a Raspberry Pi, and what is the cost?
    Also: which model size would you pick for the Pi, and why?
 4. What file does training produce, and how do you use it afterwards?

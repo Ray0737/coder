@@ -695,5 +695,119 @@
       el.addEventListener('input', draw);
       draw();
     },
+    // ---------- Face recognition (LBPH) ----------
+    // the three scripts as a picture: the webcam fills data/, training turns data/ into classifier.xml, a new face is matched against it
+    lbphpipe(el) {
+      const q = s => el.querySelector(s);
+      let step = 0, who = 0;
+      const PEOPLE = [{ n: 'Ray', c: 'var(--peach)', d: 34, g: true }, { n: 'Friend', c: 'var(--blue)', d: 88, g: false }];
+      el.innerHTML = `<p class="wgt">Try it: follow a face through the three scripts</p>
+        <div class="tb">${chips('lp-s', ['1 Capture', '2 Train', '3 Recognise'], 0)}<span>At the door</span>${chips('lp-w', ['Ray', 'Friend'], 0)}</div>
+        <div class="nndiag"><svg id="lp-svg" viewBox="0 0 640 190" width="100%"></svg></div><p class="wgcap" id="lp-c"></p>`;
+      const face = (x, y, r, col, glasses) => `<circle cx="${x}" cy="${y}" r="${r}" fill="none" stroke="${col}" stroke-width="1.5"/><circle cx="${x - r * .35}" cy="${y - r * .15}" r="${r * .1}" fill="${col}"/><circle cx="${x + r * .35}" cy="${y - r * .15}" r="${r * .1}" fill="${col}"/><path d="M${x - r * .4} ${y + r * .35} Q${x} ${y + r * .7} ${x + r * .4} ${y + r * .35}" fill="none" stroke="${col}" stroke-width="1.5"/>${glasses ? `<circle cx="${x - r * .35}" cy="${y - r * .15}" r="${r * .3}" fill="none" stroke="${col}"/><circle cx="${x + r * .35}" cy="${y - r * .15}" r="${r * .3}" fill="none" stroke="${col}"/>` : ''}`;
+      const T = (x, y, t, o = {}) => `<text x="${x}" y="${y}" text-anchor="${o.a || 'middle'}" font-size="${o.s || 10}" fill="${o.c || 'var(--o1)'}">${t}</text>`;
+      const box = (x, y, w, h, on) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8" fill="var(--crust)" stroke="${on ? 'var(--mauve)' : 'var(--s1)'}" stroke-width="${on ? 1.5 : 1}"/>`;
+      const arrow = (x1, x2, y, on, lab) => `<g opacity="${on ? 1 : .35}"><line x1="${x1}" y1="${y}" x2="${x2 - 4}" y2="${y}" stroke="${on ? 'var(--mauve)' : 'var(--s1)'}" stroke-width="1.5"/><path d="M${x2 - 8} ${y - 4} L${x2} ${y} L${x2 - 8} ${y + 4}" fill="none" stroke="${on ? 'var(--mauve)' : 'var(--s1)'}" stroke-width="1.5"/>${T((x1 + x2) / 2, y - 8, lab, { s: 9, c: on ? 'var(--text)' : 'var(--o0)' })}</g>`;
+      const draw = () => {
+        const on = i => step === i || step === i - 1;      // node i lit when its step reads or writes it
+        const lit = [step === 0, step <= 1, step >= 1, step === 2];
+        let h = '';
+        // webcam
+        h += `<g opacity="${lit[0] ? 1 : .35}">${box(14, 62, 90, 70, lit[0])}<circle cx="59" cy="92" r="14" fill="none" stroke="var(--text)" stroke-width="1.5"/><circle cx="59" cy="92" r="5" fill="var(--text)"/>${T(59, 122, 'Webcam')}</g>`;
+        h += arrow(104, 170, 97, step === 0, 'Haar + crop');
+        // data folder: 6 face crops, 4 of Ray and 2 of a friend
+        h += `<g opacity="${lit[1] ? 1 : .35}">${box(170, 22, 160, 150, step <= 1)}${T(250, 40, 'data/', { c: 'var(--text)' })}`;
+        for (let k = 0; k < 6; k++) { const cx = 198 + (k % 3) * 52, cy = 74 + Math.floor(k / 3) * 54, ray = k < 4; h += `<rect x="${cx - 21}" y="${cy - 21}" width="42" height="42" rx="5" fill="var(--base)"/>${face(cx, cy, 14, ray ? PEOPLE[0].c : PEOPLE[1].c, ray)}`; }
+        h += `${T(250, 166, 'user.&lt;id&gt;.&lt;n&gt;.jpg', { s: 9 })}</g>`;
+        h += arrow(330, 392, 97, step === 1, 'clf.train');
+        // the model
+        h += `<g opacity="${lit[2] ? 1 : .35}">${box(392, 52, 104, 90, step >= 1)}${T(444, 70, 'classifier.xml', { c: 'var(--text)' })}`;
+        [[PEOPLE[0], [18, 30, 22, 26]], [PEOPLE[1], [28, 14, 30, 18]]].forEach(([pp, bars], r) => { bars.forEach((v, k) => { h += `<rect x="${410 + k * 9 + r * 46}" y="${126 - v}" width="6" height="${v}" fill="${pp.c}" opacity=".85"/>`; }); h += T(425 + r * 46, 138, pp.n, { s: 8 }); });
+        h += `</g>`;
+        h += arrow(496, 548, 97, step === 2, 'clf.predict');
+        // the door: a new face, its distance to each person it knows, and the verdict
+        const w = PEOPLE[who] || PEOPLE[0], known = w.d <= 70;
+        h += `<g opacity="${lit[3] ? 1 : .35}">${box(548, 30, 82, 134, step === 2)}${T(589, 46, 'Live face', { c: 'var(--text)' })}${face(589, 80, 18, w.c, w.g)}`;
+        if (step === 2) h += `${T(589, 118, 'distance ' + w.d, { c: 'var(--text)' })}${T(589, 134, known ? w.n : 'unknown', { c: known ? 'var(--green)' : 'var(--red)', s: 11 })}${T(589, 150, '(limit 70)', { s: 8 })}`;
+        else h += T(589, 128, 'name here', { s: 9 });
+        h += `</g>`;
+        q('#lp-svg').innerHTML = h;
+        q('#lp-c').innerHTML = [
+          '<code>step1_capture_training_faces.py</code> finds each face with the Haar cascade, crops it, and saves about 100 grayscale samples per person into <code>data/</code>.',
+          '<code>step2_train_recognizer.py</code> reads every saved crop with its id, summarises each person as a pattern, and writes the result to <code>classifier.xml</code>.',
+          `<code>step3_recognize_live.py</code> compares the live face with every person in <code>classifier.xml</code>. ${w.n} comes out at distance ${w.d}, which is ${known ? 'under' : 'over'} the limit of 70, so the name is ${known ? w.n : '"unknown"'}.`,
+        ][step];
+      };
+      pickIn(q, '#lp-s', i => { step = i; draw(); });
+      pickIn(q, '#lp-w', i => { who = i; if (step !== 2) { step = 2; q('#lp-s').querySelectorAll('button').forEach((x, k) => x.classList.toggle('on', k === 2)); } draw(); });
+      el._reset = () => { step = 0; who = 0; q('#lp-s').querySelectorAll('button').forEach((x, k) => x.classList.toggle('on', k === 0)); q('#lp-w').querySelectorAll('button').forEach((x, k) => x.classList.toggle('on', k === 0)); draw(); };
+      draw();
+    },
+
+    // LBPH confidence is a distance: LOWER is a better match; slide the threshold and see who gets named
+    lbphthresh(el) {
+      const q = s => el.querySelector(s);
+      const rows = [['Ray, normal light', 34], ['Ray, dim room', 62], ['Friend (never trained)', 88], ['Stranger', 131]];
+      el.innerHTML = `<p class="wgt">Try it: where do you draw the line?</p>
+        <div class="tb"><label>Threshold <input id="lt-t" type="range" min="20" max="150" value="70"><b class="wgv" id="lt-v"></b></label></div>
+        <div class="lbl" id="lt-b"></div><div class="afrow" id="lt-r"></div>
+        <p class="wgcap">Remember: for LBPH the confidence is a distance. Lower is a better match, and 0 would be perfect.</p>`;
+      const draw = () => {
+        const t = +q('#lt-t').value; q('#lt-v').textContent = t;
+        q('#lt-b').innerHTML = rows.map(([n, d]) => `<div class="lbr"><span>${n}</span><div class="lbb"><i style="width:${d / 150 * 100}%;background:var(--${d <= t ? 'green' : 'red'})"></i><u style="left:${t / 150 * 100}%"></u></div><b style="color:var(--${d <= t ? 'green' : 'red'})">${d <= t ? 'Ray (id 1)' : 'unknown'} <small>${d}</small></b></div>`).join('');
+        const named = rows.filter(([, d]) => d <= t), wrong = named.filter(([n]) => !n.startsWith('Ray')).length, missed = rows.filter(([n, d]) => n.startsWith('Ray') && d > t).length;
+        q('#lt-r').innerHTML = `<div><span>Named as Ray</span><small>of 4 faces</small><b>${named.length}</b></div><div><span>Strangers named</span><small>wrong, too loose</small><b>${wrong}</b></div><div><span>Ray missed</span><small>wrong, too tight</small><b>${missed}</b></div>`;
+      };
+      el.addEventListener('input', draw);
+      el._reset = () => { q('#lt-t').value = 70; draw(); };
+      draw();
+    },
+    // YOLO11 sizes on one plot: slower models are more accurate, so the five sizes line up on a curve (figures from the Ultralytics YOLO11 table)
+    yolosizes(el) {
+      const q = s => el.querySelector(s);
+      const Z = [
+        { k: 'n', name: 'Nano', ms: 56, map: 39.5, par: 2.6, use: 'a Raspberry Pi, a phone or a quick experiment' },
+        { k: 's', name: 'Small', ms: 90, map: 47.0, par: 9.4, use: 'a laptop CPU, or a Pi when nano is not accurate enough' },
+        { k: 'm', name: 'Medium', ms: 183, map: 51.5, par: 20.1, use: 'a laptop with a modest GPU' },
+        { k: 'l', name: 'Large', ms: 239, map: 53.4, par: 25.3, use: 'a proper GPU, when accuracy matters more than speed' },
+        { k: 'x', name: 'Extra large', ms: 463, map: 54.7, par: 56.9, use: 'a big GPU or the cloud, not a small board' },
+      ];
+      let at = 0;
+      el.innerHTML = `<p class="wgt">Try it: pick a model size</p>
+        <div class="tb">${chips('ys-s', Z.map(z => z.k + ' ' + z.name), 0)}</div>
+        <div class="nndiag" id="ys-plot"></div><div class="afrow" id="ys-r"></div><p class="wgcap" id="ys-c"></p>`;
+      const draw = () => {
+        const z = Z[at];
+        q('#ys-plot').innerHTML = curveSVG([{ pts: Z.map(d => [d.ms, d.map]), color: 'var(--s1)' }], {
+          xMin: 0, xMax: 500, yMin: 35, yMax: 57, xTicksN: 6, yTicksN: 4, xLabel: 'time per picture on a CPU (ms), further left is faster', yLabel: 'accuracy (mAP)',
+          dots: Z.map((d, i) => ({ x: d.ms, y: d.map, label: d.k, color: i === at ? 'var(--peach)' : 'var(--o0)' })),
+        });
+        q('#ys-r').innerHTML = `<div><span>Accuracy</span><small>mAP, higher is better</small><b>${z.map}</b></div><div><span>Time per picture</span><small>CPU, lower is faster</small><b>${z.ms} ms</b></div><div><span>Size</span><small>parameters</small><b>${z.par} M</b></div>`;
+        q('#ys-c').innerHTML = `<code>model = YOLO("yolo11${z.k}.pt")</code> is for ${z.use}. Figures are from the Ultralytics YOLO11 table (COCO, 640 px, CPU with ONNX), so check the docs for current numbers.`;
+      };
+      pickIn(q, '#ys-s', i => { at = i; draw(); });
+      el._reset = () => { at = 0; q('#ys-s').querySelectorAll('button').forEach((x, k) => x.classList.toggle('on', k === 0)); draw(); };
+      draw();
+    },
+
+    // every detection comes with a confidence; conf= is a cut-off, and the right setting trades false boxes against missed objects
+    yolobox(el) {
+      const q = s => el.querySelector(s);
+      const D = [['car', .92, 1], ['bus', .84, 1], ['truck', .78, 1], ['person', .61, 1], ['car (a shadow)', .53, 0], ['bike', .42, 1], ['truck (a road sign)', .36, 0], ['bottle', .29, 1], ['dog (a bush)', .21, 0]];
+      el.innerHTML = `<p class="wgt">Try it: change the confidence cut-off</p>
+        <div class="tb"><label>conf <input id="yb-c" type="range" min="0" max="100" value="50"><b class="wgv" id="yb-v"></b></label><span style="color:var(--green)">Green: real object</span><span style="color:var(--red)">Red: false box</span></div>
+        <div class="lbl" id="yb-b"></div><div class="afrow" id="yb-r"></div><p class="wgcap" id="yb-x"></p>`;
+      const draw = () => {
+        const c = +q('#yb-c').value / 100; q('#yb-v').textContent = c.toFixed(2);
+        q('#yb-b').innerHTML = D.map(([n, v, real]) => { const keep = v >= c, col = keep ? (real ? 'green' : 'red') : 's1'; return `<div class="lbr"><span>${n}</span><div class="lbb"><i style="width:${v * 100}%;background:var(--${col})"></i><u style="left:${c * 100}%"></u></div><b style="color:var(--${keep ? col : 'o0'})">${keep ? 'kept' : 'dropped'} <small>${v.toFixed(2)}</small></b></div>`; }).join('');
+        const got = D.filter(d => d[2] && d[1] >= c).length, total = D.filter(d => d[2]).length, falseKept = D.filter(d => !d[2] && d[1] >= c).length;
+        q('#yb-r').innerHTML = `<div><span>Real objects found</span><small>of ${total}</small><b>${got}</b></div><div><span>False boxes shown</span><small>too low a cut-off</small><b>${falseKept}</b></div><div><span>Real objects missed</span><small>too high a cut-off</small><b>${total - got}</b></div>`;
+        q('#yb-x').innerHTML = `<code>results = model(frame, conf=${c.toFixed(2)}, imgsz=320)</code> keeps every box at or above the line and throws away the rest.`;
+      };
+      el.addEventListener('input', draw);
+      el._reset = () => { q('#yb-c').value = 50; draw(); };
+      draw();
+    },
+
   };
 })();

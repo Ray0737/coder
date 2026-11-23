@@ -7,7 +7,7 @@ summary: Open an image or a webcam with OpenCV, show it in a window, and avoid t
 
 ## Show a picture in a window
 
-Four functions do the job:
+Four functions do the job. The second argument of `imread` chooses how to load: `1` for colour, `0` for greyscale, `-1` to keep the transparency channel too. `waitKey(0)` waits for ever, while `waitKey(20)` waits 20 milliseconds and carries on, which is what you want for video.
 
 | Function | What it does |
 |---|---|
@@ -25,13 +25,11 @@ cv.waitKey(0)                          # 0 = wait forever for a key
 cv.destroyAllWindows()                 # note the (): without it nothing closes
 ```
 
-The second argument of `imread` chooses how to load: `1` for colour, `0` for greyscale, `-1` to keep the transparency channel too. `waitKey(0)` waits for ever, while `waitKey(20)` waits 20 milliseconds and carries on, which is what you want for video.
-
 > [!warn] If you see `error -215: Assertion failed ... !_src.empty()`, the path is wrong. `imread` does not complain about a missing file, it quietly gives you nothing, and the next function chokes on it.
 
 ## Video is a loop of pictures
 
-A video or webcam is read one frame at a time. `cv.VideoCapture(source)` takes a file path, or a number for a camera (`0` is the default webcam).
+A video or webcam is read one frame at a time. `cv.VideoCapture(source)` takes a file path, or a number for a camera (`0` is the default webcam). `capture.read()` hands back two things: `isTrue`, which is `False` once there are no more frames, and `frame`, which is an ordinary image array, so everything you can do to a picture, you can do to each frame of a video. The `& 0xFF` keeps only the last 8 bits of the key code so the comparison works on every system.
 
 ```python
 capture = cv.VideoCapture('assets/Sequence 01.mp4')   # or 0 for the webcam
@@ -48,40 +46,35 @@ capture.release()                       # free the file or camera
 cv.destroyAllWindows()
 ```
 
-`capture.read()` hands back two things: `isTrue`, which is `False` once there are no more frames, and `frame`, which is an ordinary image array. So everything you can do to a picture, you can do to each frame of a video. The `& 0xFF` keeps only the last 8 bits of the key code so the comparison works on every system.
-
 > [!compare] Think of it like a flip-book. `read()` turns one page. Showing each page for 20 milliseconds makes it look like movement, and `release()` puts the book back on the shelf so the next program can use the camera.
 
-### Drawing on a live feed
-
-Because each frame is an ordinary array, you can draw on it before showing it. This is `webcam_live_overlay.py`: a circle, a line, a border and a live clock on top of the webcam.
-
-```python
-from datetime import datetime
-
-capture = cv.VideoCapture(0)
-while capture.isOpened():
-    ret, frame = capture.read()
-    if ret:
-        h, w = frame.shape[0], frame.shape[1]
-        time_string = datetime.now().strftime("%H:%M:%S")
-
-        cv.circle(frame, (w // 2, h // 2), 50, (0, 255, 0), thickness=-1)   # filled green circle
-        cv.line(frame, (0, 0), (w, h), (0, 0, 255), 3)                      # red diagonal
-        cv.rectangle(frame, (10, 10), (w - 10, h - 10), (255, 191, 0), thickness=20)
-        cv.putText(frame, f'live: {time_string}', (40, 63),
-                   cv.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2, cv.LINE_AA)
-
-        cv.imshow('Frame', frame)
-        if cv.waitKey(33) & 0xFF == ord('d'):
-            break
-    else:
-        break
-capture.release()
-cv.destroyAllWindows()
-```
-
-Notice the colours are `(B, G, R)`, and that a `thickness` of `-1` fills the shape in. `cv.LINE_AA` smooths the text edges.
+> [!more] Code: drawing on a live feed
+> Because each frame is an ordinary array, you can draw on it before showing it. This is `webcam_live_overlay.py`: a circle, a line, a border and a live clock on top of the webcam. Notice the colours are `(B, G, R)`, and that a `thickness` of `-1` fills the shape in. `cv.LINE_AA` smooths the text edges.
+>
+> ```python
+> from datetime import datetime
+>
+> capture = cv.VideoCapture(0)
+> while capture.isOpened():
+>     ret, frame = capture.read()
+>     if ret:
+>         h, w = frame.shape[0], frame.shape[1]
+>         time_string = datetime.now().strftime("%H:%M:%S")
+>
+>         cv.circle(frame, (w // 2, h // 2), 50, (0, 255, 0), thickness=-1)   # filled green circle
+>         cv.line(frame, (0, 0), (w, h), (0, 0, 255), 3)                      # red diagonal
+>         cv.rectangle(frame, (10, 10), (w - 10, h - 10), (255, 191, 0), thickness=20)
+>         cv.putText(frame, f'live: {time_string}', (40, 63),
+>                    cv.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2, cv.LINE_AA)
+>
+>         cv.imshow('Frame', frame)
+>         if cv.waitKey(33) & 0xFF == ord('d'):
+>             break
+>     else:
+>         break
+> capture.release()
+> cv.destroyAllWindows()
+> ```
 
 ## Gotcha 1: the colour order is B, G, R
 
@@ -103,7 +96,7 @@ An image array is indexed **row first**: `img[y, x]`, and `img.shape` is `(heigh
 
 ## The coordinate system: (0, 0) is the top-left
 
-An image has its own coordinate system, and it is **not** the graph you drew in maths class. The origin, **(0, 0)**, is the **top-left** pixel. **x** counts columns going right, and **y** counts rows going **down**. So the bottom-right pixel of a 640 × 480 picture is (639, 479), not (639, 0). Hover and click the grid below, then flip to the maths graph to see the difference.
+An image has its own coordinate system, and it is **not** the graph you drew in maths class. The origin, **(0, 0)**, is the **top-left** pixel. **x** counts columns going right, and **y** counts rows going **down**. So the bottom-right pixel of a 640 × 480 picture is (639, 479), not (639, 0). Hover and click either grid below, and the same pixel lights up on the maths graph beside it so you can see the difference.
 
 ```widget
 coordsys
@@ -120,7 +113,8 @@ For a 640 pixel wide, 480 pixel tall picture (`img.shape = (480, 640, 3)`), the 
 | Bottom-left | (0, 479) | `img[479, 0]` | y runs 0 to height - 1 |
 | Bottom-right | (639, 479) | `img[479, 639]` | The last pixel in both directions |
 
-The last valid number is always one less than the size, because counting starts at 0. A 640-wide picture has x values 0 to 639, and asking for x = 640 is an error.
+> [!more] TLDR: why the last number is one less
+> The last valid number is always one less than the size, because counting starts at 0. A 640-wide picture has x values 0 to 639, and asking for x = 640 is an error.
 
 ## Try it
 
