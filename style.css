@@ -456,6 +456,18 @@ a.tab:hover{color:var(--text);text-decoration:underline;text-underline-offset:2p
 .callout.tip .ct{color:var(--green)}
 .callout.warn{background:color-mix(in srgb,var(--red) 9%,var(--mantle))}
 .callout.warn .ct{color:var(--red)}
+/* "> [!more] Title" dropdown, FAQ style: a thin line, the title, a "+" on the right. The body slides open (see the click handler at the end of md.js) */
+details.more{margin:18px 0;border-top:1px solid var(--s0);border-bottom:1px solid var(--s0);color:var(--sub0);font-size:13px;line-height:1.7}
+details.more+details.more{margin-top:0;border-top:0}
+details.more>summary{cursor:pointer;padding:12px 2px;font-weight:700;font-size:13px;color:var(--text);list-style:none;display:flex;align-items:center;justify-content:space-between;gap:16px;user-select:none;transition:color .15s}
+details.more>summary::-webkit-details-marker{display:none}
+details.more>summary::after{content:"+";flex:none;font-size:20px;font-weight:400;line-height:1;color:var(--o1);transition:transform .25s ease,color .15s}
+details.more>summary:hover,details.more>summary:hover::after{color:var(--mauve)}
+details.more.is-open>summary::after{transform:rotate(45deg)}
+details.more>summary:focus-visible{outline:none;text-decoration:underline}
+details.more>div{overflow:hidden;padding:2px 2px 16px}
+details.more>div>:first-child{margin-top:0}
+details.more>div>:last-child{margin-bottom:0}
 .cmp{width:100%;border-collapse:separate;border-spacing:0;margin:14px 0;background:var(--mantle);border-radius:10px;overflow:hidden;font-size:13px}
 .cmp th{text-align:left;font-weight:700;color:var(--text);padding:10px 14px;background:var(--s0)}
 .cmp td{padding:9px 14px;color:var(--sub1);vertical-align:top}
@@ -464,11 +476,16 @@ a.tab:hover{color:var(--text);text-decoration:underline;text-underline-offset:2p
 .wg{margin:18px 0;padding:16px;border-radius:12px;background:var(--mantle)}
 .wg .wgt{margin:0 0 10px;color:var(--mauve);font-weight:700;font-size:12px}
 .wg .wgrow{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:10px}
+/* slider rows: everything on one centre line, and the number beside a slider has a fixed width so nothing shifts while dragging */
+.wg .wgrow.wgctl{align-items:center;gap:12px 18px}
+.wg .wgv{display:inline-block;min-width:3.6em;text-align:right;font-variant-numeric:tabular-nums;color:var(--text)}
 .wg label{display:flex;align-items:center;gap:8px;color:var(--o1)}
 .wg input{background:var(--base);color:var(--text);border-radius:6px;padding:5px 9px;width:130px;border-bottom:1px solid var(--s1)}
 .wg input:focus{outline:0;border-bottom-color:var(--mauve)}
 .wg .code{background:var(--crust);margin:8px 0}
 .wg .wgo{margin:8px 0 14px}
+/* the text under every diagram: one small size everywhere */
+.wg .wgo,.wg .wgcap{font-size:11px;line-height:1.6;color:var(--o1)}
 .wg .wgo b{color:var(--green)}
 .wgtable{display:flex;flex-direction:column;gap:6px;margin-top:4px}
 .wgtable>div{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:8px 12px;border-radius:8px;background:var(--crust)}
@@ -1487,3 +1504,15 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 .lesson[data-cls="ai-development"] > p + h3{margin-top:46px}
 .dropviz figure{display:flex;flex-direction:column}
 .dropviz figcaption{flex:1;display:flex;align-items:center;justify-content:center}
+
+/* backprop walkthrough text: title, one pill per equation, one grey note; fixed height so Next/Back never moves the page */
+.bpsay{min-height:7.6em;margin:6px 0 4px}
+.bpsay>b{display:block;color:var(--green);font-size:13px}
+.bpsay .bpl{display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin:8px 0}
+.bpsay .bpl code{font-size:12px;line-height:1.5}
+.bpsay .wgcap{display:block;margin:0}
+
+/* maths in dropdowns: ```math blocks are centred plain lines (no box), and inline `code` inside a dropdown reads as plain maths too */
+.mathb{margin:12px 0;text-align:center;font:15px/1.9 "Cambria Math","STIX Two Math","Latin Modern Math",Georgia,serif;color:var(--text)}
+.mathb>div{white-space:pre-wrap}
+details.more p code,details.more li code,details.more td code{background:none;padding:0;color:var(--text);font:1.06em "Cambria Math","STIX Two Math","Latin Modern Math",Georgia,serif}

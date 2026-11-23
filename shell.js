@@ -179,7 +179,8 @@ const notes = [
     '# ML: Supervised','Linear regression','Classification',
     '# ML: Unsupervised','Unsupervised learning',
     '# ML: Evaluation','Evaluation',
-    '# Deep learning','MLP','CNN','RNN, LSTM and GRU','Transformer','Generative models','LLM and RL'
+    '# Deep learning foundations','MLP','Training a network',
+    '# Deep learning models','CNN','RNN, LSTM and GRU','Transformer','Generative models','LLM and RL'
   ],'M.5 Applied AI'],
   ['AI Research','lightbulb','lavender',['Coming soon'],'M.5 Applied AI'],
   ['Research','lightbulb','sapphire',['Coming soon'],'M.6 Capstone'],
@@ -273,7 +274,7 @@ $('#tree').innerHTML = notes.map(([g,ic,c,ns,yr]) => {
   return head + `<button class="grp" style="--c:var(--${c})" aria-expanded="false" data-g="${esc(g)}">${icon('caret-right')}<svg class="i f"><use href="#i-${ic}"/></svg><span>${esc(g)}</span></button><ul class="tree">${ns.map(n=>n.startsWith('# ')?`<li class="sub">${esc(n.slice(2))}</li>`:item({g,c,n})).join('')}</ul>`;
 }).join('');
 const recent = $('#recent');
-if (recent) recent.innerHTML = (load('coder:recent') || ['basic-python/printing-and-getting-input','circuits-arduino-gpio/servo-motor-with-pwm','ai-development/how-training-works'])
+if (recent) recent.innerHTML = (load('coder:recent') || ['basic-python/printing-and-getting-input','circuits-arduino-gpio/servo-motor-with-pwm','ai-development/training-a-network'])
   .map(s => all.find(x => slug(x.g)+'/'+slug(x.n) === s)).filter(Boolean)
   .map(x => `<li><a href="${href(x.g,x.n)}">${esc(x.n)}</a><span class="dim">${esc(x.g)}</span></li>`).join('');
 $('#count').insertAdjacentText('beforeend', all.length + ' notes');

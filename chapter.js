@@ -1476,12 +1476,11 @@ const widgets = {
     const trainLoss = e => 2.4 * Math.exp(-e / 10) + 0.01;
     const valLoss = e => 0.08 + 0.35 * Math.exp(-e / 18) + Math.max(0, e - 50) * 0.0015;
     el.innerHTML = `<p class="wgt">Try it: scrub the epoch</p>
-      <div class="mntabs" id="mn-tabs">
+      <div class="wgrow wgctl"><span class="mntabs" id="mn-tabs" style="display:inline-flex;gap:6px;margin:0">
         <button type="button" class="seg2 on" data-v="bird">Bird's Eye</button>
         <button type="button" class="seg2" data-v="neuron">Neuron Level</button>
         <button type="button" class="seg2" data-v="math">Math Level</button>
-      </div>
-      <div class="wgrow"><label>Epoch <input id="mn-e" type="range" min="1" max="100" value="1"></label><b id="mn-ev">1</b></div>
+      </span><label>Epoch <input id="mn-e" type="range" min="1" max="100" value="1"><b class="wgv" id="mn-ev">1</b></label></div>
       <div id="mn-view"></div>
       <p class="wgcap">A simulated training run, so you can scrub 100 epochs without a GPU. The shapes are what a real loss curve and weight grid look like, not an export of one.</p>`;
     const lossSVG = e => {
@@ -2266,6 +2265,193 @@ const widgets = {
     $('#kl-b').oninput = run;
     el.querySelectorAll('.seg2[data-s]').forEach(b => b.onclick = () => { $('#kl-b').value = b.dataset.s; run(); });
     el._reset = () => { $('#kl-b').value = 55; run(); }; run();
+  },
+  // one neuron, one input of 1: nudge the weight and compare how a step output and a sigmoid output react
+  stepsigmoid(el) {
+    const step = z => z > 0 ? 1 : 0, sig = z => 1 / (1 + Math.exp(-z)), NUDGE = 0.1, cl = z => Math.max(-6, Math.min(6, z));
+    el.innerHTML = `<p class="wgt">Try it: nudge the weight by +0.1 (peach = step, purple = sigmoid)</p>
+      <div class="wgrow wgctl"><label>weight w <input id="w-ss-w" type="range" min="-4" max="4" step="0.01" value="-0.05"><b class="wgv" id="w-ss-wv"></b></label><label>bias b <input id="w-ss-b" type="range" min="-4" max="4" step="0.01" value="0"><b class="wgv" id="w-ss-bv"></b></label></div>
+      <div class="nndiag" id="w-ss-plot"></div>
+      <div class="wgtable" id="w-ss-rows"></div>
+      <p class="wgcap" id="w-ss-say"></p>`;
+    const grid = Array.from({ length: 121 }, (_, i) => -6 + i / 10);
+    const run = () => {
+      const w = +$('#w-ss-w').value, b = +$('#w-ss-b').value, z = w + b, z2 = z + NUDGE;
+      $('#w-ss-wv').textContent = w.toFixed(2); $('#w-ss-bv').textContent = b.toFixed(2);
+      $('#w-ss-plot').innerHTML = curveSVG([{ pts: grid.map(x => [x, step(x)]), color: 'var(--peach)' }, { pts: grid.map(x => [x, sig(x)]), color: 'var(--mauve)' }],
+        { xMin: -6, xMax: 6, yMin: 0, yMax: 1, xLabel: 'z = w + b', yLabel: 'output', dots: [{ x: cl(z), y: step(z), color: 'var(--peach)' }, { x: cl(z), y: sig(z), color: 'var(--mauve)' }] });
+      const d1 = step(z2) - step(z), d2 = sig(z2) - sig(z);
+      $('#w-ss-rows').innerHTML = `<div class="afrow"><div><span>Step</span><small>${step(z)} → ${step(z2)}</small><b>change ${d1.toFixed(3)}</b></div><div><span>Sigmoid</span><small>${sig(z).toFixed(3)} → ${sig(z2).toFixed(3)}</small><b>change ${d2.toFixed(3)}</b></div></div>`;
+      $('#w-ss-say').textContent = d1 ? 'The step output flipped from one end to the other for a 0.1 nudge. The sigmoid barely moved.' : 'Away from the jump the step output does not move at all, so it gives no hint which way to nudge. The sigmoid always moves a little.';
+    };
+    el.addEventListener('input', run);
+    el._reset = () => { $('#w-ss-w').value = -0.05; $('#w-ss-b').value = 0; run(); };
+    run();
+  },
+  // gradient descent on a one-weight cost C(w) = (w - 3)^2: choose the learning rate, step by hand, or add SGD's noise
+  gdball(el) {
+    const C = w => (w - 3) ** 2, dC = w => 2 * (w - 3), START = -0.5, cl = w => Math.max(-1, Math.min(7, w));
+    let w, path, mode = 'full', rnd, timer;
+    el.innerHTML = `<p class="wgt">Try it: roll the ball downhill</p>
+      <div class="wgrow wgctl"><span id="w-gd-tabs" style="display:inline-flex;gap:6px"><button type="button" class="seg2 on" data-k="full">Exact</button><button type="button" class="seg2" data-k="sgd">Noisy (SGD)</button></span>
+        <label>η <input id="w-gd-lr" type="range" min="0.02" max="1.1" step="0.01" value="0.1" style="width:110px"><b class="wgv" id="w-gd-lrv"></b></label>
+        <button type="button" class="seg2" id="w-gd-step">Step</button><button type="button" class="seg2" id="w-gd-run">Run 25</button></div>
+      <div class="nndiag" id="w-gd-plot"></div><p class="wgcap" id="w-gd-say"></p>`;
+    const lr = () => +$('#w-gd-lr').value;
+    const draw = () => {
+      $('#w-gd-lrv').textContent = lr().toFixed(2);
+      const curve = Array.from({ length: 81 }, (_, i) => [-1 + i / 10, C(-1 + i / 10)]);
+      $('#w-gd-plot').innerHTML = curveSVG([{ pts: curve, color: 'var(--s1)' }, { pts: path.map(p => [cl(p), C(cl(p))]), color: 'var(--peach)', dash: '3 3' }],
+        { xMin: -1, xMax: 7, yMin: 0, yMax: 18, xLabel: 'weight w', yLabel: 'cost C', dots: [{ x: cl(w), y: Math.min(18, C(cl(w))), color: 'var(--mauve)' }] });
+      const gap = Math.abs(w - 3), n = path.length - 1;
+      $('#w-gd-say').textContent = !isFinite(w) || gap > 9 ? 'Diverging: each step overshoots by more than it fixes, so the cost grows. The learning rate is too big.'
+        : lr() >= 1 && n > 2 ? 'Bouncing from side to side across the bottom without settling. The learning rate is too big.'
+        : n === 0 ? 'The ball starts at w = -0.5. Press Step.'
+        : gap < 0.05 && mode === 'full' ? `Settled at w = ${w.toFixed(2)} after ${n} steps. The lowest cost is at w = 3.`
+        : `Step ${n}: w = ${w.toFixed(2)}, cost = ${C(w).toFixed(2)}.` + (mode === 'sgd' ? ' The noisy gradient makes the path jitter, but it still drifts downhill.' : '');
+    };
+    const once = () => { w -= lr() * (dC(w) + (mode === 'sgd' ? (rnd() - 0.5) * 8 : 0)); path.push(w); };
+    const reset = () => { clearInterval(timer); w = START; path = [START]; rnd = seeded(7); draw(); };
+    $('#w-gd-lr').oninput = draw;
+    $('#w-gd-step').onclick = () => { once(); draw(); };
+    $('#w-gd-run').onclick = () => { clearInterval(timer); let n = 0; timer = trackTimer(setInterval(() => { once(); draw(); if (++n >= 25) clearInterval(timer); }, 150)); };
+    $('#w-gd-tabs').onclick = e => { const b = e.target.closest('button'); if (!b) return; mode = b.dataset.k; $$('#w-gd-tabs button').forEach(t => t.classList.toggle('on', t === b)); reset(); };
+    el._reset = () => { $('#w-gd-lr').value = 0.1; mode = 'full'; $$('#w-gd-tabs button').forEach(t => t.classList.toggle('on', t.dataset.k === 'full')); reset(); };
+    reset();
+  },
+  // a cost landscape over two weights: a 3D surface (drag the angle), a top-down map and a 1D slice, with gradient descent rolling over it
+  lossland3d(el) {
+    const f = (x, y) => 0.12 * (x * x + y * y) - 1.6 * Math.exp(-((x - 1.5) ** 2 + (y - 1.5) ** 2) / 0.9) - 1.0 * Math.exp(-((x + 1.5) ** 2 + (y + 1) ** 2) / 0.9);
+    const grad = (x, y, h = 1e-4) => [(f(x + h, y) - f(x - h, y)) / (2 * h), (f(x, y + h) - f(x, y - h)) / (2 * h)];
+    const settle = (x, y) => { for (let i = 0; i < 800; i++) { const [gx, gy] = grad(x, y); x -= 0.1 * gx; y -= 0.1 * gy; } return [x, y]; };
+    const G = settle(1.5, 1.5), L = settle(-1.5, -1), R = 3, N = 26, FMIN = -1.2, FMAX = 2.2;
+    const starts = { A: [-2.5, -2.5], B: [2.5, 2.5], C: [-2.5, 2.5] }, near = (p, q) => Math.hypot(p[0] - q[0], p[1] - q[1]) < 0.4;
+    let start = 'A', mode = 'gd', view = '3d', p, v, path, timer;
+    // pastel ramp: low = periwinkle, middle = pink, high = peach; the lower lightness at the bottom keeps the valleys readable
+    const col = z => { const t = Math.max(0, Math.min(1, (z - FMIN) / (FMAX - FMIN))); return `hsl(${250 + 130 * t},${55 + 10 * t}%,${42 + 42 * t}%)`; };
+    el.innerHTML = `<p class="wgt">Try it: roll a ball over a cost landscape of two weights</p>
+      <div class="wgrow wgctl"><span id="w-ll-view" style="display:inline-flex;gap:6px"><button type="button" class="seg2 on" data-k="3d">3D</button><button type="button" class="seg2" data-k="top">Map</button><button type="button" class="seg2" data-k="slice">Slice</button></span>
+        <span id="w-ll-start" style="display:inline-flex;gap:6px"><button type="button" class="seg2 on" data-s="A">Start A</button><button type="button" class="seg2" data-s="B">B</button><button type="button" class="seg2" data-s="C">C</button></span>
+        <span id="w-ll-mode" style="display:inline-flex;gap:6px"><button type="button" class="seg2 on" data-m="gd">Plain GD</button><button type="button" class="seg2" data-m="mom">Momentum</button></span></div>
+      <div class="wgrow wgctl"><label>η <input id="w-ll-lr" type="range" min="0.02" max="0.4" step="0.01" value="0.1" style="width:100px"><b class="wgv" id="w-ll-lrv"></b></label><label>turn <input id="w-ll-yaw" type="range" min="0" max="360" step="1" value="290" style="width:100px"><b class="wgv" id="w-ll-yawv"></b></label><label>tilt <input id="w-ll-tilt" type="range" min="25" max="80" step="1" value="48" style="width:100px"><b class="wgv" id="w-ll-tiltv"></b></label>
+        <button type="button" class="seg2" id="w-ll-step">Step</button><button type="button" class="seg2" id="w-ll-run">Run 120</button></div>
+      <div class="nndiag" id="w-ll-plot"></div><p class="wgcap" id="w-ll-say"></p>`;
+    const draw = () => {
+      const lr = +$('#w-ll-lr').value, th = +$('#w-ll-yaw').value * Math.PI / 180, ph = +$('#w-ll-tilt').value * Math.PI / 180, cs = Math.cos(th), sn = Math.sin(th);
+      $('#w-ll-lrv').textContent = lr.toFixed(2); $('#w-ll-yawv').textContent = $('#w-ll-yaw').value + '°'; $('#w-ll-tiltv').textContent = $('#w-ll-tilt').value + '°';
+      let oy = 0; // vertical shift that keeps the surface centred in the frame whatever the tilt
+      const px = (x, y, z) => { const rx = x * cs - y * sn, ry = x * sn + y * cs; return [200 + rx * 34, oy + ry * Math.sin(ph) * 34 - z * Math.cos(ph) * 36, ry]; };
+      if (view === '3d') { const ys = [px(...G, FMIN - 0.5)[1] + 14, px(...L, FMIN - 0.5)[1] + 14, px(...G, f(...G))[1] - 28, px(...L, f(...L))[1] - 28]; for (let i = 0; i <= 8; i++) for (let j = 0; j <= 8; j++) ys.push(px(-R + i * 0.75, -R + j * 0.75, f(-R + i * 0.75, -R + j * 0.75))[1]); oy = 160 - (Math.min(...ys) + Math.max(...ys)) / 2; }
+      const pt = ([x, y], dz = 0.06) => px(x, y, f(x, y) + dz);
+      let svg = '';
+      if (view === '3d') {
+        const quads = [], s = 2 * R / (N - 1);
+        for (let i = 0; i < N - 1; i++) for (let j = 0; j < N - 1; j++) {
+          const xs = [-R + i * s, -R + (i + 1) * s], ys = [-R + j * s, -R + (j + 1) * s];
+          const c = [[xs[0], ys[0]], [xs[1], ys[0]], [xs[1], ys[1]], [xs[0], ys[1]]].map(([x, y]) => px(x, y, f(x, y)));
+          const zm = (f(xs[0], ys[0]) + f(xs[1], ys[1])) / 2;
+          quads.push({ d: (c[0][2] + c[2][2]) / 2, pts: c.map(q => q[0].toFixed(1) + ',' + q[1].toFixed(1)).join(' '), fill: col(zm) });
+        }
+        quads.sort((a, b) => a.d - b.d);
+        svg = `<svg viewBox="0 0 400 320" width="100%" height="320">${quads.map(q => `<polygon points="${q.pts}" fill="${q.fill}" stroke="rgba(0,0,0,.22)" stroke-width=".5"/>`).join('')}
+          <polyline points="${path.map(q => pt(q).slice(0, 2).map(n => n.toFixed(1)).join(',')).join(' ')}" fill="none" stroke="var(--text)" stroke-width="1.5"/>
+          ${[[G, 'global min (lowest)', 'var(--green)'], [L, 'local min', 'var(--peach)']].map(([m, t, c]) => { const q = pt(m, 0.05), d = px(m[0], m[1], FMIN - 0.5); return `<line x1="${q[0]}" y1="${q[1]}" x2="${d[0]}" y2="${d[1]}" stroke="${c}" stroke-dasharray="3 3"/><circle cx="${q[0]}" cy="${q[1]}" r="5" fill="none" stroke="${c}" stroke-width="2"/><text x="${q[0]}" y="${q[1] - 12}" text-anchor="middle" font-size="10" fill="${c}">${t}</text><text x="${d[0]}" y="${d[1] + 12}" text-anchor="middle" font-size="10" fill="${c}">cost ${f(m[0], m[1]).toFixed(2)}</text>`; }).join('')}
+          <circle cx="${pt(p, 0.1)[0]}" cy="${pt(p, 0.1)[1]}" r="5.5" fill="var(--yellow)" stroke="var(--crust)" stroke-width="1.5"/></svg>`;
+      } else if (view === 'top') {
+        const M = 40, s = 2 * R / M, a = x => (x + R) / (2 * R) * 300;
+        let cells = ''; for (let i = 0; i < M; i++) for (let j = 0; j < M; j++) cells += `<rect x="${i * 7.5}" y="${j * 7.5}" width="7.6" height="7.6" fill="${col(f(-R + (i + .5) * s, -R + (j + .5) * s))}"/>`;
+        svg = `<svg id="w-ll-top" viewBox="0 0 300 300" width="100%" height="300" style="cursor:crosshair;max-width:420px">${cells}
+          <polyline points="${path.map(q => a(q[0]).toFixed(1) + ',' + a(q[1]).toFixed(1)).join(' ')}" fill="none" stroke="var(--text)" stroke-width="1.5"/>
+          ${[[G, 'global min (lowest)', 'var(--green)'], [L, 'local min', 'var(--peach)']].map(([m, t, c]) => `<circle cx="${a(m[0])}" cy="${a(m[1])}" r="6" fill="none" stroke="${c}" stroke-width="2"/><text x="${a(m[0])}" y="${a(m[1]) - 10}" text-anchor="middle" font-size="10" fill="${c}">${t}</text>`).join('')}
+          <circle cx="${a(p[0])}" cy="${a(p[1])}" r="5" fill="var(--yellow)" stroke="var(--crust)" stroke-width="1.5"/></svg>`;
+      } else {
+        const T0 = -0.4, T1 = 1.4, at = t => [L[0] + t * (G[0] - L[0]), L[1] + t * (G[1] - L[1])], F = t => f(...at(t));
+        let tr = 0.5; for (let t = 0; t <= 1; t += 0.01) if (F(t) > F(tr)) tr = t;
+        svg = curveSVG([{ pts: Array.from({ length: 91 }, (_, i) => [T0 + i * 0.02, F(T0 + i * 0.02)]), color: 'var(--mauve)' }],
+          { xMin: T0, xMax: T1, yMin: -1.3, yMax: 1.6, xLabel: 'position along the straight line from the local min to the global min', yLabel: 'cost', dots: [{ x: 0, y: F(0), label: 'local min', color: 'var(--peach)' }, { x: 1, y: F(1), label: 'global min', color: 'var(--green)' }, { x: tr, y: F(tr), label: 'ridge between', color: 'var(--yellow)' }] });
+      }
+      $('#w-ll-plot').innerHTML = svg;
+      const gm = Math.hypot(...grad(...p)), n = path.length - 1, c = f(...p).toFixed(2);
+      $('#w-ll-say').textContent = view === 'slice' ? 'A slice cuts straight through the landscape along one line. Both valleys show as dips. The deeper one is the global minimum, and the bump between them is a ridge: gradient descent in a valley cannot climb it.'
+        : gm < 0.02 ? (near(p, G) ? `Global minimum: the lowest point on the whole landscape (cost ${c}).` : near(p, L) ? `Local minimum: a valley, but not the lowest one (cost ${c}, while the global minimum is ${f(...G).toFixed(2)}). Every direction from here goes uphill, so gradient descent stops, even though a better answer exists.` : `Stopped on a flat spot (cost ${c}).`)
+        : n === 0 ? 'The yellow ball starts here. Press Step or Run. The lines are the path it takes.'
+        : gm < 0.08 && n > 15 ? `Step ${n}: almost no slope here, so progress is very slow. This is a plateau or a saddle: flat in one direction, and not yet a minimum.` : `Step ${n}: cost ${c}, slope ${gm.toFixed(2)}.`;
+      if (view === 'top') { const sv = $('#w-ll-top'); sv.onclick = e => { const r = sv.getBoundingClientRect(); start = null; $$('#w-ll-start button').forEach(b => b.classList.remove('on')); reset([(e.clientX - r.left) / r.width * 2 * R - R, (e.clientY - r.top) / r.height * 2 * R - R]); }; }
+    };
+    const reset = at => { clearInterval(timer); p = (at || starts[start]).slice(); v = [0, 0]; path = [p.slice()]; draw(); };
+    const once = () => { const [gx, gy] = grad(...p), b = mode === 'mom' ? 0.9 : 0, lr = +$('#w-ll-lr').value; v = [b * v[0] + gx, b * v[1] + gy]; p = [p[0] - lr * v[0], p[1] - lr * v[1]]; path.push(p.slice()); };
+    $('#w-ll-view').onclick = e => { const b = e.target.closest('button'); if (!b) return; view = b.dataset.k; $$('#w-ll-view button').forEach(t => t.classList.toggle('on', t === b)); draw(); };
+    $('#w-ll-start').onclick = e => { const b = e.target.closest('button'); if (!b) return; start = b.dataset.s; $$('#w-ll-start button').forEach(t => t.classList.toggle('on', t === b)); reset(); };
+    $('#w-ll-mode').onclick = e => { const b = e.target.closest('button'); if (!b) return; mode = b.dataset.m; $$('#w-ll-mode button').forEach(t => t.classList.toggle('on', t === b)); reset(start ? undefined : path[0]); };
+    $('#w-ll-lr').oninput = draw; $('#w-ll-yaw').oninput = draw; $('#w-ll-tilt').oninput = draw;
+    $('#w-ll-step').onclick = () => { once(); draw(); };
+    $('#w-ll-run').onclick = () => { clearInterval(timer); let n = 0; timer = trackTimer(setInterval(() => { once(); draw(); if (++n >= 120) clearInterval(timer); }, 60)); };
+    el._reset = () => { view = '3d'; mode = 'gd'; start = 'A'; $('#w-ll-lr').value = 0.1; $('#w-ll-yaw').value = 290; $('#w-ll-tilt').value = 48; $$('#w-ll-view button').forEach(t => t.classList.toggle('on', t.dataset.k === '3d')); $$('#w-ll-start button').forEach(t => t.classList.toggle('on', t.dataset.s === 'A')); $$('#w-ll-mode button').forEach(t => t.classList.toggle('on', t.dataset.m === 'gd')); reset(); };
+    reset();
+  },
+  // one sigmoid neuron that must output 0: the same gradient descent, once with quadratic cost and once with cross-entropy
+  costcompare(el) {
+    const sig = z => 1 / (1 + Math.exp(-z)), EP = 300, starts = { 'Mildly wrong': [0.6, 0.9], 'Badly wrong': [2, 2] };
+    let which = 'Badly wrong';
+    el.innerHTML = `<p class="wgt">Try it: same neuron, same target 0, two cost functions (peach = quadratic, purple = cross-entropy)</p>
+      <div class="wgrow wgctl"><span id="w-cc-tabs" style="display:inline-flex;gap:6px"></span>
+        <label>η <input id="w-cc-eta" type="range" min="0.05" max="0.5" step="0.01" value="0.15" style="width:110px"><b class="wgv" id="w-cc-etav"></b></label></div>
+      <div class="nndiag" id="w-cc-plot"></div><div class="wgtable" id="w-cc-rows"></div>`;
+    $('#w-cc-tabs').innerHTML = Object.keys(starts).map(n => `<button type="button" class="seg2${n === which ? ' on' : ''}" data-k="${n}">${n}</button>`).join('');
+    // x = 1 and target y = 0, so the gradient is a·σ′(z) = a²(1−a) for quadratic cost and just a for cross-entropy
+    const sim = (eta, ce) => { let [w, b] = starts[which]; const out = []; for (let t = 0; t <= EP; t++) { const a = sig(w + b); out.push([t, a]); const g = ce ? a : a * a * (1 - a); w -= eta * g; b -= eta * g; } return out; };
+    const run = () => {
+      const eta = +$('#w-cc-eta').value; $('#w-cc-etav').textContent = eta.toFixed(2);
+      $$('#w-cc-tabs button').forEach(t => t.classList.toggle('on', t.dataset.k === which));
+      const q = sim(eta, false), c = sim(eta, true), half = s => { const i = s.findIndex(p => p[1] < 0.5); return i < 0 ? `not within ${EP} epochs` : `epoch ${i}`; };
+      $('#w-cc-plot').innerHTML = curveSVG([{ pts: q, color: 'var(--peach)' }, { pts: c, color: 'var(--mauve)' }], { xMin: 0, xMax: EP, yMin: 0, yMax: 1, xLabel: 'epoch', yLabel: 'output a (target 0)' });
+      $('#w-cc-rows').innerHTML = `<div class="afrow"><div><span>Quadratic</span><small>output below 0.5 at</small><b>${half(q)}</b></div><div><span>Cross-entropy</span><small>output below 0.5 at</small><b>${half(c)}</b></div></div>`;
+    };
+    $('#w-cc-tabs').onclick = e => { const b = e.target.closest('button'); if (b) { which = b.dataset.k; run(); } };
+    $('#w-cc-eta').oninput = run;
+    el._reset = () => { which = 'Badly wrong'; $('#w-cc-eta').value = 0.15; run(); };
+    run();
+  },
+  // a 2-2-1 sigmoid network with fixed numbers, walked through one backprop step at a time
+  backproptiny(el) {
+    const sig = z => 1 / (1 + Math.exp(-z)), f = n => n.toFixed(3);
+    const x = [1, 0.5], W1 = [[0.5, -0.4], [0.3, 0.8]], b1 = [0.1, -0.1], W2 = [0.6, -0.7], b2 = 0.2, y = 1, eta = 1;
+    const z1 = W1.map((r, j) => r[0] * x[0] + r[1] * x[1] + b1[j]), a1 = z1.map(sig);
+    const z2 = W2[0] * a1[0] + W2[1] * a1[1] + b2, a2 = sig(z2), C = (a2 - y) ** 2 / 2;
+    const d2 = (a2 - y) * a2 * (1 - a2), d1 = [0, 1].map(j => W2[j] * d2 * a1[j] * (1 - a1[j]));
+    const nW2 = W2.map((w, j) => w - eta * a1[j] * d2), nb2 = b2 - eta * d2;
+    const nW1 = W1.map((r, j) => r.map((w, i) => w - eta * x[i] * d1[j])), nb1 = b1.map((b, j) => b - eta * d1[j]);
+    const na1 = [0, 1].map(j => sig(nW1[j][0] * x[0] + nW1[j][1] * x[1] + nb1[j])), na2 = sig(nW2[0] * na1[0] + nW2[1] * na1[1] + nb2);
+    const steps = [
+      ['Inputs', [`x = (${x[0]}, ${x[1]}), target y = ${y}`], 'Every weight and bias is fixed, so you can check each number by hand.'],
+      ['Forward: hidden layer', z1.map((z, j) => `z${j + 1} = ${W1[j][0]}·${x[0]} + ${W1[j][1]}·${x[1]} + ${b1[j]} = ${f(z)}, so a${j + 1} = σ(z${j + 1}) = ${f(a1[j])}`)],
+      ['Forward: output', [`z = ${W2[0]}·${f(a1[0])} + ${W2[1]}·${f(a1[1])} + ${b2} = ${f(z2)}`, `a = σ(z) = ${f(a2)}, but the target is ${y}`]],
+      ['Cost', [`C = ½(a − y)² = ½(${f(a2)} − ${y})² = ${f(C)}`]],
+      ['Backward: output δ', [`δ = (a − y)·a(1 − a) = (${f(a2 - y)})·${f(a2 * (1 - a2))} = ${f(d2)}`], 'δ is how much the cost changes per unit change in z: the blame at the output.'],
+      ['Backward: hidden δ', d1.map((d, j) => `δ${j + 1} = w${j + 1}·δ·a${j + 1}(1 − a${j + 1}) = ${W2[j]}·${f(d2)}·${f(a1[j] * (1 - a1[j]))} = ${f(d)}`), 'The blame goes back through the same weights the answer came forward through.'],
+      ['Gradients', [`output weights: ∂C/∂w = a_hidden · δ = (${f(a1[0] * d2)}, ${f(a1[1] * d2)}), bias ${f(d2)}`, `hidden weights: ∂C/∂w = input · δ_hidden, e.g. ${f(x[0] * d1[0])} for the top-left weight`]],
+      ['Update with η = 1', [`w ← w − η·∂C/∂w for every weight and bias`, `new output a = ${f(na2)} (was ${f(a2)}), new cost = ${f((na2 - y) ** 2 / 2)} (was ${f(C)})`], 'One nudge, and the answer moved toward the target.'],
+    ];
+    let at = 0;
+    el.innerHTML = `<p class="wgt">Try it: step through one backpropagation</p>
+      <div class="nndiag" id="w-bp-svg"></div>
+      <div class="wgrow wgctl"><button type="button" class="seg2" id="w-bp-prev">Back</button><button type="button" class="seg2" id="w-bp-next">Next</button><span id="w-bp-n" class="wgcap" style="margin:0"></span></div>
+      <div class="bpsay" id="w-bp-say"></div>`;
+    const node = (cx, cy, top, below, stroke) => `<circle cx="${cx}" cy="${cy}" r="17" fill="var(--base)" stroke="${stroke}" stroke-width="1.5"/><text x="${cx}" y="${cy + 4}" text-anchor="middle" font-size="10" fill="var(--text)">${top}</text>${below ? `<text x="${cx}" y="${cy + 31}" text-anchor="middle" font-size="10" fill="var(--red)">${below}</text>` : ''}`;
+    const go = i => {
+      at = Math.max(0, Math.min(steps.length - 1, i));
+      const hy = [35, 100], oy = 67, ix = 60, hx = 180, ox = 300;
+      let lines = ''; hy.forEach(a => hy.forEach(b => lines += `<line x1="${ix}" y1="${a}" x2="${hx}" y2="${b}" stroke="var(--s1)"/>`)); hy.forEach(a => lines += `<line x1="${hx}" y1="${a}" x2="${ox}" y2="${oy}" stroke="var(--s1)"/>`);
+      const nodes = x.map((v, i) => node(ix, hy[i], v, '', 'var(--sub0)')).join('')
+        + hy.map((y0, j) => node(hx, y0, at >= 1 ? f(a1[j]).slice(0, 5) : 'a', at >= 5 ? 'δ ' + f(d1[j]) : '', 'var(--sub0)')).join('')
+        + node(ox, oy, at >= 2 ? f(a2).slice(0, 5) : 'a', at >= 4 ? 'δ ' + f(d2) : '', 'var(--mauve)');
+      const lab = [['Input', ix], ['Hidden', hx], ['Output', ox]].map(([t, cx]) => `<text x="${cx}" y="146" text-anchor="middle" font-size="10" fill="var(--o1)">${t}</text>`).join('');
+      $('#w-bp-svg').innerHTML = `<svg viewBox="35 8 290 142" width="100%" height="142">${lines}${nodes}${lab}</svg>`;
+      $('#w-bp-n').textContent = `step ${at + 1} of ${steps.length}`;
+      $('#w-bp-say').innerHTML = `<b>${steps[at][0]}</b><div class="bpl">${steps[at][1].map(l => `<code>${mdEsc(l)}</code>`).join('')}</div>${steps[at][2] ? `<span class="wgcap">${mdEsc(steps[at][2])}</span>` : ''}`;
+    };
+    $('#w-bp-prev').onclick = () => go(at - 1); $('#w-bp-next').onclick = () => go(at + 1);
+    el._reset = () => go(0); go(0);
   },
   // fill in the blanks of an f-string and watch the sentence change
   fstring(el) {

@@ -1,255 +1,152 @@
 ---
 title: MLP
-summary: Multilayer perceptron: one artificial neuron, stacked into layers, taught by trial and error.
+summary: From one voting neuron to a stack of smooth sigmoid neurons: why the step had to go, and what a layered network computes.
 ---
 
-> [!aha] A multi-layer perceptron is many tiny "guess, check, adjust" machines stacked in layers. Each one only ever does three things: multiply, add, decide.
+> [!aha] A neural network is a stack of tiny voting booths. The whole story of this chapter is one swap: replace the hard on/off decision with a smooth one, so that a small change in a weight makes a small change in the answer.
 
-## The perceptron: one neuron
+Everything here follows the first chapter of Michael Nielsen's free book [Neural Networks and Deep Learning](http://neuralnetworksanddeeplearning.com/). The maths for each idea sits in a dropdown, so you can read the plain story first and open the proof only when you want it.
 
-A perceptron is a tiny voting booth. Every input casts a vote, some votes count more than others (the **weight**), there is a fixed head start before anyone votes (the **bias**), and the booth adds it all up.
+## The perceptron: a neuron that votes
 
-```
-z = w₁x₁ + w₂x₂ + w₃x₃ + bias
-```
-
-`z` is called the **weighted sum**. The neuron does not decide anything yet, it only adds. Drag the weights and the bias below and watch `z` change.
+A perceptron is a tiny voting booth. Every input casts a vote, some votes count more than others (the **weight**), and there is a fixed head start (the **bias**). The booth adds it all up into one number `z`, the **weighted sum**, and then makes a hard yes/no call: output 1 if `z` is above zero, otherwise 0. The bias is just the old "is the total above some threshold?" rule with the threshold moved to the other side of the inequality. Drag the weights and the bias and watch `z` change.
 
 ```widget
 perceptron
 ```
 
-### Bias: how easy it is to fire
+> [!more] Math: weights, bias, threshold, and a NAND gate
+> A perceptron with inputs `x₁, x₂, …`, weights `w₁, w₂, …` and a bias `b` outputs:
+>
+> ```math
+> output = 0   if  w·x + b ≤ 0
+> output = 1   if  w·x + b > 0          where  w·x = w₁x₁ + w₂x₂ + …
+> ```
+>
+> The first version of the rule used a threshold: fire if `w·x > threshold`. Subtract the threshold from both sides and you get `w·x + b > 0` with `b = −threshold`. The bias says how easy it is to fire: a large positive `b` fires on almost any evidence.
+>
+> A single perceptron can already be a logic gate. Take two inputs, weights `−2` and `−2`, and bias `3`:
+>
+> | x₁ | x₂ | w·x + b | output |
+> |---|---|---|---|
+> | 0 | 0 | 3 | 1 |
+> | 0 | 1 | 1 | 1 |
+> | 1 | 0 | 1 | 1 |
+> | 1 | 1 | −1 | 0 |
+>
+> That is NAND. NAND is universal, so a network of perceptrons can compute anything a computer can.
 
-Think of the bias as how eager the neuron is to say yes. A big positive bias and it fires on almost any evidence. A very negative bias and it needs overwhelming evidence before it fires. It is the old "is the sum above some threshold?" rule with the threshold moved to the other side: `w·x > threshold` becomes `w·x + b > 0`, with `b = −threshold`.
+## One neuron is not enough, so stack them
 
-**Fun fact:** the perceptron comes from the late 1950s, when Frank Rosenblatt built on the 1943 artificial neuron of McCulloch and Pitts. One perceptron can already act as a logic gate (AND, OR, NAND, the building blocks of every computer). But it can only draw a single straight line, so it cannot learn XOR ("one or the other, but not both"), a limit famously pointed out in 1969 by Minsky and Papert. Stacking neurons into layers is the way out.
-
-## Multi-layer perceptron: input, hidden, output
-
-"Multi-layer" just means several of these voting booths, arranged in columns. Data flows one way, left to right.
-
-| Layer | What it does |
-|---|---|
-| Input layer | Hands over the raw features. No maths happens here, it is just the data. |
-| Hidden layer | Every neuron here takes **all** of the previous layer's outputs, weights them, sums them, and decides. A network can have many hidden layers. |
-| Output layer | The last layer's decision is the network's answer. |
+One perceptron draws a single straight line, so there are things it can never learn, like XOR ("one or the other, but not both"). Put neurons in columns and feed each column's answers to the next, and the limit goes away. The first column just hands over the data (**input layer**), the last column gives the answer (**output layer**), and everything in between is the **hidden layer**. Information only moves forward, so this is a *feedforward* network. Networks that loop back (RNNs) come later in the course.
 
 ```widget
 mlpdiagram
 ```
 
-Every line in that picture is one weight. A small network like this already has dozens of them, which is why training is just "adjust every line a little, many times."
+Every line in that picture is one weight, so even a small network has dozens, and "learning" means adjusting all of them.
 
-### Which way does the data flow?
+> [!more] Math: why one perceptron cannot do XOR
+> Suppose one perceptron computed XOR, with weights `w₁, w₂` and bias `b`. Each row of XOR forces one inequality:
+>
+> ```math
+> (0,0) → 0 :   b ≤ 0
+> (1,0) → 1 :   w₁ + b > 0   so   w₁ > −b ≥ 0
+> (0,1) → 1 :   w₂ + b > 0   so   w₂ > −b ≥ 0
+> (1,1) → 0 :   w₁ + w₂ + b ≤ 0
+> ```
+>
+> But from the middle two rows, `w₁ + w₂ + b > −b − b + b = −b ≥ 0`, which contradicts the last row. No weights work. With a second layer there is no contradiction, because the hidden neurons can compute OR and NAND and the output neuron can AND them, and `OR AND NAND` is exactly XOR.
 
-| Type | Loops? | Good for |
-|---|---|---|
-| Feedforward (this chapter) | None. Information only moves forward, never back. | Fixed-size inputs: a row of numbers, the pixels of one image |
-| Recurrent (RNN) | Yes. An output is fed back in, one step later. | Ordered data: audio, sensor readings, words in a sentence |
+## The catch: a hard step cannot be trained
 
-A loop within a single instant would have no answer, because a neuron's input would depend on its own output. A recurrent network gets away with it because the feedback only arrives at the *next* time step. The RNN chapter picks this up.
-
-## Deep learning is part of ML
-
-> [!compare] Think of it like a photocopier making a copy of a copy. One hidden layer learns simple patterns. Stack more hidden layers, and each one learns a pattern built out of the last layer's patterns: edges, then shapes, then whole digits.
-
-"Deep learning" has no secret ingredient. It is a multi-layer perceptron (or a cousin of one) with enough hidden layers that it starts learning layered, abstract features instead of one flat pattern.
+Training is "nudge a weight a tiny bit, and check whether the answer got better". A hard step breaks that. Nudge one weight by 0.1 and the output can flip from 0 to 1, and that flip can change how the whole network treats every other example. You fix your "9" and quietly break the "4"s. And away from the jump, nudging does nothing at all, so there is no hint which way to go. Try it: with the default settings, the weight sits right next to the jump.
 
 ```widget
-dlvsml
+stepsigmoid
 ```
 
-## Activation functions: how a neuron decides
+> [!aha] Learning needs "small nudge in, small change out". The step breaks that rule. The sigmoid, a smoothed-out step, keeps it. That is why, technically, the network is a multilayer *sigmoid* network (MLS), not a multilayer perceptron, even though everyone still calls it an MLP.
 
-The weighted sum `z` can be any number at all. The **activation function** is the rule that turns `z` into the neuron's actual output. Same three raw scores, five different decisions:
+> [!more] Math: small change in, small change out
+> For any neuron whose output is a smooth function of its weights, a small change gives, to first order:
+>
+> ```math
+> Δoutput ≈ Σⱼ (∂output/∂wⱼ) Δwⱼ  +  (∂output/∂b) Δb
+> ```
+>
+> The change in the output is a *linear* function of the changes in the weights and bias. That linearity is what makes it easy to pick small changes that push the output the way you want. For a step function the slope `∂output/∂w` is 0 everywhere except at the jump, where it does not exist, so the formula tells you nothing.
+
+## The sigmoid neuron
+
+A sigmoid neuron is a perceptron with one change. It computes the same `z = w·x + b`, but instead of a hard 0 or 1 it outputs `σ(z)`, a smooth S-shaped curve that squashes any `z` into the range 0 to 1. The S means it is flat near 0 on the left, flat near 1 on the right, and steep only in the middle, like a dimmer switch. Far from zero it behaves like a step, near zero it glides. The other activation functions below are alternatives for the same job: turn `z` into the neuron's real output.
 
 ```widget
 activationfunctions
 ```
 
-### Why the smooth ones won
+Two name traps worth knowing, since papers use them freely: the sigmoid is also called the **logistic function**, and a network of many layers is still called a **multilayer perceptron (MLP)** even though most of its neurons are no longer true perceptrons. Strictly it is a multilayer *sigmoid* network.
 
-With a hard step, a tiny nudge to one weight can flip a neuron from 0 to 1, and that flip can change how the whole network treats every *other* example. You fix your "9" and quietly break the "4"s. A sigmoid is a smoothed-out step: a tiny nudge to a weight makes a tiny change to the output, so training can improve a little at a time.
+> [!more] Math: the sigmoid and its slope
+> ```math
+> σ(z) = 1 / (1 + e^(−z))          σ′(z) = σ(z) · (1 − σ(z))
+> ```
+>
+> Proof of the slope. Write `σ(z) = (1 + e^(−z))^(−1)` and use the chain rule:
+>
+> ```math
+> σ′(z) = e^(−z) / (1 + e^(−z))²
+>       = [1 / (1 + e^(−z))] · [e^(−z) / (1 + e^(−z))]
+>       = σ(z) · (1 − σ(z))          because  1 − σ(z) = e^(−z) / (1 + e^(−z))
+> ```
+>
+> Two facts to carry forward. The slope is biggest at `z = 0`, where `σ′ = 0.5 × 0.5 = 0.25`, and it is almost 0 when `|z|` is large. Those flat tails come back when we meet the vanishing gradient. As `z → +∞`, `σ → 1`, and as `z → −∞`, `σ → 0`, so a sigmoid really is a smoothed step.
 
-> [!aha] Learning needs "small nudge in, small change out". A hard step breaks that rule. The smooth curves, and ReLU, which bends but never jumps, keep it.
+## Layers: what a network computes
 
-Two name traps worth knowing, since papers use them freely: the sigmoid is also called the **logistic function** (so a "logistic neuron" is a sigmoid neuron), and a network of many layers is still called an MLP even though most of its neurons are no longer true perceptrons.
-
-## Training: backpropagation, in one line
-
-> [!aha] Backpropagation is grading a group project from the end backwards: the final answer was wrong, so you ask "which step contributed most to that?", walk back through the layers, and nudge every weight that played a part.
-
-```tgrid5
-1. Forward pass | Run the input forward through every layer to get an answer. Each layer takes the numbers from the one before, applies its weights and activation, and passes the result on.
-2. Loss | Compare the answer with the real one using a **loss function**: a single number for "how wrong". A perfect answer gives a loss near zero.
-3. Backward pass | Walk backward layer by layer and work out how much each weight is to blame for the loss. That share of the blame is the **gradient**.
-4. Update | Nudge every weight a little in the direction that lowers the loss. How big the nudge is gets set by the learning rate, below.
-5. Repeat | Do it for every example, many times over. One full pass through all the data is an **epoch**, and training usually takes many epochs.
-```
-
-That nudge is controlled by the **learning rate**: too big and training overshoots and never settles, too small and it crawls.
-
-**Fun fact:** the idea of backpropagation was around in the 1970s, but nobody paid much attention until a 1986 paper by Rumelhart, Hinton and Williams showed it made multi-layer networks learn far faster than earlier methods, and let them solve problems that had been out of reach. It is still the workhorse of neural-network learning today.
-
-### Math level: the four steps with symbols
-
-Here `a` is a layer's output, `z` is its weighted sum, `δ` is "how much this layer is to blame", and `σ′` is the slope of the activation.
-
-```
-1. Input:        set the first layer's a to the data
-2. Feedforward:  for each layer,  z = w · a(previous) + b,  then  a = σ(z)
-3. Output error: δ(last)  = (how wrong the output is) × σ′(z)
-4. Go backwards: δ(layer) = (next layer's weights, flipped) · δ(next layer) × σ′(z)
-
-Result:  gradient of a weight = a(previous) × δ      gradient of a bias = δ
-```
-
-In words: the blame at the end is pushed backwards through the very same weights the answer travelled forwards through, and each weight's share of the blame is how active its input was times the blame at its output.
-
-## Why deep networks are hard to train
-
-Deep networks are hard to train because of the **vanishing gradient**. The blame for a wrong answer is passed back through every layer, and at each layer it gets multiplied by a small number. By the time it reaches the early layers there is almost nothing left, so they barely learn while the later layers learn fine.
-
-> [!compare] Think of a game of telephone. The blame for a wrong answer has to be whispered back through every layer. Each layer passes it on a little quieter, so by the time it reaches the first layer it is almost silent and that layer has nothing to learn from.
-
-The effect shows up in the numbers. In Nielsen's MNIST tests, with the same settings every time, extra layers stopped helping after the second one, even though they could in theory just do nothing:
-
-| Hidden layers | 1 | 2 | 3 | 4 |
-|---|---|---|---|---|
-| Test accuracy | 96.48% | 96.90% | 96.57% | 96.53% |
-
-### Why the signal shrinks
-
-```tgrid
-A product of terms | By the chain rule, the gradient at an early layer multiplies one term for every later layer. Each term is roughly `w × σ′(z)`: the weight times the activation's slope.
-A small slope | A sigmoid's slope is never above 0.25, so unless the weights are big, every extra layer multiplies the signal by something small.
-Unstable, not just vanishing | A product of many terms is only stable if they happen to balance out near 1. By chance they almost never do, so early layers get either nothing or far too much.
-```
-
-### What fixes it
-
-Making the weights large does not help, because a large `w` also pushes `z` out onto the flat tails of the sigmoid, where `σ′(z)` is tiny again. The fixes are the ones you already met:
-
-```tgrid
-ReLU | No flat side, so the slope stays 1 for positive inputs instead of shrinking.
-Smaller starting weights | Start with `z` near 0, where the sigmoid is steep, so learning can take off straight away.
-A sensible optimizer | Momentum and per-weight step sizes keep early layers moving even when their gradient is small.
-```
-
-## The rest of the toolbox
-
-A few more pieces you will see on every real network, in one table:
-
-| Tool | Real-life picture | What it does |
-|---|---|---|
-| Dropout | Randomly benching a few players each practice | Turns off a random slice of neurons each step, so the network can't lean on just a few of them |
-| Batch normalization | Re-centring a scale between weighings | Rescales the numbers flowing between layers so training stays stable as it goes deeper |
-| Optimizer (SGD, Adam) | The strategy for taking the nudge | Decides *how* to use the gradient: a plain step (SGD), or a smarter step that remembers recent nudges (Adam) |
-| Weight initialization | Not starting every runner on the same square | The random starting values for every weight, before any training happens. Starting badly can stall learning before it begins |
-
-**Why a bad start hurts:** the classic recipe is to draw every starting weight from a bell curve centred on 0 with a spread of 1. That works, but it is wasteful. Give a neuron 1,000 inputs and the sum `z` collects a thousand random terms, so it easily lands 20 or more away from 0, far out on the flat tails of a sigmoid where the slope is almost zero. Those neurons start out saturated and learn at a crawl. The fix is to start with *smaller* weights, shrunk in proportion to the number of inputs, so `z` begins near 0 where the curve is steep and learning can take off straight away.
-
-### Optimizers explained
-
-Every optimizer starts from the same idea: look at the gradient, then take a step downhill. They differ in what they **remember** from earlier steps, and how that changes the next one.
-
-```tgrid
-SGD (Stochastic Gradient Descent) | The simplest optimizer. It computes the gradient on a small batch of examples and takes one step downhill. Easy to understand, but it can be slow, zig-zags in narrow valleys and can get stuck on flat stretches called saddle points.
-Momentum | SGD that remembers which way it has been going. Each step adds a bit of the previous step, so steady directions build up speed and sideways wobbles cancel out. It rolls through flat patches and across narrow valleys much faster than plain SGD.
-RMSprop | Keeps a running average of how big each weight's recent gradients were, and divides the step by it. Weights with huge gradients take smaller steps, weights with tiny gradients take bigger ones, so every weight moves at a sensible pace.
-AdaGrad | Like RMSprop, but it adds up all the past squared gradients instead of a running average. Rarely updated weights keep large steps, which suits sparse data such as words. The catch: the total only grows, so the steps keep shrinking until learning can stall.
-Adam | The most popular optimizer. It adapts the step size for each weight individually, combining momentum (keep moving the same way) with RMSprop (scale steps by how large the recent gradients were). Usually the best default choice.
-AdamW | Adam with weight decay done properly: the pull towards smaller weights is applied separately from the gradient. It is the usual choice for Transformers and large models.
-```
-
-> [!compare] Think of rolling a ball down a bumpy hillside in fog. SGD is a ball that stops to look around at every step. Momentum is a heavy ball that keeps its speed. RMSprop and Adam add adjustable shock absorbers: steep, jumpy directions get slowed down and gentle ones get sped up.
-
-The update rules, in short (`g` is the gradient and `lr` is the learning rate):
-
-```python
-# SGD
-w = w - lr * g
-
-# Momentum: v remembers the direction (beta is about 0.9)
-v = beta * v + g
-w = w - lr * v
-
-# RMSprop: s remembers how big the gradients were (rho is about 0.9)
-s = rho * s + (1 - rho) * g ** 2
-w = w - lr * g / (s ** 0.5 + 1e-8)
-
-# Adam: both memories at once (beta1 0.9, beta2 0.999, lr 0.001 are the usual defaults)
-m = beta1 * m + (1 - beta1) * g
-s = beta2 * s + (1 - beta2) * g ** 2
-w = w - lr * m / (s ** 0.5 + 1e-8)       # real Adam also corrects m and s for the first few steps
-```
-
-| Optimizer | What it remembers | Good at | Watch out for |
-|---|---|---|---|
-| SGD | nothing | simple, light on memory, can generalise well | slow, very sensitive to the learning rate |
-| Momentum | the direction it has been going | faster on valleys and flat patches | can overshoot a minimum |
-| RMSprop | the recent size of the gradients | uneven gradients, recurrent networks | the learning rate still needs tuning |
-| AdaGrad | all past squared gradients | sparse data | steps shrink until it stalls |
-| Adam | both of the above | a strong default, little tuning | sometimes ends a little worse than well-tuned SGD |
-| AdamW | both, plus clean weight decay | Transformers and big models | the same tuning as Adam |
-
-> [!tip] All optimizers use gradient descent at their core. They just differ in *how* they decide the step size and direction. If you are unsure, start with **Adam** and a learning rate of 0.001. If you later want the last bit of accuracy on an image model, try SGD with momentum and a tuned learning rate. You can try different learning rates yourself in the neural network playground.
-
-## MNIST training replay: watch it learn
-
-MNIST is a set of 70,000 small handwritten digits, 0–9, the "hello world" of deep learning. How big is this network at the edges? Each image is 28 × 28 = 784 pixels, each a greyscale value between 0 and 1, so the input layer has **784 neurons**. The output layer has **10**, one per digit. To read the answer you do not compare against a 0.5 threshold, you simply take the output neuron with the highest activation (`argmax`). The 0.5 rule is for a single yes/no output, like "is this a 9, or not?". A 64 × 64 image would need 4,096 input neurons.
-
-Below is a simulated training run of a small MLP on MNIST: scrub the epoch slider and watch the loss drop, the guesses improve, and the first hidden layer's weights settle into shapes.
+Layer by layer, each neuron takes **all** of the previous layer's outputs, weights them, adds its bias, and applies the activation. That is the whole forward pass. Add hidden layers and each one learns patterns built out of the last layer's patterns: edges, then shapes, then whole digits. "Deep learning" has no secret ingredient. It is this network with enough hidden layers to learn layered features.
 
 ```widget
-mnisttrainingreplay
+dlvsml
 ```
 
-Three ways to look at the same run:
+> [!compare] Think of a photocopier making a copy of a copy. One hidden layer learns simple patterns. Stack more, and each one learns a pattern built out of the last layer's patterns.
 
-```tgrid
-Bird's Eye | The loss curve. Train loss (solid) always falls. Validation loss (dashed) falls too, then creeps back up late: the network is starting to memorise instead of generalise. That is **overfitting**, from the earlier chapter, happening live.
-Neuron Level | Ten sample digits with the model's current guess and confidence, plus a peek at 16 of the first hidden layer's neurons. Early on their weights look like static. By the later epochs, patterns appear: some neurons specialise in a stroke, a loop, a corner.
-Math Level | The same formulas from this chapter (`z`, the activation, the loss, the gradient step), with this epoch's real numbers dropped in.
-```
+A concrete size check: a 28 × 28 greyscale digit has 784 pixels, so the input layer has **784 neurons**. The output layer has **10**, one per digit, and you read the answer as the output neuron with the highest activation. A 64 × 64 image would need 4,096 inputs.
 
-```cta
-books | Get the MNIST dataset | The 70,000 handwritten digits used in this chapter, free to download.
-The original MNIST page | http://yann.lecun.com/exdb/mnist/ | Yann LeCun, the source of the dataset
-Digit Recognizer on Kaggle | https://www.kaggle.com/c/digit-recognizer | A beginner competition built on MNIST
-MNIST mirror on GitHub | https://github.com/cvdfoundation/mnist | Download links for the four data files
-MNIST database on Wikipedia | https://en.wikipedia.org/wiki/MNIST_database | History and benchmark results
-```
-
-```cta
-flask | See it for yourself | Train a small network in your browser, or put an MLP next to a CNN and compare them.
-Neural network playground | @neural-playground | Pick data, layers and settings, and watch it learn
-Neural network comparison | @compare#MLP,CNN | MLP next to a CNN
-```
+> [!more] Math: the forward pass in one line, and counting weights
+> Let `aˡ` be the vector of outputs of layer `l`, `Wˡ` the matrix of weights into layer `l` (row `j` holds the weights of neuron `j`), and `bˡ` the bias vector:
+>
+> ```math
+> zˡ = Wˡ · aˡ⁻¹ + bˡ          aˡ = σ(zˡ)          a⁰ = the input x
+> ```
+>
+> Count the parameters of a 784 – 30 – 10 network, the one Nielsen uses on MNIST:
+>
+> ```
+> hidden layer:  784 × 30 weights + 30 biases  = 23,550
+> output layer:   30 × 10 weights + 10 biases  =    310
+> total                                         = 23,860
+> ```
+>
+> Nearly 24,000 numbers to tune, all by the same recipe. That recipe is the next chapter.
 
 ## Try it
 
-1. In the perceptron widget, set all three weights to 0. What does `z` become, no matter the bias? What does that tell you about a neuron with zero weights?
-2. In the activation widget, compare Sigmoid and ReLU for the Dubai score (8). Which one keeps almost all of that score, and which one squashes it down?
-3. Scrub the MNIST replay to epoch 1, then epoch 100. Describe in one sentence what changed on each of the three views.
-4. Scrub past epoch 55 on Bird's Eye. Why does the validation line rise even while the train line keeps falling?
-5. You want a network to read 32 × 32 greyscale images of the 26 letters A to Z. How many input neurons and how many output neurons does it need?
-6. A step neuron and a sigmoid neuron both get a tiny nudge to one weight. Which output could jump from 0 to 1, and why does that make the step neuron hard to train?
-7. A sigmoid's slope is at most 0.25. Roughly how much does that shrink a signal passing back through 5 layers, if the weights are about 1? Why does ReLU avoid this?
-8. Why does making one weight huge not cure a vanishing gradient?
-
-*Further reading: Michael Nielsen's free book [Neural Networks and Deep Learning](http://neuralnetworksanddeeplearning.com/) is the source of several ideas on this page.*
+1. In the perceptron widget, set all three weights to 0. What does `z` become, no matter the bias? What does that say about a neuron with zero weights?
+2. In the step-versus-sigmoid widget, drag the weight until the step output stops flipping when nudged. Does the sigmoid still move? Why is that useful?
+3. In the activation widget, compare Sigmoid and ReLU for the Dubai score (8). Which keeps almost all of that score, and which squashes it?
+4. Pick weights and a bias for a perceptron that acts as AND (fires only when both inputs are 1). Check all four input rows.
+5. You want a network to read 32 × 32 greyscale images of the 26 letters A to Z. How many input neurons and output neurons does it need?
+6. A sigmoid's slope is at most 0.25. If every weight is 1, how much of a change survives passing through three sigmoid neurons in a row?
 
 ## Quick recap
 
 | Tool | Real-life picture | What it does |
 |---|---|---|
 | Weight, bias | Votes and a head start | Turn inputs into one weighted sum `z` |
-| Activation function | The rule the voting booth follows | Turns `z` into the neuron's real output |
+| Perceptron | A voting booth with a hard yes/no | Outputs 1 if `z > 0`, otherwise 0 |
+| Sigmoid neuron | The same booth with a dimmer switch | Outputs a smooth `σ(z)` between 0 and 1, so small nudges give small changes |
 | Hidden layer | A photocopy of a photocopy | Learns patterns built out of the previous layer's patterns |
-| Backpropagation | Grading a group project backwards | Works out which weights to blame and nudges them |
-| Epoch | One full lap of the training data | A single pass where every weight gets nudged once per example |
-| Learning rate | Stride length | How big each nudge is |
-| Vanishing gradient | A whisper passed down a long line | Early layers get almost no learning signal in deep networks, so they barely train |
-| Dropout, batch norm, optimizer, weight init | Benching players, re-centring a scale, a nudge strategy, a fair starting line | The extra tricks that make training stable and fast |
+| Multilayer perceptron | A factory assembly line | Layers of neurons, each feeding the next, forward only |
+| Forward pass | Passing a note down the line | `a = σ(W · a_previous + b)`, layer by layer |

@@ -55,6 +55,7 @@ function mdParse(src) {
       else if (lang === 'terms') out.push(`<div class="tms">${buf.filter(x => x.trim()).map(x => { const i = x.indexOf('|'); return `<div class="tm"><b>${mdInline(x.slice(0, i).trim())}</b><span>${mdInline(x.slice(i + 1).trim())}</span></div>`; }).join('')}</div>`);
       else if (lang === 'tgrid' || lang === 'tgrid4' || lang === 'tgrid5') out.push(`<div class="tgrid${lang === 'tgrid4' ? ' c4' : lang === 'tgrid5' ? ' c5' : ''}">${buf.filter(x => x.trim()).map(x => { const i = x.indexOf('|'); return `<div class="tg"><b>${mdInline(x.slice(0, i).trim())}</b><span>${mdInline(x.slice(i + 1).trim())}</span></div>`; }).join('')}</div>`);
       else if (lang === 'cards') out.push(`<div class="pcs">${buf.filter(x => x.trim()).map(x => { const [n, f, d, p, c] = x.split('|').map(s => s.trim()); return `<div class="pc"><b class="pn">${mdInline(n)}</b><code>${mdInline(f)}</code><p>${mdInline(d)}</p><p class="pcl"><span class="pro"><em>Pros:</em> ${mdInline(p)}</span><span class="con"><em>Cons:</em> ${mdInline(c)}</span></p></div>`; }).join('')}</div>`);
+      else if (lang === 'math') out.push(`<div class="mathb">${buf.filter(x => x.trim()).map(x => `<div>${mdEsc(x.trim()).replace(/ {2,}/g, '  ')}</div>`).join('')}</div>`);
       else if (lang === 'widget') out.push(`<div class="wg" data-widget="${mdEsc(buf.join('').trim())}"></div>`);
       else out.push(`<figure class="code">${lang ? `<figcaption>${mdEsc(lang)}</figcaption>` : ''}<pre><code>${mdCode(buf.join('\n'), lang)}</code></pre></figure>`);
     } else if ((m = l.match(/^(#{1,3})\s+(.*)/))) {
@@ -62,6 +63,9 @@ function mdParse(src) {
     } else if (l.startsWith('>')) {
       const buf = [];
       for (; i < lines.length && lines[i].startsWith('>'); i++) buf.push(lines[i].replace(/^>\s?/, ''));
+      // "> [!more] Title" is a closed dropdown (TLDR style): the rest of the quote block is read as normal Markdown, so tables and code blocks work inside it
+      const mo = buf[0].match(/^\[!more\]\s*(.*)/);
+      if (mo) { out.push(`<details class="more"><summary>${mdInline(mo[1])}</summary><div>${mdParse(buf.slice(1).join('\n')).html}</div></details>`); continue; }
       let text = buf.join(' '), kind = '';
       const t = text.match(/^\[!(\w+)\]\s*/);
       if (t && CALLOUTS[t[1]]) { kind = t[1]; text = text.slice(t[0].length); }
@@ -83,4 +87,23 @@ function mdParse(src) {
     }
   }
   return { meta, html: out.join('\n') };
+}
+
+// "> [!more]" dropdowns: slide the body open and shut (a plain <details> just snaps). Click, Enter and Space all arrive here as a click on the summary.
+if (!window._moreBound) {
+  window._moreBound = true;
+  document.addEventListener('click', e => {
+    const sm = e.target.closest && e.target.closest('details.more > summary');
+    if (!sm) return;
+    e.preventDefault();
+    const d = sm.parentElement, body = sm.nextElementSibling, opening = !d.classList.contains('is-open');
+    if (d._anim) d._anim.cancel();
+    d.classList.toggle('is-open', opening);
+    const quick = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (opening) d.open = true;
+    const cs = getComputedStyle(body), full = { height: body.offsetHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) + 'px', paddingTop: cs.paddingTop, paddingBottom: cs.paddingBottom, opacity: 1 };
+    const none = { height: '0px', paddingTop: '0px', paddingBottom: '0px', opacity: 0 };
+    d._anim = body.animate(opening ? [none, full] : [full, none], { duration: quick ? 0 : opening ? 280 : 220, easing: 'ease' });
+    d._anim.onfinish = () => { d._anim = null; if (!opening) d.open = false; };
+  });
 }
