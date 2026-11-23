@@ -1,5 +1,5 @@
 // Work page: the real code files for each class, in a sidebar tree that keeps the same year > class > section shape as Main.
-// A file opens as cells on the left (code, and its real output when it has one) with "What this cell does" on the right.
+// A file opens as one code window on the left (the whole file, line numbers, the picked cell highlighted) with "What this cell does" and its output on the right.
 // A chapter that has work lists its files; a chapter without any shows dimmed.
 // To add work: copy the file into work/<class-slug>/ and add it here. See work/README.md.
 // The file is read with fetch, so the site has to be served (see content/README.md).
@@ -41,6 +41,7 @@ const WORK = {
   ],
 };
 
+const REPO = 'https://github.com/eai-spsm/M.4-Classwork';   // where the class files are kept
 const wmain = $('#wmain');
 const wItems = Object.entries(WORK).flatMap(([chapter, files]) => files.map(f => ({ ...f, chapter, cs: chapter.split('/')[0] })));
 const wId = f => f.cs + '/' + f.file;
@@ -143,7 +144,7 @@ async function showWork() {
     $$('#wmain [data-cmd]').forEach(a => a.onclick = e => { e.preventDefault(); cmd.focus(); });
     return;
   }
-  wmain.className = 'welcome wide';
+  wmain.className = 'welcome wide wfile';
   const folder = notes.find(n => slug(n[0]) === f.cs);
   setHead(f.file, `Coder › Work › ${folder[0]} › ${f.file}`);
   const a = $(`#tree a[href="work.html#${id}"]`);
@@ -158,20 +159,49 @@ async function showWork() {
   }
   code = code.replace(/\r\n?/g, '\n');
   const cells = cutCells(code, f.cutAt);
+  // left: the whole file in one code window with line numbers (cells are marked bands inside it); right: the explanation of the picked cell
+  // syntax-coloured lines; every run of four leading spaces gets a faint indent guide, like VS Code
+  // extra colours on top of mdCode, like VS Code: names the code makes up (variables) are pink, %d / %.2f codes inside strings are orange,
+  // and brackets cycle yellow, pink, blue by depth. mdCode already wrapped keywords, calls, numbers, strings and comments in spans, so only the loose text is left to colour.
+  const colorize = html => {
+    const stack = [], rainbow = ['br0', 'br1', 'br2'];
+    let depth = 0;
+    return html.split(/(<[^>]+>)/).map(part => {
+      if (part[0] === '<') { if (part[1] === '/') stack.pop(); else stack.push((part.match(/class="([^"]*)"/) || [])[1] || ''); return part; }
+      const top = stack[stack.length - 1];
+      if (top === 's') return part.replace(/%[-+ 0#]*\d*(?:\.\d+)?[sdfrxXeEgGc]/g, m => `<span class="fc">${m}</span>`);
+      if (stack.length) return part;
+      return part.replace(/(&\w+;)|([A-Za-z_]\w*)|([()\[\]{}])/g, (m, ent, id, br) => {
+        if (ent) return m;
+        if (id) return `<span class="${id === 'self' ? 'sf' : /^(None|True|False)$/.test(id) ? 'n' : 'v'}">${id}</span>`;
+        if ('([{'.includes(br)) return `<span class="${rainbow[depth++ % 3]}">${br}</span>`;
+        depth = Math.max(0, depth - 1);
+        return `<span class="${rainbow[depth % 3]}">${br}</span>`;
+      });
+    }).join('');
+  };
+  // VS Code's Python grammar (MagicPython) puts float, int, str, type, list and the other built-in TYPES in their own scope (support.type), apart from built-in functions such as print and input
+  const PYTYPES = /<span class="b">(bool|bytearray|bytes|classmethod|complex|dict|float|frozenset|int|list|object|property|set|slice|staticmethod|str|super|tuple|type)<\/span>/g;
+  const hl = code => colorize(mdCode(code, 'python').replace(PYTYPES, '<span class="ty">$1</span>').replace(/(<span class="k">def<\/span> )<span class="b">/g, '$1<span class="fn">').replace(/(<span class="k">class<\/span> )([A-Za-z_]\w*)/g, '$1<span class="y">$2</span>')).split('\n').map(l => (/\bf["']/.test(l) ? l.replace(/\{[^{}<>]*\}/g, m => `<span class="fi">${m}</span>`) : l).replace(/^( +)/, m => m.replace(/ {4}/g, '<span class="ig">    </span>'))).join('\n');
+  let lineNo = 1;
+  const segs = cells.map((c, i) => {
+    const n = c.code.split('\n').length, nums = Array.from({ length: n }, (_, k) => lineNo + k).join('\n');
+    lineNo += n;
+    return `<section class="wseg" tabindex="0" data-i="${i}"><span class="wtag">In [${i + 1}] \u00b7 ${esc(c.label)}</span><pre class="gut">${nums}</pre><pre class="src"><code>${hl(c.code)}</code></pre></section>`;
+  }).join('');
   wmain.innerHTML = `<div class="wgrid">
-      <div class="wcells">${cells.map((c, i) => `<section class="wcell" tabindex="0" data-i="${i}"><span class="cin">In [${i + 1}]<em>${esc(c.label)}</em></span><pre><code>${mdCode(c.code, 'python')}</code></pre>${f.outs[i] ? `<div class="cout"><span class="cin ocl">Out [${i + 1}]</span><pre>${esc(f.outs[i])}</pre></div>` : ''}</section>`).join('')}</div>
+      <div class="wwin vs">
+        <div class="vedit"><div class="wbody" id="wbody">${segs}</div></div>
+      </div>
       <aside class="wside">
         <div class="wtop"><span class="ni" style="--c:var(--${folder[2]})">${icon('code')}</span><div><h1>${esc(f.file)}</h1><p class="sum">${esc(f.note)}</p></div></div>
-        <div class="wact">
-          <button class="btn ghost" id="wcopy" type="button" data-tip="Copy file">${icon('notebook')}</button>
-          <a class="btn ghost" href="${path}" download="${esc(f.file)}" data-tip="Download">${icon('arrow-up-right')}</a>
-          <a class="btn ghost" href="${pathById(f.chapter)}" data-tip="Read the chapter">${icon('file-text')}</a>
-        </div>
+        <div class="cft" style="margin:0 0 16px;padding:0;border:0"><a class="btn ghost" href="${REPO}" target="_blank" rel="noopener">${icon('github-logo')}<span>GitHub</span></a><button class="btn ghost" id="wcopy" type="button">${icon('notebook')}<span>Copy clone link</span></button></div>
         <div class="cpanel">
           <div class="chd"><span class="ni">${icon('lightbulb')}</span><div><b>What this cell does</b><i id="cwhich"></i></div>
             <span class="cnav"><button type="button" id="cprev" data-tip="Previous cell">${icon('caret-left')}</button><button type="button" id="cnext" data-tip="Next cell">${icon('caret-right')}</button></span></div>
           <p id="cdoes"></p>
-          <div class="cft"><button class="btn ghost" id="ccopy" type="button">${icon('notebook')}<span>Copy this cell</span></button><span id="cpos"></span></div>
+          <div class="cout" id="cout"></div>
+          <div class="cft"><a class="btn ghost" href="${pathById(f.chapter)}">${icon('file-text')}<span>Read the chapter</span></a></div>
         </div>
       </aside>
     </div>`;
@@ -179,15 +209,18 @@ async function showWork() {
   let cur = 0;
   // code-looking words in a description (%d, print(), \\n, **) are set in code type so they stand out
   const say = t => esc(t).replace(/(%\.?\d*[dsf]|\b[\w.]+\(\)|\\n|\*\*|\bmath\.pi\b|\bTrue\b|\bFalse\b)/g, '<code>$1</code>');
+  const body = $('#wbody');
   const pick = (i, scroll) => {
     cur = i;
-    $$('.wcell').forEach(el => el.classList.toggle('on', +el.dataset.i === i));
+    const all = $$('.wseg');
+    all.forEach(el => el.classList.toggle('on', +el.dataset.i === i));
     $('#cdoes').innerHTML = f.does[i] ? say(f.does[i]) : 'No description yet.';
-    $('#cwhich').textContent = `In [${i + 1}] \u00b7 ${cells[i].label}`;
-    $('#cpos').textContent = `${i + 1} of ${cells.length}`;
+    $('#cwhich').textContent = `In [${i + 1}] \u00b7 ${cells[i].label} \u00b7 ${i + 1} of ${cells.length}`;
+    $('#cout').innerHTML = f.outs[i] ? `<span class="ocl">Output</span><pre>${esc(f.outs[i])}</pre>` : '';
+    $('#cout').hidden = !f.outs[i];
     $('#cprev').disabled = i === 0;
     $('#cnext').disabled = i === cells.length - 1;
-    if (scroll) $$('.wcell')[i].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    if (scroll) body.scrollTo({ top: Math.max(0, all[i].offsetTop - 8), behavior: 'smooth' });
   };
   const flash = (btn, text) => {
     const s = btn.querySelector('span');
@@ -195,13 +228,13 @@ async function showWork() {
     const old = btn.dataset.tip; btn.dataset.tip = text; setTimeout(() => btn.dataset.tip = old, 1400);
   };
   const copy = (text, btn) => (navigator.clipboard ? navigator.clipboard.writeText(text) : Promise.reject()).then(() => flash(btn, 'Copied')).catch(() => {});
-  $('.wcells').addEventListener('click', e => { const c = e.target.closest('.wcell'); if (c) pick(+c.dataset.i); });
-  $('.wcells').addEventListener('keydown', e => { const c = e.target.closest('.wcell'); if (c && e.target === c && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); pick(+c.dataset.i); } });
-  $('#wcopy').onclick = () => copy(code, $('#wcopy'));
-  $('#ccopy').onclick = () => copy(cells[cur].code, $('#ccopy'));
+  body.addEventListener('click', e => { const c = e.target.closest('.wseg'); if (c) pick(+c.dataset.i); });
+  body.addEventListener('keydown', e => { const c = e.target.closest('.wseg'); if (c && e.target === c && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); pick(+c.dataset.i); } });
+  $('#wcopy').onclick = () => copy(REPO + '.git', $('#wcopy'));
   $('#cprev').onclick = () => pick(cur - 1, true);
   $('#cnext').onclick = () => pick(cur + 1, true);
   pick(0);
+
   $('.view').scrollTop = 0;
 }
 

@@ -1570,3 +1570,111 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 .wg .wgsay+.evlog{margin-top:14px}
 .wg canvas+.evlog{margin-top:16px}
 .cmp th{white-space:nowrap}
+/* Work page: one code window on the left, the explanation on the right */
+.wgrid{grid-template-columns:minmax(0,1fr) 340px;gap:24px;align-items:start}
+.wwin{background:var(--crust);border-radius:12px;overflow:hidden;min-width:0}
+.wbar{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--mantle);color:var(--o1);font-size:12px}
+.wbar b{font-weight:400;color:var(--text)}
+.wbar .sp{flex:1}
+.wdots{display:inline-flex;gap:6px;margin-right:6px}
+.wdots i{width:9px;height:9px;border-radius:50%;background:var(--s1)}
+.wbt{display:grid;place-items:center;width:26px;height:26px;border-radius:6px;color:var(--o1);cursor:pointer}
+.wbt:hover{background:var(--s0);color:var(--text);text-decoration:none}
+.wbt .i{width:14px;height:14px}
+.wbody{position:relative;max-height:calc(100vh - 150px);overflow:auto;padding:6px 0}
+.wseg{position:relative;display:flex;gap:0;padding:10px 16px 10px 0;border-left:2px solid transparent;cursor:pointer}
+.wseg+.wseg{border-top:1px dashed var(--s0)}
+.wseg:hover{background:color-mix(in srgb,var(--s0) 30%,transparent)}
+.wseg.on{background:color-mix(in srgb,var(--mauve) 8%,transparent);border-left-color:var(--mauve)}
+.wseg:focus-visible{outline:0;background:color-mix(in srgb,var(--mauve) 12%,transparent)}
+.wtag{position:absolute;top:6px;right:12px;font-size:10px;color:var(--o0);pointer-events:none}
+.wseg.on .wtag{color:var(--mauve)}
+.wseg pre{margin:0}
+.wseg .gut{flex:none;width:44px;padding-right:14px;text-align:right;color:var(--o0);font:12.5px/1.65 ui-monospace,SFMono-Regular,Consolas,"Courier New",monospace;user-select:none}
+.wseg .src{flex:1;min-width:0;overflow-x:auto}
+.wseg code{font:12.5px/1.65 ui-monospace,SFMono-Regular,Consolas,"Courier New",monospace;color:var(--text)}
+.wseg .k{color:var(--mauve)}.wseg .s{color:var(--green)}.wseg .n{color:var(--peach)}.wseg .b{color:var(--blue)}.wseg .c{color:var(--o0)}
+.wside .cout{margin-top:16px}
+.wside .cout[hidden]{display:none}
+.wside .cft{flex-wrap:wrap}
+@media(max-width:1100px){.wgrid{grid-template-columns:minmax(0,1fr)}.wbody{max-height:70vh}}
+/* Work page: the code window copies VS Code: tab, breadcrumb, line numbers, indent guides, minimap */
+.wwin.vs{background:#1e1e2e;border:1px solid var(--s0)}
+.vtabs{display:flex;align-items:stretch;background:var(--mantle);padding-right:8px;font-size:12px}
+.vtab{display:flex;align-items:center;gap:8px;padding:9px 14px;background:#1e1e2e;color:var(--text);border-top:2px solid var(--mauve)}
+.vtab .i{width:14px;height:14px;color:var(--yellow)}
+.vtab .vx{font-style:normal;color:var(--o0);margin-left:6px;font-size:14px;line-height:1}
+.vtabs .sp{flex:1}
+.vtabs .wbt{align-self:center}
+.vcrumb{display:flex;align-items:center;gap:6px;padding:6px 14px;color:var(--o1);font-size:11.5px;background:#1e1e2e}
+.vcrumb i{font-style:normal;color:var(--o0)}
+.vcrumb .i{width:12px;height:12px;color:var(--yellow)}
+.vedit{position:relative;display:flex;min-height:0}
+.vs .wbody{flex:1;min-width:0;padding:4px 0;max-height:calc(100vh - 190px);background:#1e1e2e;scrollbar-width:thin;scrollbar-color:var(--s1) transparent}
+.vs .wseg{padding:6px 12px 6px 0}
+.vs .wseg+.wseg{border-top:0;margin-top:0}
+.vs .wseg .gut{width:52px;padding-right:18px}
+.vs .wseg .gut,.vs .wseg code{font-family:"Cascadia Code","Cascadia Mono",Consolas,ui-monospace,monospace;font-size:13px;line-height:1.6}
+.vs .wseg.on .gut{color:var(--text)}
+.vs .wseg.on{background:color-mix(in srgb,var(--mauve) 7%,transparent);border-left-color:var(--mauve)}
+.vs .wtag{display:none}
+.ig{display:inline;box-shadow:inset 1px 0 color-mix(in srgb,var(--o0) 45%,transparent)}
+.vmap{position:relative;flex:none;width:80px;background:#1e1e2e;border-left:1px solid color-mix(in srgb,var(--s0) 60%,transparent);overflow:hidden;cursor:pointer}
+.vmap canvas{display:block;width:80px}
+.vmv{position:absolute;left:0;right:0;background:color-mix(in srgb,var(--text) 10%,transparent);pointer-events:none}
+.vmc{position:absolute;left:0;width:3px;background:var(--mauve);pointer-events:none}
+@media(max-width:700px){.vmap{display:none}}
+/* Work page, plainer: full width, smaller type, the code and the explanation share one text size */
+.welcome.wfile{max-width:none;margin:0}
+.view:has(.wfile){padding:16px 20px}
+.wfile .wgrid{grid-template-columns:minmax(0,1fr) 340px;gap:20px}
+.wfile .wwin.vs{display:flex;flex-direction:column;height:calc(100vh - 112px);background:var(--crust);border:0;border-radius:10px}
+.wfile .wbar{padding:8px 14px;background:var(--mantle);font-size:12px}
+.wfile .vedit{flex:1;min-height:0}
+.wfile .vs .wbody{max-height:none;height:100%;background:var(--crust);padding:6px 0}
+.wfile .vs .wseg{padding:4px 12px 4px 0;border-left:2px solid transparent}
+.wfile .vs .wseg+.wseg{margin-top:10px}
+.wfile .vs .wseg:hover{background:none}
+.wfile .vs .wseg.on{background:color-mix(in srgb,var(--s0) 45%,transparent);border-left-color:var(--o0)}
+.wfile .vs .wseg .gut{width:46px;padding-right:14px;color:var(--o0)}
+.wfile .vs .wseg.on .gut{color:var(--o1)}
+.wfile .vs .wseg .gut,.wfile .vs .wseg code{font-size:12px;line-height:1.6}
+.wfile .vmap{background:var(--crust)}
+.wfile .vmc{background:var(--o0)}
+.wfile .vmv{background:color-mix(in srgb,var(--text) 8%,transparent)}
+.wfile .wtop h1{font-size:15px}
+.wfile .wtop .sum{font-size:12px}
+.wfile .cpanel p,.wfile .cpanel p code{font-size:12px;line-height:1.7}
+.wfile .cpanel .chd b{font-size:12px}
+.wfile .cout pre,.wfile .cout .ocl{font-size:12px}
+.wfile .cpanel .btn{font-size:11px}
+/* Work page: no second container, the code sits straight on the main panel */
+.wfile .wwin.vs{background:none;border:0;border-radius:0;overflow:visible;height:calc(100vh - 80px)}
+.wfile .vs .wbody,.wfile .vmap{background:none}
+.wfile .vmap{border-left:0}
+.wfile .wgrid{grid-template-columns:minmax(0,760px) 340px;gap:32px;justify-content:start}
+@media(max-width:1100px){.wfile .wgrid{grid-template-columns:minmax(0,1fr)}}
+/* code colours like VS Code: built-in calls yellow, f-string blanks orange, comments grey and italic */
+.wseg .b{color:var(--yellow)}.wseg .fi{color:var(--peach)}.wseg .c{color:var(--o0);font-style:italic}
+.wseg .v{color:var(--pink)}.wseg .fc{color:var(--peach)}.wseg .br0{color:var(--yellow)}.wseg .br1{color:var(--pink)}.wseg .br2{color:var(--blue)}
+/* closer to the editor: variables and parameters salmon, self red italic, def names blue, class names yellow; only the picked cell gets a left bar */
+.wseg .v{color:var(--maroon)}
+.wseg .sf{color:var(--red);font-style:italic}
+.wseg .fn{color:var(--blue)}
+.wseg .y{color:var(--yellow)}
+.wfile .vs .wseg:hover{background:color-mix(in srgb,var(--s0) 28%,transparent);border-left-color:transparent}
+.wfile .vs .wseg:focus-visible{border-left-color:transparent}
+.wfile .vs .wseg.on:hover{border-left-color:var(--o0)}
+/* code type like the editor: Consolas, regular weight (the bold look came from the heavier fallback font); no left bar at all, the picked cell is just a grey band */
+.wfile .vs .wseg .gut,.wfile .vs .wseg code,.wfile .vs .wseg .src{font-family:Consolas,"Cascadia Mono","Liberation Mono",ui-monospace,monospace;font-weight:400}
+.wfile .vs .wseg code{font-size:13px}
+.wfile .vs .wseg .gut{font-size:13px}
+.wfile .vs .wseg,.wfile .vs .wseg.on,.wfile .vs .wseg:hover,.wfile .vs .wseg.on:hover,.wfile .vs .wseg:focus-visible{border-left-color:transparent}
+.wfile .vs .wseg.on{background:color-mix(in srgb,var(--s0) 55%,transparent)}
+/* print, input, type, float and the other built-in calls are blue, like the editor */
+.wseg .b{color:var(--blue)}
+/* built-in types (float, int, str, type, list ...) are yellow, built-in functions (print, input, len ...) stay blue */
+.wseg .ty{color:var(--yellow)}
+.wside>.cft{display:flex;flex-wrap:wrap;gap:8px}
+.wside>.cft .btn{margin-top:0;padding:6px 12px;font-size:12px}
+.wside>.cft .btn .i{width:13px;height:13px}
