@@ -755,6 +755,7 @@ textarea{border:0;outline:0}
 .cpanel .cnav button:disabled:hover{color:var(--o1);background:none}
 .cpanel .cnav .i{width:13px;height:13px}
 .cpanel p{color:var(--sub1);font-size:13.5px;line-height:1.85;margin:0}
+.cpanel p+p{margin-top:12px}
 .cpanel p code{font:12px ui-monospace,SFMono-Regular,Consolas,"Courier New",monospace;background:var(--s0);color:var(--text);padding:1px 6px;border-radius:5px}
 .cpanel .cft{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:18px;padding-top:12px;border-top:1px dashed var(--s1)}
 .cpanel .cft span{color:var(--o0);font-size:11px}

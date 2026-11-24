@@ -39,12 +39,19 @@ def softmax(z): # stabel softmax
     z = z - np.max(z, axis=0)
     return np.exp(z) / np.sum(np.exp(z), axis=0)
 
+# ===== ONE-HOT ENCODING =====
+# a label like Y=3 is just one number, but softmax's output A2 is 10 numbers
+# (one probability per digit). one_hot turns Y into the same shape as A2, so
+# they can be compared directly: a 10-row column that is 1 at the true digit's
+# row and 0 everywhere else. That is what back_prop's dZ2 = A2 - one_hot(Y)
+# actually subtracts: "what we predicted" minus "what we should have predicted".
 def one_hot(Y):
     m = len(Y)
-    oh = np.zeros((10, m))
-    oh[Y, np.arange(m)] = 1
+    oh = np.zeros((10, m))        # one column per example, one row per digit 0-9
+    oh[Y, np.arange(m)] = 1       # row Y[i], column i -> 1; every other row of that column stays 0
     return oh
 
+# ===== STEP 2 (cont.): PREDICTIONS, ACCURACY AND INIT =====
 def get_predict(A2):   # winner class = highest probability after softmax
     return np.argmax(A2, axis=0)
 
@@ -82,15 +89,15 @@ class NeuralNet:
     def back_prop(self, Z1, A1, Z2, A2, X, Y, alpha):
         m = len(Y)
         dZ2 = A2 - one_hot(Y)                       # error at output (predicted - true)
-        dW2 = 1/m * np.dot(dZ2, A1.T)                # slope wrt W2
+        dW2 = 1/m * np.dot(dZ2, A1.T)                # slope wrt W2 (.T = transpose, so shapes line up for the dot product)
         db2 = 1/m * np.sum(dZ2)                      # slope wrt b2
-        dZ1 = np.dot(self.W2.T, dZ2) * deriv_relu(Z1)  # push error back through relu
-        dW1 = 1/m * np.dot(dZ1, X.T)                 # slope wrt W1
+        dZ1 = np.dot(self.W2.T, dZ2) * deriv_relu(Z1)  # push error back through relu (W2.T = transpose of W2)
+        dW1 = 1/m * np.dot(dZ1, X.T)                 # slope wrt W1 (X.T = transpose of X)
         db1 = 1/m * np.sum(dZ1)                      # slope wrt b1
 
         # ===== STEP 5: GRADIENT DESCENT =====
         # apply the slope: step every weight/bias a little opposite the gradient,
-        # alpha = how big that step is. this is the actual "re-tune" / learning.
+        # alpha = the learning rate (LR), how big that step is. this is the actual "re-tune" / learning.
         self.W2 = self.W2 - alpha * dW2
         self.b2 = self.b2 - alpha * db2
         self.W1 = self.W1 - alpha * dW1
