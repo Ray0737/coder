@@ -165,7 +165,7 @@
       const q = s => el.querySelector(s);
       el.innerHTML = `<p class="wgt">Try it: two resistors on a 5 V supply</p>
         <div class="tb">${chips('sp-c', ['In series', 'In parallel'])}${rng('sp-1', 'R1', 100, 1000, 10, 220)}${rng('sp-2', 'R2', 100, 1000, 10, 470)}</div>
-        <div class="nndiag"><svg viewBox="20 0 460 175" width="100%" style="max-height:150px" id="sp-s"></svg></div><div class="afrow" id="sp-a"></div>
+        <div class="nndiag"><svg viewBox="20 0 460 175" width="100%" style="max-height:190px" id="sp-s"></svg></div><div class="afrow" id="sp-a"></div>
         <p class="wgcap">The arrows show the current, from the battery's + side, round the loop and back to its - side.</p>`;
       let m = 0;
       // node: a rounded box with the value inside, in the same outline style as the MLP circles
@@ -209,7 +209,7 @@
       const say = ['Voltage: put the meter ACROSS the part, one probe on each side, with the circuit running. The meter is a branch next to the part, not in its way.', 'Current: BREAK the wire and put the meter IN the road, so every bit of current has to pass through it. Never do this on the voltage setting, because the meter becomes a short circuit.', 'Resistance: switch the power OFF and take the part out of the circuit, or the other parts change the reading. The meter sends its own tiny current.'];
       el.innerHTML = `<p class="wgt">Try it: where does the meter go?</p>
         <div class="tb">${chips('mm-c', ['Voltage', 'Current', 'Resistance'])}</div>
-        <div class="nndiag"><svg viewBox="20 0 460 200" width="100%" style="max-height:170px" id="mm-s"></svg></div><p class="wgsay" id="mm-t"></p>`;
+        <div class="nndiag"><svg viewBox="20 0 460 200" width="100%" style="max-height:215px" id="mm-s"></svg></div><p class="wgsay" id="mm-t"></p>`;
       const node = (x, y, txt, c = 'var(--sub0)', w = 56) => `<rect x="${x - w / 2}" y="${y - 13}" width="${w}" height="26" rx="8" fill="var(--base)" stroke="${c}" stroke-width="1.5"/><text x="${x}" y="${y + 4}" text-anchor="middle" font-size="11" fill="var(--text)">${txt}</text>`;
       const lab = (x, y, t, a = 'middle', c = 'var(--o1)') => `<text x="${x}" y="${y}" text-anchor="${a}" font-size="11" fill="${c}">${t}</text>`;
       const wire = (d, c = 'var(--s1)') => `<path d="${d}" fill="none" stroke="${c}" stroke-width="1.5" stroke-linejoin="round"/>`;
@@ -217,14 +217,14 @@
       const loop = 'M60 87 V50 Q60 40 70 40 H430 Q440 40 440 50 V150 Q440 160 430 160 H70 Q60 160 60 150 V113';
       const dot = (x, y, c) => `<circle cx="${x}" cy="${y}" r="3.5" fill="${c}"/>`;
       // the meter body: a symbol, the two sockets on its top edge and the dial setting under it
-      const body = (cx, cy, w, sym, dial) => `<rect x="${cx - w / 2}" y="${cy - 20}" width="${w}" height="40" rx="8" fill="var(--base)" stroke="var(--mauve)" stroke-width="1.5"/><text x="${cx}" y="${cy + 6}" text-anchor="middle" font-size="16" fill="var(--text)">${sym}</text>${lab(cx, cy + 36, dial)}`;
+      const body = (cx, cy, w, sym, dial) => `<rect x="${cx - w / 2}" y="${cy - 15}" width="${w}" height="30" rx="7" fill="var(--base)" stroke="var(--mauve)" stroke-width="1.5"/><text x="${cx}" y="${cy + 5}" text-anchor="middle" font-size="14" fill="var(--text)">${sym}</text>${lab(cx, cy + 30, dial)}`;
       const battery = node(60, 100, '5 V', 'var(--mauve)', 52) + lab(60, 140, 'battery') + lab(46, 80, '+', 'end', RED) + lab(46, 124, '\u2212', 'end', 'var(--blue)');
       const draw = i => {
         let s = '';
         if (i === 0) s = wire(loop) + node(190, 40, '220\u03a9') + lab(190, 20, 'resistor') + node(330, 40, 'LED', 'var(--sub0)', 44) + battery
           + wire('M140 95 V40', RED) + wire('M240 95 V40', BLK) + dot(140, 40, RED) + dot(240, 40, BLK)
-          + body(190, 115, 140, 'V', 'dial: DC volts')
-          + dot(140, 95, RED) + dot(240, 95, BLK) + lab(150, 108, 'V\u03a9', 'start', RED) + lab(230, 108, 'COM', 'end')
+          + body(190, 110, 116, 'V', 'dial: DC volts')
+          + dot(140, 95, RED) + dot(240, 95, BLK) + lab(147, 88, 'V\u03a9', 'start', RED) + lab(233, 88, 'COM', 'end')
           + lab(132, 70, 'red probe', 'end') + lab(248, 70, 'black probe', 'start') + lab(190, 70, 'across the part');
         if (i === 1) s = wire(loop) + node(250, 40, '220\u03a9') + lab(250, 20, 'resistor') + node(360, 40, 'LED', 'var(--sub0)', 44) + battery
           + wire('M60 87 V50 Q60 40 70 40 H105', RED) + wire('M175 40 H222', BLK)
@@ -232,7 +232,7 @@
           + lab(82, 62, 'red', 'middle', RED) + lab(199, 62, 'black') + lab(140, 14, 'meter in the line');
         if (i === 2) s = node(250, 60, '220\u03a9') + lab(250, 30, 'resistor, taken out') + wire('M160 60 H222', 'var(--s1)') + wire('M278 60 H340', 'var(--s1)')
           + wire('M212 60 V130', RED) + wire('M288 60 V130', BLK) + dot(212, 60, RED) + dot(288, 60, BLK)
-          + body(250, 150, 140, '\u03a9', 'dial: ohms') + dot(212, 130, RED) + dot(288, 130, BLK) + lab(222, 143, 'V\u03a9', 'start', RED) + lab(278, 143, 'COM', 'end')
+          + body(250, 145, 116, '\u03a9', 'dial: ohms') + dot(212, 130, RED) + dot(288, 130, BLK) + lab(219, 123, 'V\u03a9', 'start', RED) + lab(281, 123, 'COM', 'end')
           + lab(204, 98, 'red probe', 'end') + lab(296, 98, 'black probe', 'start') + lab(350, 64, 'power off', 'start', RED);
         q('#mm-s').innerHTML = s; q('#mm-t').textContent = say[i];
       };
@@ -288,34 +288,32 @@
       q('#lw-b').onclick = () => { hi = !hi; draw(); }; draw();
     },
 
-    // button: pull-up and pull-down, drawn like the series and parallel diagram
+    // button: pull-up and pull-down, in the same loop design and size as the series and multimeter diagrams
     buttonwire(el) {
       const q = s => el.querySelector(s);
       el.innerHTML = `<p class="wgt">Try it: wire a button two ways, then press it</p>
         <div class="tb">${chips('bw-c', ['Pull-up: button to GND', 'Pull-down: button to 5V'])}${bt('bw-b', 'Press the button', 'act')}</div>
-        <div class="nndiag"><svg viewBox="20 0 460 236" width="100%" style="max-height:340px" id="bw-s"></svg></div><div class="afrow" id="bw-a"></div>`;
+        <div class="nndiag"><svg viewBox="20 0 460 175" width="100%" style="max-height:190px" id="bw-s"></svg></div><div class="afrow" id="bw-a"></div>`;
       let m = 0, down = false;
-      const node = (x, y, txt, c = 'var(--sub0)', w = 64) => `<rect x="${x - w / 2}" y="${y - 13}" width="${w}" height="26" rx="8" fill="var(--base)" stroke="${c}" stroke-width="1.5"/><text x="${x}" y="${y + 4}" text-anchor="middle" font-size="11" fill="var(--text)">${txt}</text>`;
-      const lab = (x, y, t, a = 'middle', c = 'var(--o1)', s = 10) => `<text x="${x}" y="${y}" text-anchor="${a}" font-size="${s}" fill="${c}">${t}</text>`;
+      const node = (x, y, txt, c = 'var(--sub0)', w = 56) => `<rect x="${x - w / 2}" y="${y - 13}" width="${w}" height="26" rx="8" fill="var(--base)" stroke="${c}" stroke-width="1.5"/><text x="${x}" y="${y + 4}" text-anchor="middle" font-size="11" fill="var(--text)">${txt}</text>`;
+      const lab = (x, y, t, a = 'middle', c = 'var(--o1)', s = 11) => `<text x="${x}" y="${y}" text-anchor="${a}" font-size="${s}" fill="${c}">${t}</text>`;
       const wire = (d, on) => `<path d="${d}" fill="none" stroke="${on ? 'var(--mauve)' : 'var(--s1)'}" stroke-width="${on ? 2 : 1.5}" stroke-linejoin="round"/>`;
       const arrow = (x, y, d) => `<polygon transform="translate(${x} ${y})" points="${{ r: '-3,-4 -3,4 4,0', l: '3,-4 3,4 -4,0', d: '-4,-3 4,-3 0,4' }[d]}" fill="var(--mauve)"/>`;
       const draw = () => {
         q('#bw-b').textContent = down ? 'Release the button' : 'Press the button';
-        const flow = down, X = 300, YT = 36, Y1 = 80, YJ = 124, Y2 = 168, YB = 208;     // the current runs from 5V to GND only while the button is pressed
+        const flow = down;                                                  // current runs round the loop only while the button is pressed
         const val = m === 0 ? (down ? 0 : 1) : (down ? 1 : 0);
-        const btn = y => node(X, y, down ? 'pressed' : 'open', down ? 'var(--mauve)' : 'var(--sub0)', 64);
-        const res = (y, t) => node(X, y, t, 'var(--sub0)', 64);
-        let s = wire(`M82 ${YT} H${X}`, flow) + wire(`M82 ${YB} H${X}`, flow);
-        // the parts down the middle: pull-up is resistor then button, pull-down is button then resistor
-        s += wire(`M${X} ${YT} V${Y1 - 13}`, flow) + wire(`M${X} ${Y1 + 13} V${YJ}`, flow) + wire(`M${X} ${YJ} V${Y2 - 13}`, flow) + wire(`M${X} ${Y2 + 13} V${YB}`, flow);
-        s += wire(`M162 ${YJ} H${X}`, false) + `<circle cx="${X}" cy="${YJ}" r="3.5" fill="var(--${flow ? 'mauve' : 'sub0'})"/>`;
-        s += node(60, YT, '5 V', 'var(--mauve)', 44) + node(60, YB, 'GND', 'var(--sub0)', 44);
-        s += m === 0 ? res(Y1, '~20 k\u03a9') + btn(Y2) : btn(Y1) + res(Y2, '10 k\u03a9');
-        s += node(130, YJ, m === 0 ? 'pin 2' : 'pin 3', val ? 'var(--mauve)' : 'var(--sub0)', 64) + lab(130, YJ + 30, 'reads ' + (val ? 'HIGH' : 'LOW'), 'middle', val ? 'var(--mauve)' : 'var(--o1)', 11) + lab(130, YJ + 44, val ? '(about 5 V)' : '(about 0 V)', 'middle', 'var(--o1)', 9);
-        s += m === 0 ? lab(X + 44, Y1 + 4, 'inside the chip', 'start') + lab(X + 44, Y2 + 4, 'you add this button', 'start') : lab(X + 44, Y1 + 4, 'you add this button', 'start') + lab(X + 44, Y2 + 4, 'you add this resistor', 'start');
-        if (flow) s += arrow(190, YT, 'r') + arrow(190, YB, 'l') + arrow(X, 54, 'd') + arrow(X, 102, 'd') + arrow(X, 146, 'd') + arrow(X, 190, 'd');
+        const loop = 'M60 82 V48 Q60 38 70 38 H430 Q440 38 440 48 V142 Q440 152 430 152 H70 Q60 152 60 142 V108';
+        const btn = x => node(x, 38, down ? 'pressed' : 'open', down ? 'var(--mauve)' : 'var(--sub0)');
+        let s = wire(loop, flow) + wire('M250 38 V82', false) + `<circle cx="250" cy="38" r="3.5" fill="var(--${flow ? 'mauve' : 'sub0'})"/>`;
+        s += node(60, 95, '5 V', 'var(--mauve)', 52);
+        // pull-up: resistor, tap to the pin, button.  pull-down: button, tap to the pin, resistor
+        s += m === 0 ? node(170, 38, '~20 k\u03a9') + btn(330) : btn(170) + node(330, 38, '10 k\u03a9');
+        s += m === 0 ? lab(170, 20, 'resistor') + lab(170, 66, 'inside the chip') + lab(330, 20, 'button') + lab(330, 66, 'you add this') : lab(170, 20, 'button') + lab(170, 66, 'you add this') + lab(330, 20, 'resistor') + lab(330, 66, 'you add this');
+        s += node(250, 95, m === 0 ? 'pin 2' : 'pin 3', val ? 'var(--mauve)' : 'var(--sub0)', 56) + lab(250, 124, 'reads ' + (val ? 'HIGH' : 'LOW'), 'middle', val ? 'var(--mauve)' : 'var(--o1)') + lab(250, 138, val ? '(about 5 V)' : '(about 0 V)', 'middle', 'var(--o1)', 9);
+        if (flow) s += arrow(110, 38, 'r') + arrow(390, 38, 'r') + arrow(440, 95, 'd') + arrow(260, 152, 'l');
         q('#bw-s').innerHTML = s;
-        q('#bw-a').innerHTML = cell('Wiring', m === 0 ? 'INPUT_PULLUP' : 'INPUT + 10k resistor', m === 0 ? 'pull-up' : 'pull-down') + cell('Idle reads', 'button not pressed', m === 0 ? 'HIGH' : 'LOW') + cell('Pressed reads', 'button pressed', m === 0 ? 'LOW' : 'HIGH') + cell('Right now', down ? 'pressed' : 'released', `digitalRead = ${val ? 'HIGH' : 'LOW'}`);
+        q('#bw-a').innerHTML = cell('Wiring', m === 0 ? 'INPUT_PULLUP' : 'INPUT + 10k resistor', m === 0 ? 'pull-up' : 'pull-down') + cell('Idle reads', 'button not pressed', m === 0 ? 'HIGH' : 'LOW') + cell('Pressed reads', 'button pressed', m === 0 ? 'LOW' : 'HIGH') + cell('Right now', down ? 'pressed' : 'released', `<span style="white-space:nowrap;font-size:14px">digitalRead&nbsp;=&nbsp;${val ? 'HIGH' : 'LOW'}</span>`);
       };
       pick(q, '#bw-c', i => { m = i; draw(); });
       q('#bw-b').onclick = () => { down = !down; draw(); }; draw();
