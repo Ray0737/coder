@@ -1517,10 +1517,11 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 .bpsay .bpl code{font-size:12px;line-height:1.5}
 .bpsay .wgcap{display:block;margin:0}
 
-/* maths in dropdowns: ```math blocks are centred plain lines (no box), and inline `code` inside an AI Development dropdown reads as plain maths too (other classes keep normal code) */
-.mathb{margin:12px 0;text-align:center;font:15px/1.9 "Cambria Math","STIX Two Math","Latin Modern Math",Georgia,serif;color:var(--text)}
+/* maths in dropdowns: ```math blocks are centred plain lines (no box), and inline `code` inside an AI Development dropdown reads as plain maths too (other classes keep normal code).
+   Uses the site's own bundled sans font, not a system math/serif font: those fall back to plain Times New Roman wherever Cambria Math / STIX Two Math / Georgia aren't installed. */
+.mathb{margin:12px 0;text-align:center;font:15px/1.9 "LINE Seed",system-ui,sans-serif;color:var(--text)}
 .mathb>div{white-space:pre-wrap}
-.lesson[data-cls="ai-development"] details.more p code,.lesson[data-cls="ai-development"] details.more li code,.lesson[data-cls="ai-development"] details.more td code{background:none;padding:0;color:var(--text);font:1.06em "Cambria Math","STIX Two Math","Latin Modern Math",Georgia,serif}
+.lesson[data-cls="ai-development"] details.more p code,.lesson[data-cls="ai-development"] details.more li code,.lesson[data-cls="ai-development"] details.more td code{background:none;padding:0;color:var(--text);font:1.06em "LINE Seed",system-ui,sans-serif}
 
 /* AI Development diagrams: one text size, taken from the MLP diagrams (11px labels, 9px small ticks) */
 [data-cls="ai-development"] .wg svg text{font-size:11px}

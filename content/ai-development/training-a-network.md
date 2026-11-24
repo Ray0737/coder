@@ -110,6 +110,8 @@ backproptiny
 > [!compare] Think of grading a group project from the end backwards. The final result was wrong, so you ask who contributed most, walk back through each stage, and nudge everyone who played a part.
 
 > [!more] Math: the four backpropagation equations, with proofs
+> *"This chapter is more mathematically involved than the rest of the book. If you're not crazy about mathematics you may be tempted to skip the chapter, and to treat backpropagation as a black box whose details you're willing to ignore. Why take the time to study those details?" (someone who clearly had to write this section too.)*
+>
 > Define the **error** of neuron `j` in layer `l` as how much the cost changes per unit change in its weighted sum: `δˡⱼ = ∂C/∂zˡⱼ`. Here `L` is the last layer, `σ′` is the sigmoid's slope, and `⊙` means multiply element by element.
 >
 > ```math
