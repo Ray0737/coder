@@ -17,6 +17,9 @@ print(len(constellations))      # 12
 # constellations[0] = "Cat"     # TypeError: tuples are immutable
 ```
 
+> [!more] TLDR: tuples
+> A tuple uses round brackets, such as `(1, 2, 3)`, and cannot be changed after it is made, so `t[0] = 5` is an error. That is the point: it guarantees the values stay fixed, like the twelve zodiac animals or the days of the week. A tuple with one item needs a comma, as in `(5,)`, because `(5)` is just the number 5 in brackets.
+
 ## Reading a tuple
 
 You read a tuple by index and slice it just like a list. You can also ask `count` and `index`.
@@ -29,6 +32,9 @@ print(t.index(3.14))        # 2
 
 > [!compare] Think of it like a printed menu card and a whiteboard menu. The whiteboard (a list) can be rubbed out and rewritten. The printed card (a tuple) is fixed, so nobody can change a price by accident.
 
+> [!more] TLDR: reading a tuple
+> Index and slice it like a list, and use `count` and `index`. Nothing in it can be changed.
+
 ## Unpacking
 
 You can pull a tuple apart into separate variables in one line. This is how a function returns two values.
@@ -38,6 +44,9 @@ point = (3, 7)
 x, y = point
 print(x, y)         # 3 7
 ```
+
+> [!more] TLDR: unpacking
+> `a, b = pair` pulls a tuple into separate variables in one line. It is how a function returns two values.
 
 ## Matching two tuples with an index
 
@@ -51,6 +60,9 @@ for year in range(2565, 2571):
     print(f"Year {year}: {names[i]}")
 ```
 
+> [!more] TLDR: matching with an index
+> Two tuples of the same length work as two matching columns. A remainder from `%` picks the position.
+
 ## Dictionaries: look it up by name
 
 A **dictionary** stores **key: value** pairs inside curly brackets. You give it a key, and it gives you the value.
@@ -60,6 +72,9 @@ menu = {"Burger": 250, "Pizza": 199, "Frenchfries": 299}
 print(menu["Pizza"])        # 199
 ```
 
+> [!more] TLDR: dictionaries
+> A dictionary stores `key: value` pairs in curly brackets. Give a key and you get its value.
+
 ## Look a key up
 
 Look up a key below and notice what happens with a key that is not in the menu. Use `[]` when the key must exist, and `.get()` when it might not, because `.get()` gives `None` instead of crashing. You can also give `.get()` a fallback: `menu.get("Salad", 0)`.
@@ -67,6 +82,9 @@ Look up a key below and notice what happens with a key that is not in the menu. 
 ```widget
 dictlookup
 ```
+
+> [!more] TLDR: looking up a key
+> `d[key]` stops the program with a `KeyError` if the key is not in the dictionary. `d.get(key)` gives `None` instead, and `d.get(key, 0)` gives a fallback you choose. Use `[]` when the key must exist, so a mistake is loud, and `.get()` when it might not. `key in d` is the yes-or-no version.
 
 ## Changing a dictionary
 
@@ -82,6 +100,9 @@ These are the everyday jobs on a dictionary, one line each.
 | all the values | `menu.values()` |
 | all the pairs | `menu.items()` |
 
+> [!more] TLDR: changing a dictionary
+> `d[key] = value` adds or replaces, and `pop` and `del` remove.
+
 ## Looping over a dictionary
 
 `keys()`, `values()` and `items()` give you the parts to loop over, and `items()` hands back each key and value together. In the code, `keys()` and `values()` give the parts and `items()` gives each pair together, so the `for` loop can unpack each pair into `short` and `full`.
@@ -95,6 +116,9 @@ for short, full in weekday.items():
     print(short, "=", full)
 ```
 
+> [!more] TLDR: looping
+> `keys()`, `values()` and `items()` give the parts to loop over, and `items()` gives each key and value together.
+
 ## Keys and values
 
 Keys must be unique and cannot be changed (strings, numbers and tuples work, lists do not). Values can be anything, even a list.
@@ -103,6 +127,9 @@ Keys must be unique and cannot be changed (strings, numbers and tuples work, lis
 account = {"admin": ["test1", 0]}    # key: username, value: [password, balance]
 account["admin"][1] += 100           # add 100 to the balance
 ```
+
+> [!more] TLDR: keys and values
+> Keys must be unique and unchangeable: strings, numbers and tuples work, lists do not. Values can be anything.
 
 ## Sets: no duplicates
 
@@ -113,6 +140,9 @@ print({1, 2, 3, 2, 1})                  # {1, 2, 3}
 print({1, 2}.union({3, 4}))             # {1, 2, 3, 4}
 print({1, 2}.intersection({2, 3}))      # {2}
 ```
+
+> [!more] TLDR: sets
+> A set keeps each value once and has no order. `list(set(items))` removes duplicates.
 
 ## Where Python keeps data
 
@@ -153,6 +183,9 @@ for item in Priority:      # loop over every choice
     print(item.name)
 ```
 
+> [!more] TLDR: enum
+> An `Enum` gives names to a small fixed set of choices, so a typo becomes an error.
+
 ## Which one should I use?
 
 Pick the container from what you need to do with the data.
@@ -166,6 +199,9 @@ Pick the container from what you need to do with the data.
 | keep it after the program closes | a file (text or JSON) |
 
 > [!compare] Think of it like kitchen storage. A **list** is a shelf where you can reorder things, a **tuple** is a sealed box, a **dictionary** is a spice rack with labels, a **set** is a jar of marbles where duplicates fall out, and a **file** is the fridge that keeps food after you leave the kitchen.
+
+> [!more] TLDR: which one to use
+> Ask what you do with the data. If it keeps an order and changes, use a list. If it must stay fixed, use a tuple. If you look things up by a name, use a dictionary. If you only care about which values exist and want no duplicates, use a set. Choosing the right container makes the code shorter and the mistakes fewer.
 
 ## Handy tips
 

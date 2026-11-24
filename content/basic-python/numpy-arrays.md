@@ -13,6 +13,9 @@ NumPy is not built into Python, so install it once with `pip install numpy`, the
 import numpy as np
 ```
 
+> [!more] TLDR: install
+> `pip install numpy`, then `import numpy as np`.
+
 ## Making arrays
 
 Build an array from a list, from a list of lists for a grid, or with a helper that fills it for you. `np.array` turns a list into an array, and a list of lists becomes a grid. `zeros` and `ones` make arrays filled with 0 or 1, `arange` counts like `range`, `linspace` gives a set number of evenly spaced values between two ends, and `reshape` rearranges the same numbers into rows and columns.
@@ -28,6 +31,9 @@ print(np.linspace(0, 1, 5))             # [0.   0.25 0.5  0.75 1.  ]  5 evenly s
 print(np.arange(1, 7).reshape(2, 3))    # reshape a row into 2 rows of 3
 ```
 
+> [!more] TLDR: making arrays
+> `np.array` turns a list into an array. `zeros`, `ones` and `arange` fill one for you.
+
 ## Shape and type
 
 Every array knows its own shape and type.
@@ -38,6 +44,9 @@ Every array knows its own shape and type.
 | `b.ndim` | number of dimensions | `2` |
 | `b.size` | total items | `6` |
 | `b.dtype` | the type of every item | `int64` (it can be `int32` on some Windows installs) |
+
+> [!more] TLDR: shape and type
+> `.shape` gives the size of each direction and `.dtype` gives the type of the numbers.
 
 ## Maths on the whole array
 
@@ -57,6 +66,9 @@ print([1, 2] * 2)              # [1, 2, 1, 2]   the list is repeated
 print(np.array([1, 2]) * 2)    # [2 4]          every number doubled
 ```
 
+> [!more] TLDR: maths on the whole array
+> `prices * 2` changes every item at once, with no loop.
+
 ## Two arrays together
 
 Two arrays of the same shape combine item by item. This is the speed-up too: the loop runs inside NumPy's fast code, not in slow Python.
@@ -64,6 +76,9 @@ Two arrays of the same shape combine item by item. This is the speed-up too: the
 ```python
 print(np.array([1, 2, 3]) + np.array([10, 20, 30]))    # [11 22 33]
 ```
+
+> [!more] TLDR: two arrays
+> Two arrays of the same shape combine item by item. The loop runs inside NumPy's fast code.
 
 ## Try the operations
 
@@ -86,6 +101,9 @@ print(a[:, 1])        # [ 2  6 10], the whole second column
 print(a[0:2, 1:3])    # rows 0-1 and columns 1-2: [[2 3] [6 7]]
 ```
 
+> [!more] TLDR: indexing
+> A grid needs row then column: `a[1, 2]`. The colon means all, so `a[:, 1]` is every row of column 1.
+
 ## Masks: pick by a condition
 
 A comparison on an array gives an array of `True` and `False`. Use it as an index to keep only the matching items. This replaces a loop with an `if`. `scores >= 60` checks every score and gives True or False for each, which is the mask. Using the mask as an index keeps only the True items, so `scores[mask]` is `[90 72 85]`, and the last line assigns, so every score under 50 is raised to 50.
@@ -97,6 +115,9 @@ print(mask)               # [False  True  True False  True]
 print(scores[mask])       # [90 72 85]
 scores[scores < 50] = 50  # raise every low score to 50
 ```
+
+> [!more] TLDR: masks
+> A comparison on an array, such as `scores >= 60`, gives an array of `True` and `False` the same size. Using that as an index, `scores[scores >= 60]`, keeps only the items where it is true. It replaces a loop with an `if`. Join conditions with `&` and `|`, and put each one in brackets, because `and` and `or` do not work on arrays.
 
 ## axis: which way to squash
 
@@ -110,6 +131,9 @@ Functions like `sum`, `mean`, `max` take an `axis`. The axis is the direction th
 
 > [!compare] Think of it like a school timetable grid. `axis=0` adds down each column (the total for each day), and `axis=1` adds across each row (the total for each period).
 
+> [!more] TLDR: axis
+> Functions such as `sum`, `mean` and `max` take an `axis`, and the axis is the direction that disappears. For a grid with rows and columns, `axis=0` squashes the rows and gives one answer per column, while `axis=1` squashes the columns and gives one answer per row. With no axis, everything is squashed into one number.
+
 ## Broadcasting: different shapes, still works
 
 NumPy stretches a smaller array to fit a bigger one, when the shapes allow it. A single number stretches to everything, and a row stretches down the rows, so each column gets its own number added. This is how you subtract the average from every column in one line.
@@ -121,6 +145,9 @@ print(a + np.array([10, 20, 30, 40]))
 #  [15 26 37 48]
 #  [19 30 41 52]]
 ```
+
+> [!more] TLDR: broadcasting
+> When two arrays have different shapes, NumPy stretches the smaller one to fit if the shapes allow it. A single number is stretched to everything, so `a + 5` works, and a row is repeated down the rows, so `a - a.mean(axis=0)` subtracts each column's average from that column. No loop is written, and no copy of the data is made by you.
 
 ## Why a picture is an array
 
@@ -134,6 +161,9 @@ img[0, 0] = [255, 0, 0]                     # make the top-left pixel blue (BGR)
 
 > [!warn] `uint8` cannot go past 255. It **wraps around**: `np.array([250], dtype=np.uint8) + 10` gives `[4]`, not 260. When you brighten a picture, convert to a bigger type first, or use `np.clip(img.astype(int) + 50, 0, 255)`.
 
+> [!more] TLDR: a picture is an array
+> A colour picture is height by width by 3 numbers from 0 to 255, stored as `uint8`.
+
 ## Cropping is slicing
 
 This is why NumPy is the language of the Computer Vision class: cropping a picture is just slicing.
@@ -141,6 +171,9 @@ This is why NumPy is the language of the Computer Vision class: cropping a pictu
 ```python
 crop = img[y1:y2, x1:x2]       # rows first, then columns
 ```
+
+> [!more] TLDR: cropping
+> Cropping a picture is slicing: `img[y1:y2, x1:x2]`.
 
 ## A neuron in one line
 
@@ -153,6 +186,9 @@ b = 0.5                          # bias
 
 print(np.dot(x, w) + b)          # 5.0  =  1*0.5 + 2*-1 + 3*2 + 0.5
 ```
+
+> [!more] TLDR: a neuron
+> A neuron's weighted sum is a dot product, and a whole layer is `x @ W`.
 
 ## Handy functions
 

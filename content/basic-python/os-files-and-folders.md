@@ -18,6 +18,9 @@ print(os.listdir("."))      # the names inside it, as a list of text
 
 > [!warn] The most common beginner error is `FileNotFoundError: [Errno 2] No such file or directory`. The file is usually fine. The script is running from a **different folder** than you think. Print `os.getcwd()` and look.
 
+> [!more] TLDR: the working directory
+> A script runs from a current folder and every relative path starts there. `.` is this folder and `..` is the one above.
+
 ## Building paths: os.path
 
 Never glue paths together with `+` and a slash. Windows uses `\`, Linux and the Raspberry Pi use `/`, and `os.path.join` picks the right one for the machine. `os.path.join` glues the parts together with the right separator for your machine, so the same code works on Windows and on the Pi.
@@ -29,6 +32,9 @@ path = os.path.join("data", "images", "cat01.png")
 print(path)                       # data/images/cat01.png  (data\images\cat01.png on Windows)
 ```
 
+> [!more] TLDR: os.path.join
+> `os.path.join("data", "cat.png")` glues the parts together with the separator that suits the machine: a backslash on Windows and a slash on Linux and the Raspberry Pi. Writing `"data" + "/" + "cat.png"` by hand breaks when the program moves to another system. Use `join` every time you build a path.
+
 ## Taking a path apart
 
 The other `os.path` tools take a path apart or ask questions about it. Type a path and see.
@@ -36,6 +42,9 @@ The other `os.path` tools take a path apart or ask questions about it. Type a pa
 ```widget
 pathviz
 ```
+
+> [!more] TLDR: taking a path apart
+> `os.path.basename` gives the file name and `os.path.dirname` gives the folder.
 
 ## The os.path questions
 
@@ -51,6 +60,9 @@ These are the calls the diagram uses, and each one answers a single question abo
 | `os.path.getsize(p)` | the size in bytes |
 
 > [!compare] Think of it like a postal address. The **absolute** path is the full address with country and street. A **relative** path is "two doors down from here", which only works if you are standing in the right place. `join` writes the address with the correct separators for the country.
+
+> [!more] TLDR: the os.path questions
+> `exists`, `isfile` and `isdir` each answer one yes-or-no question about a path.
 
 ## Making, renaming and deleting
 
@@ -69,6 +81,9 @@ os.rmdir("empty_folder")                      # deletes an EMPTY folder
 
 > [!warn] **Danger: never point a delete at a system folder.** On Windows the folder `C:\Windows\System32` holds the files Windows needs to start, and on Linux and the Pi the same goes for `/`, `/bin`, `/usr` and `/etc`. Deleting inside them, or running a delete or `shutil.rmtree` on a wrong or empty path, can leave the computer unable to boot and force a full reinstall, with no way to undo it. A path built from `input()` or from a variable that turned out empty can end up pointing there. Never run a delete you copied from the internet without reading it, test with `print()` first, and only ever delete inside a folder your own program created.
 
+> [!more] TLDR: make, rename, delete
+> `makedirs(..., exist_ok=True)` makes the folders, `rename` renames or moves and `remove` deletes for good.
+
 ## Copying and deleting a folder
 
 To copy a file, the `os` module has no call, so use `shutil`. To delete a folder with files inside, use `shutil.rmtree`, which is just as permanent as `os.remove`.
@@ -79,6 +94,9 @@ shutil.copy("a.txt", "b.txt")      # copy a file
 # shutil.rmtree("folder")         # delete a folder and everything inside it
 ```
 
+> [!more] TLDR: shutil
+> `os` has no copy call, so use `shutil.copy`. `shutil.rmtree` deletes a whole folder, and it is permanent.
+
 ## Looking through a dataset folder
 
 Image datasets are usually one folder per class, like this.
@@ -88,6 +106,9 @@ dataset/
     cats/   cat01.jpg  cat02.jpg ...
     dogs/   dog01.jpg  dog02.jpg ...
 ```
+
+> [!more] TLDR: a dataset folder
+> Image datasets usually have one folder per class, and the folder name is the label.
 
 ## Loop over the folders and files
 
@@ -105,6 +126,9 @@ for label in os.listdir(root):                       # "cats", "dogs"
     print(label, len(files))
 ```
 
+> [!more] TLDR: loop over a dataset
+> Loop over the folders, then the files inside, and keep only pictures. The folder is the label and the files are the examples.
+
 ## os.walk: every folder at any depth
 
 To visit every folder at any depth in one go, use `os.walk`.
@@ -115,6 +139,9 @@ for folder, subfolders, files in os.walk("dataset"):
 ```
 
 > [!tip] `os.listdir` gives names in no promised order. Wrap it in `sorted(...)` when the order matters, such as frames of a video.
+
+> [!more] TLDR: os.walk
+> `os.walk` visits every folder at any depth and gives the folder, its subfolders and its files.
 
 ## Environment variables: secrets stay out of code
 
@@ -130,6 +157,9 @@ if key is None:
 
 > [!warn] Never type a real key or password into your code and then share or upload the file. Anyone who sees the file has the key. Read it from the environment instead.
 
+> [!more] TLDR: environment variables
+> An environment variable is a setting that lives in the computer, outside your script. `os.environ.get("API_KEY")` reads it and gives `None` if it is not set. It is the right place for passwords and API keys, because the secret never appears in a file you share or upload to GitHub.
+
 ## The modern alternative: pathlib
 
 Python also has `pathlib`, which treats a path as an object and uses `/` to join. Many new programs use it, so you will meet it. `Path("data") / "images" / "cat01.png"` joins the parts with `/`. The path object then has handy parts, such as `.name` for the file name, `.suffix` for the extension and `.exists()` to check it is there.
@@ -142,6 +172,9 @@ print(p.name)          # cat01.png
 print(p.suffix)        # .png
 print(p.exists())
 ```
+
+> [!more] TLDR: pathlib
+> `Path("data") / "cat.png"` joins parts with `/` and the path object has handy methods.
 
 ## Try it
 

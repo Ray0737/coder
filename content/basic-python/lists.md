@@ -15,6 +15,9 @@ mixed = [0, 1, 2, "a", "b", "c"]
 empty = []
 ```
 
+> [!more] TLDR: making a list
+> A list is values in square brackets, separated by commas. It can mix types and repeat values.
+
 ## Index: the locker number
 
 Each item has a position called an **index**. It starts at **0**, not 1, so the first locker is number 0. Negative numbers count from the end: `-1` is the last item. Asking for a position that does not exist, such as `playlist[10]`, stops the program with `IndexError: list index out of range`.
@@ -25,6 +28,9 @@ print(playlist[3])     # Echo
 print(playlist[-1])    # Echo, the last song
 ```
 
+> [!more] TLDR: index
+> An index is a position, and it starts at 0, so `playlist[0]` is the first item. Negative numbers count from the end, so `playlist[-1]` is the last. Asking for a position that does not exist, such as `playlist[10]` in a list of three, stops the program with `IndexError: list index out of range`. The last valid index is always `len(list) - 1`.
+
 ## Swap an item and count them
 
 You can swap what is inside a locker by assigning to its index, and `len()` tells you how many lockers there are.
@@ -34,6 +40,9 @@ playlist[1] = "Moonlight"       # Sunrise is replaced
 print(playlist)                 # ['Blue', 'Moonlight', 'Tokyo', 'Echo']
 print(len(playlist))            # 4
 ```
+
+> [!more] TLDR: assign and len()
+> `my_list[1] = x` replaces an item and `len(my_list)` counts them.
 
 ## Changing a list
 
@@ -59,6 +68,9 @@ These are the methods the buttons use. Two of them, `sort()` and `reverse()`, ch
 | `sort()` | put the items in order, changing the list itself |
 | `reverse()` | flip the order, changing the list itself |
 
+> [!more] TLDR: list methods
+> `append(x)` adds to the end, `insert(i, x)` adds at a position, `pop()` removes and gives back the last item, and `remove(x)` removes the first one equal to x. `sort()` and `reverse()` change the list itself and give back nothing, so `nums = nums.sort()` leaves `nums` as `None`. If you want a sorted copy and want to keep the original, use `sorted(nums)`.
+
 ## Slicing: a piece of the row
 
 A **slice** copies a section of a list. `[start:stop]` takes from `start` up to, but **not including**, `stop`. `nums[1:3]` starts at index 1 and stops before index 3, so you get 20 and 30. Leaving out the start (`nums[:2]`) means from the beginning, and leaving out the end (`nums[2:]`) means to the end, and a slice is a new list, so the original does not change.
@@ -69,6 +81,9 @@ print(nums[1:3])     # [20, 30]
 print(nums[:2])      # [10, 20]  from the start
 print(nums[2:])      # [30, 40, 50]  to the end
 ```
+
+> [!more] TLDR: slicing
+> `list[start:stop]` copies from `start` up to, but not including, `stop`. So `nums[1:3]` takes index 1 and 2. Leave out `start` to begin at the front, leave out `stop` to go to the end, and add a third number for a step, as in `nums[::2]`. A slice is a new list, so changing it does not change the original.
 
 ## Building a list from input
 

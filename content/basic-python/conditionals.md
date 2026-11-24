@@ -18,6 +18,9 @@ A condition is a yes-or-no question. Python answers it with a **boolean**: `True
 
 > [!warn] One `=` **stores** a value (`age = 15`). Two `==` **ask** whether two values are equal (`age == 15`). Mixing them up is the most common beginner mistake.
 
+> [!more] TLDR: comparisons
+> A comparison such as `==`, `!=`, `>` or `<=` gives `True` or `False`. `=` stores and `==` asks.
+
 ## Joining questions
 
 You can join questions with `and`, `or` and `not`.
@@ -27,6 +30,9 @@ print(5 > 3 and 2 > 1)     # True: both must be true
 print(5 > 3 or 2 > 9)      # True: one is enough
 print(not 5 > 3)           # False: flips the answer
 ```
+
+> [!more] TLDR: and, or, not
+> `and` needs both true, `or` needs one, and `not` flips the answer.
 
 ## if, elif, else
 
@@ -42,6 +48,9 @@ else:
     print(f"{num} is less than 0")
 ```
 
+> [!more] TLDR: if, elif, else
+> Python checks `if` first, then each `elif` in order, and runs only the first branch whose question is true. `else` has no question and catches everything left over. Each branch is the indented block under the colon, so four spaces of indentation is part of the syntax, not decoration. Exactly one branch runs, and at most one, if you leave out `else` and nothing matches.
+
 ## The ladder: only the first yes counts
 
 Python reads an `if` / `elif` chain from the top and stops at the **first** question that is true. Everything below it is never checked. Drag the score and see where it stops. This is the grade rule from the class exercise.
@@ -51,6 +60,9 @@ gradeladder
 ```
 
 > [!compare] Think of it like a bouncer checking a line of rules: "Over 80? Straight in. No? Over 75? Table 2. No? Over 70?" Once you are placed, the bouncer stops asking. That is why the **order** matters: put `>= 50` first and everyone above 50 would get Grade 1.
+
+> [!more] TLDR: the ladder
+> Because the first true question wins, the order of the checks matters. A grade ladder must go from the highest score to the lowest: `>= 80`, then `>= 75`, then `>= 70`. If you put `>= 50` first, a score of 90 would stop there and get the wrong grade. When the checks are ranges, always ask yourself which one should be asked first.
 
 ## The grade code
 
@@ -67,6 +79,9 @@ elif gpa >= 70:
 else:
     print("Grade 0")
 ```
+
+> [!more] TLDR: the grade code
+> Check the highest grade first and let `else` catch the rest. A score stops at the first branch it passes.
 
 ## A decision inside a decision
 
@@ -87,6 +102,9 @@ else:
     print("No discount")
 ```
 
+> [!more] TLDR: nested if
+> An `if` inside another `if` is only reached when the outer question was true. In the discount exercise the program asks whether the user is a member, and only then asks for the bill and picks a discount. The inner block is indented one level more. If you find yourself nesting more than two or three levels, `and` and `or` can often flatten it.
+
 ## Check before you convert
 
 Remember that `int("abc")` crashes. Text has its own yes-or-no questions you can ask first, so ask before you convert. `text.isdigit()` is True only when every character is a digit, so `"15"` passes while `"abc"` and `"1.5"` do not. Only then is it safe to call `int(text)`, and otherwise the program prints a message instead of crashing.
@@ -99,6 +117,9 @@ else:
     print("Please type a whole number")
 ```
 
+> [!more] TLDR: check before you convert
+> `text.isdigit()` is true only for whole digits, so test it before calling `int(text)` and the program does not crash.
+
 ## The text questions
 
 These are the yes-or-no questions a piece of text can answer about itself.
@@ -109,6 +130,9 @@ These are the yes-or-no questions a piece of text can answer about itself.
 | `s.isalpha()` | the text is only letters, such as `"Python"` |
 | `s.isalnum()` | letters and digits only |
 | `s.isupper()` / `s.islower()` | all the letters are capitals / small |
+
+> [!more] TLDR: text questions
+> `isdigit()`, `isalpha()`, `isupper()` and similar methods answer yes or no about a piece of text.
 
 ## Math you will need: // and %
 
@@ -122,6 +146,9 @@ print(withdraw // 500)      # 1 note of 500
 withdraw = withdraw % 500   # 200 left
 print(withdraw // 100)      # 2 notes of 100
 ```
+
+> [!more] TLDR: // and %
+> `//` is how many whole times a number fits and `%` is what is left over. Together they split an amount into notes and change.
 
 ## Handy tips
 

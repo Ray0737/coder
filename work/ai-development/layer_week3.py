@@ -41,10 +41,6 @@ def get_predict(A2):
 def get_accuracy(predict, Y):
     return np.sum(get_predict(predict) == Y) / len(Y)
 
-# ===== VARIABLE-DEPTH NETWORK =====
-# unlike MLP_train_week2.py's fixed W1/W2, W and b are now LISTS: one entry per
-# layer, so the same class builds a 1-hidden-layer net or a 3-hidden-layer net
-# off the same code, just a longer hidden_sizes list.
 class NeuralNet:
     # hidden_sizes: list of node counts, one per hidden layer (so len() = layer count)
     def __init__(self, hidden_sizes, n_in=784, n_out=10):
@@ -52,19 +48,15 @@ class NeuralNet:
         self.W = [np.random.rand(sizes[i+1], sizes[i]) - 0.5 for i in range(len(sizes)-1)]
         self.b = [np.random.rand(sizes[i+1], 1) - 0.5 for i in range(len(sizes)-1)]
 
-    # ===== FORWARD PROP (any depth) =====
     def forward_prop(self, X):
         Z, A = [], [X]
         for i in range(len(self.W)):
             z = np.dot(self.W[i], A[-1]) + self.b[i]
             Z.append(z)
             is_output = i == len(self.W) - 1
-            A.append(softmax(z) if is_output else sigmoid(z))   # sigmoid in every hidden layer, softmax only at the output
+            A.append(softmax(z) if is_output else sigmoid(z))
         return Z, A
 
-    # ===== BACK PROP (any depth) =====
-    # same chain-rule idea as MLP_train_week2.py's back_prop, but looped backward
-    # over however many layers this network has, instead of two hand-written blocks.
     def back_prop(self, Z, A, Y, alpha):
         m = len(Y)
         n = len(self.W)
@@ -73,11 +65,10 @@ class NeuralNet:
             dW = 1/m * np.dot(dZ, A[i].T)
             db = 1/m * np.sum(dZ)
             if i > 0:
-                dZ = np.dot(self.W[i].T, dZ) * deriv_sigmoid(Z[i-1])   # push error one more layer back
+                dZ = np.dot(self.W[i].T, dZ) * deriv_sigmoid(Z[i-1])
             self.W[i] = self.W[i] - alpha * dW
             self.b[i] = self.b[i] - alpha * db
 
-    # ===== TRAINING LOOP (timed, early-stops at target accuracy) =====
     # full n_epochs run (no early stop), records (epoch, val_acc, cumulative_time) every 10 epochs
     def fit(self, X, Y, X_val, Y_val, alpha, n_epochs, batch_size=128, target_acc=0.85):
         m = X.shape[1]
@@ -111,18 +102,16 @@ class NeuralNet:
             'history': history,
         }
 
-# ===== RUN: three depths, same training budget =====
 LEARNING_RATE = 0.1
 BATCH_SIZE = 128
 N_EPOCHS = 200
 TARGET_ACC = 0.85
 
-# (layer_count, hidden_sizes) pairs per the slide: 1 layer/10 nodes, 2 layers/100
-# nodes each, 3 layers/1000 nodes each.
+# per the slide: layers 1,2,3 x nodes-per-layer 10,100 (all 6 combos)
 CONFIGS = {
-    '1x10':    [10],
-    '2x100':   [100, 100],
-    '3x1000':  [1000, 1000, 1000],
+    f'{L}x{N}': [N] * L
+    for L in (1, 2, 3)
+    for N in (10, 100)
 }
 
 results = {}
@@ -131,7 +120,6 @@ for name, hidden_sizes in CONFIGS.items():
     model = NeuralNet(hidden_sizes)
     results[name] = model.fit(X, Y, X_val, Y_val, LEARNING_RATE, N_EPOCHS, BATCH_SIZE, TARGET_ACC)
 
-# ===== PRINT RESULTS =====
 print('\n===== COMPARISON =====')
 print(f"{'layers':<10} {'epochs_to_85%':<15} {'final_val_acc':<15} {'avg_s/epoch':<12}")
 for name, r in results.items():

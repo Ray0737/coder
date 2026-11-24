@@ -38,6 +38,8 @@ print(df)
 3   mango     25   30.0
 ```
 
+> [!more] TLDR: DataFrame
+> A DataFrame is a table with named columns and a numbered index for the rows. You can build one from a dictionary, where each key is a column name and each value is the list for that column. One column on its own, such as `df["price"]`, is a Series, which is a labelled list. Almost everything else in Pandas is a question asked of a DataFrame.
 
 ## Load a file
 
@@ -47,6 +49,9 @@ Real data lives in a file. `read_csv` loads a CSV (comma separated values) file,
 df = pd.read_csv("iris.csv")
 df.to_csv("clean.csv", index=False)      # index=False leaves out the row numbers
 ```
+
+> [!more] TLDR: loading a file
+> `pd.read_csv("file.csv")` loads a table and `df.to_csv("file.csv")` saves one.
 
 ## First look at any new table
 
@@ -60,6 +65,9 @@ Do these five before anything else. They answer "what did I just load?".
 | `df.describe()` | count, mean, spread and quartiles of every number column |
 | `df.columns` | the column names |
 
+> [!more] TLDR: the first look
+> `head`, `shape`, `info`, `describe` and `columns` answer "what did I just load?".
+
 ## Ask the table a question
 
 The same questions work every time: pick a column, filter rows, sort, group. Press each one.
@@ -69,6 +77,9 @@ dfviz
 ```
 
 > [!compare] Think of it like a spreadsheet with a magic remote. Pick a column is clicking the column letter, filter is "show only rows where...", sort is clicking the header arrow, and groupby is a pivot table that makes one row per group.
+
+> [!more] TLDR: asking questions
+> Pick a column, filter rows, sort and group: the same four moves work on every table.
 
 ## The common questions in code
 
@@ -84,6 +95,9 @@ df.sort_values("price", ascending=False)       # biggest first
 
 > [!warn] When you combine conditions, wrap each one in its own **brackets** and use `&` and `|`, not the words `and` and `or`. Writing `df[df["a"] > 1 and df["b"] > 2]` stops with `ValueError: The truth value of a Series is ambiguous`.
 
+> [!more] TLDR: the common questions
+> `df["price"] > 10` gives True and False for each row, and putting it in brackets keeps those rows.
+
 ## Picking by label or by position
 
 `loc` picks by the names on the table, and `iloc` picks by counting from 0.
@@ -92,6 +106,9 @@ df.sort_values("price", ascending=False)       # biggest first
 |---|---|---|---|
 | `df.loc[row, column]` | **label** (names and index numbers) | `df.loc[1, "price"]` | `5` |
 | `df.iloc[row, column]` | **position** (counting from 0) | `df.iloc[0, 0]` | `'apple'` |
+
+> [!more] TLDR: loc and iloc
+> `loc` picks by the names on the table and `iloc` picks by counting from 0.
 
 ## New columns and maths
 
@@ -102,6 +119,9 @@ df["value"] = df["price"] * df["stock"]
 print(df["price"].max())          # 40
 print(df["price"].mean())         # 20.5
 ```
+
+> [!more] TLDR: new columns
+> `df["total"] = df["a"] * df["b"]` makes a new column, with the maths running down the whole column.
 
 ## Missing values
 
@@ -117,6 +137,9 @@ df = df.dropna()                                         # or drop rows that hav
 
 > [!warn] Fill or drop in a way that makes sense for the data. Filling missing prices with 0 pulls your average down and can mislead you. Check how many values are missing **before** you choose.
 
+> [!more] TLDR: missing values
+> Real data has gaps, and Pandas marks them as `NaN`. `df.isna().sum()` counts the gaps in each column. Then you decide: `fillna(0)` or `fillna(df["col"].mean())` fills them, and `dropna()` throws away every row that has one. Filling keeps the row but guesses a value, and dropping keeps only true values but loses data.
+
 ## Count and group
 
 `value_counts` counts the rows of each value, and `groupby` splits the table into groups, calculates for each group, and joins the answers, so `df.groupby("species").mean()` is the table shown in the diagram above.
@@ -126,6 +149,9 @@ df["species"].value_counts()               # how many rows of each value
 df.groupby("species")["petal_length"].mean()   # average petal length for each species
 ```
 
+> [!more] TLDR: count and group
+> `df["species"].value_counts()` counts the rows of each value. `groupby` is three steps in one: it splits the table into groups, calculates for each group and joins the answers, so `df.groupby("species").mean()` gives the average of every number column for each species. It is the question "for each ..., what is the ...?".
+
 ## From table to model
 
 For machine learning, you split the table into the **features** (the inputs) and the **label** (the answer), as in the Data handling chapter. Many libraries accept these directly, or as arrays with `X.to_numpy()`.
@@ -134,6 +160,9 @@ For machine learning, you split the table into the **features** (the inputs) and
 X = df[["sepal_length", "petal_length"]]     # features: a table of inputs
 y = df["species"]                            # label: a column of answers
 ```
+
+> [!more] TLDR: table to model
+> Split the table into features (the inputs) and the label (the answer) before giving it to a model.
 
 ## Try it
 

@@ -21,6 +21,9 @@ python greet.py hello 3
 # ['greet.py', 'hello', '3']
 ```
 
+> [!more] TLDR: sys.argv
+> `sys.argv` is the list of words typed after `python`. `sys.argv[0]` is the script's own name.
+
 ## Watch the list change
 
 Change the command and watch the list change. A value in quotes stays together as one item.
@@ -30,6 +33,9 @@ argvviz
 ```
 
 > [!warn] Every item in `sys.argv` is **text**, even `3`. The same trap as `input()`: convert with `int()` or `float()` before using it in a sum.
+
+> [!more] TLDR: watching argv
+> Every word becomes one item, and a value in quotes stays together as one item.
 
 ## Using the arguments
 
@@ -54,6 +60,9 @@ python repeat.py ha 3
 
 > [!compare] Think of it like ordering at a counter. `input()` is the cashier asking you questions one at a time. Command-line arguments are handing over a filled-in order slip at the start, so the kitchen can begin without asking anything.
 
+> [!more] TLDR: using the arguments
+> Everything in `sys.argv` is text, so convert numbers with `int()` or `float()`. Check `len(sys.argv)` before you read an item, because asking for `sys.argv[2]` when only one argument was given stops with `IndexError`. Print a short `Usage:` message and call `sys.exit(1)` when something is missing. It is the polite way to fail.
+
 ## sys.exit: stopping with a result
 
 `sys.exit()` ends the program at once. The number you give is an **exit code**: `0` means success, anything else means something went wrong. Scripts that run other scripts, and tools like a scheduler, read this code. The three calls show the three ways to leave: `sys.exit(0)` for success, `sys.exit(1)` for a problem, and passing text prints that text as an error message and exits with 1.
@@ -65,6 +74,9 @@ sys.exit(0)                    # finished fine
 sys.exit(1)                    # a problem
 sys.exit("Could not open the file")   # prints the message to the error stream and exits with 1
 ```
+
+> [!more] TLDR: sys.exit
+> `sys.exit(0)` ends the program as a success and any other number means a failure. Other tools read this code.
 
 ## Which Python am I running?
 
@@ -78,6 +90,9 @@ print(sys.version)         # its version
 print(sys.platform)        # 'win32', 'linux', 'darwin'
 ```
 
+> [!more] TLDR: which Python
+> `sys.executable` shows the Python that is running. When a package "is not found", it is often a different Python from the one you installed into.
+
 ## Where imports are searched
 
 `sys.path` is the list of folders Python searches when you write `import something`. If an import fails, printing `sys.path` shows where Python looked.
@@ -86,6 +101,9 @@ print(sys.platform)        # 'win32', 'linux', 'darwin'
 import sys
 print(sys.path)
 ```
+
+> [!more] TLDR: sys.path
+> `sys.path` lists the folders Python searches for an import. Print it when an import fails.
 
 ## Reading and writing the screen
 
@@ -97,6 +115,9 @@ import sys
 sys.stdout.write("normal output\n")
 sys.stderr.write("something went wrong\n")
 ```
+
+> [!more] TLDR: stdin, stdout, stderr
+> `print` writes to `sys.stdout` and errors go to `sys.stderr`, so results and errors can be kept apart.
 
 ## When the arguments get complicated
 
@@ -111,6 +132,9 @@ parser.add_argument("path")
 args = parser.parse_args()
 print(args.epochs, args.path)
 ```
+
+> [!more] TLDR: argparse
+> For named options, defaults and `--help`, use `argparse`. `sys.argv` is enough for a few values.
 
 ## Try it
 

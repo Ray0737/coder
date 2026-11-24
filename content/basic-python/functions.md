@@ -17,6 +17,9 @@ print_pet("Biscuit", "hamster", 2)      # call it
 print_pet("Pepper", "parrot", 5)        # call it again
 ```
 
+> [!more] TLDR: def
+> `def name(parameters):` writes the steps once, and calling `name(...)` runs them whenever you like.
+
 ## Inputs go in, one value comes out
 
 Put numbers in, get an answer out. The `return` word hands the answer back so you can store it or use it.
@@ -24,6 +27,9 @@ Put numbers in, get an answer out. The `return` word hands the answer back so yo
 ```widget
 funcmachine
 ```
+
+> [!more] TLDR: inputs and output
+> Values go in as parameters and one value comes out with `return`. Without `return` the answer is lost.
 
 ## return: the answer comes back
 
@@ -40,6 +46,9 @@ print(f"Your BMI: {bmi:.2f}")
 
 > [!warn] `print` and `return` are not the same. `print` only **shows** something on the screen. `return` gives the value **back to your code**. A function that only prints cannot be used in a sum, but a function that returns can: `bmi_calculator(60, 170) + 1`.
 
+> [!more] TLDR: return
+> `return` ends the function at once and hands a value back to the place where it was called, so you can store it (`bmi = calc(w, h)`) or use it inside a sum. A function with no `return` gives back `None`. Printing inside a function is not the same as returning, because a printed value cannot be used by the rest of the program.
+
 ## Calling with names
 
 You can pass values by position, or by name. With names the order does not matter. The first call passes `"Notebook"` and `30` by position, so they land in `name` and `price` in order. The second names each value, so `price=25` can come first and still reach the right parameter.
@@ -52,6 +61,9 @@ describe_item("Notebook", 30)             # by position
 describe_item(price=25, name="Pencil")    # by name
 ```
 
+> [!more] TLDR: calling with names
+> Pass values by position, or by name with `name=value`. With names the order does not matter.
+
 ## Default values
 
 Give a parameter a default and it becomes optional. If the caller leaves it out, the default is used. `name="Guest"` gives the parameter a value even when the caller gives none. `greet("Falcons")` replaces it, while `greet()` falls back to "Guest".
@@ -63,6 +75,9 @@ def greet(name="Guest"):
 print(greet("Falcons"))     # Hello, Falcons!
 print(greet())          # Hello, Guest!
 ```
+
+> [!more] TLDR: default values
+> Write `def greet(name="Guest"):` and `name` becomes optional. `greet()` uses "Guest" and `greet("Falcons")` replaces it. Parameters with defaults must come after the ones without, so `def f(a, b=2)` is fine and `def f(a=1, b)` is an error. Do not use a list as a default, because it is shared between calls.
 
 ## A function that decides
 
@@ -85,6 +100,9 @@ operator = input("Choose operator (+ - * /): ")
 print(calculator(num1, num2, operator))
 ```
 
+> [!more] TLDR: a function that decides
+> A function can hold a whole `if` ladder with a `return` in each branch. The first match ends the function.
+
 ## Passing a list in
 
 Passing a **list** into a function works the same. This one finds the smallest and biggest in a list, using the list skills from earlier. `sorted(nlist)` makes a sorted copy, so index 0 is the smallest and index -1 is the biggest. Returning `ordered[0], ordered[-1]` sends back two values as a tuple, and `low, high = ...` unpacks them into two variables.
@@ -97,6 +115,9 @@ def find_max_min(nlist):
 low, high = find_max_min([4, 9, 1, 7])
 print(f"Lowest = {low} | highest = {high}")
 ```
+
+> [!more] TLDR: passing a list in
+> A list goes in like any value. `sorted(list)` gives a sorted copy, so index 0 is the smallest and -1 the biggest.
 
 ## Any number of arguments
 
@@ -118,6 +139,9 @@ def print_info(**kwargs):
 print_info(city="London", population=9000000)
 ```
 
+> [!more] TLDR: *args and **kwargs
+> One star before a parameter name collects all extra positional values into a tuple, so `def total(*nums)` accepts any number of values. Two stars collect extra named values into a dictionary, so `def info(**kw)` accepts `info(name="Ann", age=15)`. The names `args` and `kwargs` are only a habit, and the stars are what matter.
+
 ## lambda: a function with no name
 
 A **lambda** is a one-line function you do not bother to name. It is handy for short jobs, especially with `map` and `filter`: `map` applies the function to every item, and `filter` keeps only the items for which the function says `True`. `lambda x: x + 1` is the same as a tiny `def` that returns `x + 1`. With `map` the next lambda squares every number, and with `filter` it keeps only the even ones, because `x % 2 == 0` is True for even numbers. `list(...)` turns the result into a list you can print.
@@ -132,6 +156,9 @@ print(list(filter(lambda x: x % 2 == 0, numbers)))  # [2, 4]
 ```
 
 > [!tip] If a function does more than one thing, split it. A function named `calculate_bmi` that also asks the user and prints the answer is hard to reuse. Let one function calculate, and let the main code ask and print.
+
+> [!more] TLDR: lambda
+> `lambda x: x * 2` is a one-line function. It is handy with `map` and `filter`.
 
 ## Handy tips
 

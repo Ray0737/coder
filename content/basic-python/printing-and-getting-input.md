@@ -14,6 +14,9 @@ print("Hello, world")
 print("My favourite fruit is mango")
 ```
 
+> [!more] TLDR: print()
+> `print()` shows whatever you give it. Text goes in quotes, and every call starts a new line.
+
 ## Numbers and strings
 
 Numbers do not need quotes. Text in quotes is called a **string**, and `"42"` is text that looks like a number while `42` is a real number. They behave differently, and you will see why soon.
@@ -24,6 +27,9 @@ print(3.14)
 print("Total:", 42)
 ```
 
+> [!more] TLDR: numbers and strings
+> Numbers have no quotes and can be calculated with. Text in quotes is a string, so `"42"` is text and `42` is a number.
+
 ## Variables: labelled boxes
 
 A variable is a lunchbox with a label on the lid. The label is the **name** and whatever is inside is the **value**. You can swap what is inside, and the label stays the same.
@@ -33,6 +39,9 @@ A variable is a lunchbox with a label on the lid. The label is the **name** and 
 | A box labelled `snack` holds a banana | `snack = "banana"` |
 | You open the box labelled `snack` | `print(snack)` |
 | You put an apple in the same box | `snack = "apple"` |
+
+> [!more] TLDR: variables
+> A variable is a name that points to a value, made with `=`. Write `age = 15` and Python remembers 15 under the name `age`. Later you can store a new value in the same name, such as `age = 16`, and the old value is gone. Names cannot start with a number or contain spaces, so use `my_age` or `score2`.
 
 ## f-strings: a form letter with blanks
 
@@ -48,6 +57,9 @@ print(f"{name} scored {score} points")
 fstring
 ```
 
+> [!more] TLDR: f-strings
+> Put an `f` before the opening quote and write a variable's name inside `{ }`. Python replaces each blank with the value, so `f"{name} scored {score}"` becomes `Ann scored 90`. You can also do a little work inside the braces, and `{price:.2f}` shows a number with 2 decimals. Without the `f`, the braces are printed as plain text.
+
 ## The older % way
 
 Before f-strings, Python had two other ways to fill the blanks. You will meet them in older code and in many tutorials, so it helps to recognise them, but use f-strings when you write new code because they are shorter and easier to read. The `%` way puts a code where each blank goes, and the code says what kind of value belongs there.
@@ -58,6 +70,9 @@ Before f-strings, Python had two other ways to fill the blanks. You will meet th
 | `%d` | a whole number | `"%d" % 95` gives 95 |
 | `%f` | a decimal number | `"%f" % 3.5` gives 3.500000 |
 | `%.2f` | a decimal rounded to 2 places | `"%.2f" % 3.14159` gives 3.14 |
+
+> [!more] TLDR: the % way
+> `%s` is for text, `%d` for whole numbers and `%f` for decimals. Old code uses it, but write f-strings in new code.
 
 ## Using the % way
 
@@ -70,6 +85,9 @@ print("%s scored %d points" % (name, score))
 print("Average: %.2f" % 87.456)      # Average: 87.46
 ```
 
+> [!more] TLDR: using %
+> The values come after a `%` in the same order as the codes. Several values go in brackets, and a wrong code gives an error.
+
 ## The .format() way
 
 The blanks are `{ }` again, but the values come afterwards inside `.format()`. All three styles print the same sentence, and the only difference is where the values sit: inside the text for f-strings, after a `%` for the old style, and inside `.format()` for this one.
@@ -80,6 +98,9 @@ print("{0} scored {1} points".format(name, score))
 print("Average: {:.2f}".format(87.456))
 ```
 
+> [!more] TLDR: .format()
+> `{ }` marks each blank and the values go inside `.format()`. It prints the same sentence as an f-string.
+
 ## input(): Python listens
 
 `input()` is a cashier asking "How many would you like?" and then waiting for your answer. It shows a question, waits for the user to type, and gives you back what they typed. The text inside the brackets is the question, and you should leave a space at the end so the answer does not touch it.
@@ -88,6 +109,9 @@ print("Average: {:.2f}".format(87.456))
 name = input("What is your name? ")
 print(f"Nice to meet you, {name}")
 ```
+
+> [!more] TLDR: input()
+> `input("question ")` shows the question, waits for typing and gives back what was typed.
 
 ## The catch: input() always gives text
 
@@ -99,6 +123,9 @@ This is the mistake almost everyone makes once. `input()` returns a **string**, 
 age = input("How old are you? ")
 print(age + 1)        # this crashes
 ```
+
+> [!more] TLDR: input() is always text
+> `input()` always gives back a string, even when the user types `15`. So `age = input()` followed by `age + 1` stops with a `TypeError`, because Python cannot add a number to text. The fix is to convert first. Two strings added together are joined instead, so `"1" + "1"` is `"11"`, which is a quieter mistake and harder to spot.
 
 ## See it happen
 
@@ -120,6 +147,9 @@ height = float(input("Height in metres: "))
 print(f"Double your height is {height * 2}")
 ```
 
+> [!more] TLDR: int() and float()
+> Wrap the `input()` call: `age = int(input("Age: "))`. Use `int()` for whole numbers such as ages and counts, and `float()` for decimals such as heights and prices. If the user types something that cannot be a number, such as `abc`, the conversion stops with a `ValueError`. Checking the text first with `isdigit()` avoids that, and the Conditionals chapter shows how.
+
 ## type(): the label on a parcel
 
 `type()` is the label on a parcel: *fragile*, *liquid*, *this way up*. It does not change the parcel. It just tells you what you are holding. When something behaves strangely, print its type. It is the fastest way to catch a string where you expected a number. In the code, `input()` gives a string, so the first `type()` prints `<class 'str'>`. After `int(value)` the same name holds a number and prints `<class 'int'>`, because casting does not change the old value but makes a new one that you store back.
@@ -131,6 +161,9 @@ print(type(value))            # <class 'str'>
 value = int(value)
 print(type(value))            # <class 'int'>
 ```
+
+> [!more] TLDR: type()
+> `type(value)` tells you what kind of value you hold. Print it when something behaves strangely.
 
 ## The basic data types
 
@@ -147,6 +180,9 @@ Every value has a **type**, and `type()` tells you which. These are the built-in
 
 > [!tip] Single values are only half the story. The types that hold **many** values, such as lists, tuples, dictionaries and sets, come in the next chapters, and the Tuples and dicts chapter compares them in one table.
 
+> [!more] TLDR: the basic types
+> `int`, `float`, `str` and `bool` are the single-value types. Every value has exactly one.
+
 ## Casting: switching types
 
 Switching a value from one type to another is called **casting**. Each line converts one value: `float(10)` adds a decimal point, `int(3.9)` cuts off the decimals without rounding, `int("123")` turns text into a number, `str(456)` turns a number into text, and `bool(0)` is False because zero and empty text count as false.
@@ -158,6 +194,9 @@ print(int("123"))     # 123, text to number
 print(str(456))       # "456", number to text
 print(bool(0))        # False, 0 and "" count as False
 ```
+
+> [!more] TLDR: casting
+> Casting switches a value to another type with the type's own name. `int(3.9)` is 3, because it cuts the decimals and does not round. `float("2.5")` is 2.5, `str(456)` is `"456"`, and `bool(0)` is `False`. Zero, empty text and empty lists count as `False`, and nearly everything else counts as `True`.
 
 ## math: borrow a tool
 
@@ -171,6 +210,9 @@ area = math.pi * radius ** 2
 print(f"Area = {area:.2f}")
 print(f"Square root of 49 = {math.sqrt(49)}")
 ```
+
+> [!more] TLDR: the math module
+> `import math` gives you tools such as `math.pi` and `math.sqrt()`. Import a module once, at the top.
 
 ## Handy tips
 

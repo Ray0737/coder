@@ -14,6 +14,9 @@ for fruit in ["apple", "banana", "cherry"]:
     print(fruit)
 ```
 
+> [!more] TLDR: for
+> `for item in collection:` runs the indented lines once per item, with the item in the variable.
+
 ## for over text
 
 Text is a collection of letters too, so a `for` loop can walk through a word one letter at a time.
@@ -23,6 +26,9 @@ for ch in "Python":
     print(ch)
 ```
 
+> [!more] TLDR: for over text
+> A string is a collection of letters, so `for ch in word:` visits one letter at a time.
+
 ## range(): a counted list of numbers
 
 When you just want to repeat something a number of times, use `range()`. It makes the numbers for you. It takes up to three values: `range(start, stop, step)`. The numbers stop **before** `stop`.
@@ -30,6 +36,9 @@ When you just want to repeat something a number of times, use `range()`. It make
 ```widget
 rangeviz
 ```
+
+> [!more] TLDR: range()
+> `range(start, stop, step)` makes numbers up to, but not including, stop.
 
 ## The forms of range
 
@@ -42,6 +51,9 @@ Leave out `start` and it begins at 0, leave out `step` and it counts by 1, and a
 | `range(0, 19, 2)` | 0, 2, 4, ... 18 |
 | `range(10, 0, -3)` | 10, 7, 4, 1 |
 
+> [!more] TLDR: the forms of range
+> `range(5)` is 0 to 4, `range(2, 5)` is 2 to 4 and `range(10, 0, -2)` counts down.
+
 ## range in a loop
 
 Put a `range` after `in` and the loop runs once for each number it makes, here every third number up to 100.
@@ -51,6 +63,9 @@ for i in range(0, 101, 3):     # every third number up to 100
     print(i)
 ```
 
+> [!more] TLDR: range in a loop
+> `for i in range(n):` repeats n times, and `i` holds the current number.
+
 ## enumerate: position and item
 
 When you need the position **and** the item, `enumerate` hands you both.
@@ -59,6 +74,9 @@ When you need the position **and** the item, `enumerate` hands you both.
 for index, value in enumerate(["a", "b", "c"]):
     print(f"Index: {index}, Value: {value}")
 ```
+
+> [!more] TLDR: enumerate
+> `for i, item in enumerate(list):` gives the position and the item together.
 
 ## while: keep going until the answer is no
 
@@ -73,6 +91,9 @@ while count < 3:
 
 > [!warn] If nothing inside a `while` loop ever makes the condition false, it runs **forever**. If that happens in the terminal, press `Ctrl+C` to stop it.
 
+> [!more] TLDR: while
+> `while condition:` checks the condition before every round, and runs the block only while it is true. You use it when you do not know how many rounds you need. Something inside the loop must eventually make the condition false, such as `x += 1`, or the loop never ends. If that happens by accident, press Ctrl+C to stop the program.
+
 ## break and continue
 
 Three small words steer a loop from the inside: `break` leaves it, `continue` skips to the next round, and `pass` does nothing.
@@ -82,6 +103,9 @@ Three small words steer a loop from the inside: `break` leaves it, `continue` sk
 | `break` | leave the loop right now | walking out of the exam room when you are done |
 | `continue` | skip the rest of this round, start the next | skipping a song and playing the next one |
 | `pass` | do nothing (a placeholder) | an empty seat held for someone |
+
+> [!more] TLDR: break, continue, pass
+> `break` leaves the loop completely and carries on after it. `continue` skips the rest of this round and jumps to the next one. `pass` does nothing and is only a placeholder where Python needs some line. In nested loops, `break` and `continue` only affect the loop they are written in.
 
 ## break and continue in code
 
@@ -98,6 +122,9 @@ for i in range(5):
         continue       # skips 2 only
     print(i)           # prints 0 1 3 4
 ```
+
+> [!more] TLDR: break and continue in code
+> `break` at 5 stops the loop, while `continue` at 2 only skips that round.
 
 ## A loop that waits for the user
 
@@ -117,9 +144,12 @@ else:
     print("No data")
 ```
 
+> [!more] TLDR: wait for the user
+> `while True:` with a `break` on a stop word keeps asking until the user is done.
+
 ## A menu inside a menu: a cafe program
 
-Real programs often have a **main menu** that opens a **sub menu**, and each menu is its own `while True` loop. This cafe program from class shows it. The outer loop is the main menu: it shows "Register member, Order and pay, Exit" again and again until the user exits. When the user picks Order and pay, the program enters an **inner** loop, the order menu, which keeps asking for a drink until the user picks 0 to pay. The key rule is that `break` leaves only the loop it is written in. After `payment()` the inner `break` ends the order menu and the program returns to the main menu for the next customer, and the outer `break` ends the whole program. Three dictionaries hold the prices, the drink names and the cups ordered, so every drink uses the same one line, and `payment()` turns them into a receipt with a 10% discount for registered members. The menu choice is kept as text, so typing a letter just prints the warning, and after paying the cup counts are set back to 0 for the next customer.
+Each menu is its own `while True` loop. The outer loop is the main menu and the inner loop is the order menu. `break` leaves only the loop it is written in, so after paying, the inner `break` returns to the main menu and the outer `break` ends the program.
 
 ```python
 price = {"1": 50, "2": 65, "3": 45}              # menu number (as text): price in THB
@@ -162,6 +192,9 @@ while True:                                      # main menu: repeats until Exit
 
 > [!compare] Think of it like a lift in a building. The main menu is the ground floor lobby and the order menu is a floor you ride up to. Paying takes you back down to the lobby, and only walking out of the front door (Exit) leaves the building.
 
+> [!more] TLDR: menu inside a menu
+> Each menu is its own `while True` loop, and the inner loop sits inside one choice of the outer one. `break` leaves only the loop it is written in, so the inner `break` goes back to the main menu and the outer `break` ends the program. Keeping the menu choice as text means a wrong key just prints a warning and the loop runs again.
+
 ## Counting with a dictionary
 
 Looping over text and counting each letter is a famous exercise. It uses a dictionary, which the next chapters explain, but here is the idea: `count` starts empty. For each letter that is not a space, `count.get(ch, 0)` returns how many times the letter was seen so far (0 if it is new), and the code stores that plus 1. The last loop goes through the letters in alphabetical order and prints each with its total.
@@ -177,6 +210,9 @@ for ch in sorted(count):
     print(ch, count[ch])
 ```
 
+> [!more] TLDR: counting with a dict
+> `count[ch] = count.get(ch, 0) + 1` counts anything, because `get` gives 0 for a new key.
+
 ## A loop inside a loop: drawing shapes
 
 A loop can contain another loop. The outer loop picks the **row**, and the inner loop fills in that row. Printing shapes in the terminal is the best way to see it. This one prints a staircase, where `"-" * 3` gives `---` and `end=""` stops `print` from jumping to a new line. In the code, each row first prints `9 - i` dashes, then the inner loop prints the numbers 1 to `i` on the same line, and the bare `print()` ends the row.
@@ -188,6 +224,9 @@ for i in range(1, 10):
         print(j, end="")              # the numbers 1 to i
     print()                           # end the row
 ```
+
+> [!more] TLDR: loop in a loop
+> The outer loop picks the row and the inner loop fills that row. For every one round of the outer loop, the inner loop runs all of its rounds, so 3 rows of 4 stars take 12 steps. `print("*", end="")` keeps the stars on the same line, and a plain `print()` after the inner loop ends the row.
 
 ## A hollow triangle
 
@@ -206,6 +245,9 @@ for i in range(1, h + 1):
 ```
 
 > [!tip] To understand a nested loop, write the values by hand for the first two rows. Row 1 uses `i = 1`, row 2 uses `i = 2`, and so on. The shape comes from how the spaces and stars change with `i`.
+
+> [!more] TLDR: hollow triangle
+> Spaces push the stars into place, and only the first and last star of a row are printed.
 
 ## Handy tips
 

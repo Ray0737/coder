@@ -15,6 +15,9 @@ from math import pi, sqrt      # take just two tools: sqrt(16)
 import random as rnd           # open it under a shorter name: rnd.randint(1, 10)
 ```
 
+> [!more] TLDR: three ways to import
+> `import math` then `math.sqrt(16)` keeps the module name visible, so you always see where a tool comes from. `from math import sqrt` then `sqrt(16)` is shorter but hides the origin. `import math as m` gives a shorter name, which is how `np` and `pd` work for NumPy and Pandas. Avoid `from math import *`, because it can silently replace your own names.
+
 ## Which style, when
 
 The three styles differ in what you write afterwards, so pick the one that keeps your code clear.
@@ -27,9 +30,15 @@ The three styles differ in what you write afterwards, so pick the one that keeps
 
 > [!warn] Do not name your own file after a module. A file called `random.py` or `math.py` next to your script will be imported **instead of** the real one, and you will get strange errors like `AttributeError: module 'random' has no attribute 'randint'`.
 
+> [!more] TLDR: which style
+> Use plain `import` when you want the module name to show where a tool comes from, and `from` for one or two tools used often.
+
 ## Your own file is a module
 
 Your own `.py` file is a module too. If you have `my_module.py` with a function `say_hello`, another file in the same folder can write `import my_module` and call `my_module.say_hello()`.
+
+> [!more] TLDR: your own module
+> Any `.py` file in the same folder can be imported by its name, and its functions are used as `name.function()`.
 
 ## math: numbers
 
@@ -45,6 +54,9 @@ print(math.floor(2.9))    # 2, always rounds down
 print(math.hypot(3, 4))   # 5.0, the long side of a right triangle
 ```
 
+> [!more] TLDR: math
+> `math` has `pi`, `sqrt`, `ceil`, `floor` and `hypot` for the maths that plain operators do not cover.
+
 ## Built-in helpers
 
 Python also has built-in helpers that need no import: `abs(-5)` is 5, `round(3.14159, 2)` is 3.14, `max`, `min`, `sum` and `pow(2, 3)`.
@@ -55,6 +67,9 @@ print(max(4, 9, 1), min(4, 9, 1), sum([4, 9, 1]))   # 9 1 14
 ```
 
 > [!tip] `round()` rounds halves to the **nearest even number**: `round(2.5)` is 2 and `round(3.5)` is 4. If you need school-style rounding, add 0.5 and use `math.floor`, for example `math.floor(2.5 + 0.5)` gives 3.
+
+> [!more] TLDR: built-in helpers
+> `abs`, `round`, `max`, `min`, `sum` and `pow` need no import.
 
 ## random: chance
 
@@ -73,6 +88,9 @@ random.shuffle(cards)                     # shuffles the list itself
 print(cards)
 print(random.sample(cards, 2))            # 2 different items, list untouched
 ```
+
+> [!more] TLDR: random
+> `randint`, `random`, `uniform`, `choice` and `shuffle` give dice, decimals and picks.
 
 ## The random calls
 
@@ -95,6 +113,9 @@ random.seed(42)
 print(random.randint(1, 6), random.randint(1, 6))   # the same two numbers every run
 ```
 
+> [!more] TLDR: seed
+> `random.seed(42)` fixes the start, so the same numbers come out every run. It is useful for testing.
+
 ## time: waiting and measuring
 
 `time.time()` is the number of seconds since 1 January 1970. It is a plain number, good for measuring how long something took, and `perf_counter()` is the more precise stopwatch. The first part prints, pauses 2 seconds with `sleep`, then prints again. The second part notes the clock before and after adding up a million numbers, and the difference is how long it took.
@@ -112,6 +133,9 @@ print(f"Took {time.perf_counter() - start:.4f} seconds")
 
 > [!warn] Do not use `time.sleep()` inside a Tkinter window. It freezes the whole window. Use `root.after(milliseconds, function)` instead, as in the Tkinter GUI chapter.
 
+> [!more] TLDR: time
+> `time.sleep()` pauses, and `time.time()` or `perf_counter()` measures how long something took.
+
 ## datetime: dates and clocks
 
 `strftime` turns a date **into** text, and `strptime` reads text **into** a date. The letters after `%` choose the pieces. In the code, `now()` is the current date and time, `date.today()` is just the date, subtracting two dates gives a time difference whose `.days` is the days between them, and adding a `timedelta` moves a date forward.
@@ -128,6 +152,9 @@ due = datetime.strptime("2026-12-31", "%Y-%m-%d")   # text to a date
 print((due - now).days)                      # days between two dates
 print(now + timedelta(days=7))               # one week from now
 ```
+
+> [!more] TLDR: datetime
+> `strftime` turns a date into text and `strptime` reads text into a date. Subtracting two dates gives a time difference.
 
 ## Try your own pattern
 
@@ -163,6 +190,9 @@ print(statistics.median(scores))    # 85, the middle value
 print(statistics.mode(scores))      # 85, the most common
 ```
 
+> [!more] TLDR: statistics
+> `mean`, `median` and `mode` summarise a list in one call.
+
 ## json: save data to a file
 
 Variables disappear when the program ends. To keep data, write it to a file. **JSON** is a text format that looks like Python dictionaries and lists, so it is the easiest way to save them. In the code, `json.dump` writes the dictionary into `data.json` (`indent=4` makes it readable), and `json.load` reads it back into a dictionary, so `loaded["tasks"][0]` is the first task.
@@ -180,6 +210,9 @@ with open("data.json", "r") as f:       # "r" reads
 print(loaded["tasks"][0])               # read chapter 4
 ```
 
+> [!more] TLDR: json
+> `json.dump(data, file)` writes a dictionary or list into a file as text, and `json.load(file)` reads it back into the same structure. Variables vanish when the program ends, so this is the simplest way to keep scores, settings or a shopping list between runs. Use `with open(..., "w") as f:` so the file is closed for you.
+
 ## Check the file exists
 
 `with open(...)` closes the file for you, even if an error happens, and `"a"` **appends** to the end instead of replacing. If the file might not exist yet, check first. `os.path.exists` returns True if the file is there, so the `if` only reads it when it is safe.
@@ -193,6 +226,9 @@ if os.path.exists("data.json"):
 
 > [!compare] Think of it like a toolbox shelf in a workshop. Each module is a labelled drawer: `math` for measuring, `random` for dice, `time` for the clock, `json` for the filing cabinet. You do not build the tools, you just open the right drawer.
 
+> [!more] TLDR: files
+> `with open(...)` closes the file for you, `"a"` appends, and `os.path.exists` checks before you read.
+
 ## Not sure what a module can do?
 
 Ask Python itself. The official list lives at `docs.python.org/3/library`, and for tools that are **not** built in, such as NumPy and Pandas, you install them first with `pip install numpy` and then import them the same way.
@@ -202,6 +238,9 @@ import math
 print(dir(math))            # every name inside the module
 help(math.sqrt)             # what one tool does
 ```
+
+> [!more] TLDR: finding modules
+> Read `docs.python.org/3/library`. Modules that are not built in, such as NumPy, need `pip install` first.
 
 ## Try it
 

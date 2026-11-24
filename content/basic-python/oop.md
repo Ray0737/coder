@@ -23,6 +23,9 @@ phone1 = Phone("Nova", 12000)
 phone1.showdata()
 ```
 
+> [!more] TLDR: class and object
+> A class is the blueprint and an object is one thing built from it. Each object keeps its own attributes.
+
 ## Reading the constructor
 
 Three things in the code above are worth noticing.
@@ -31,6 +34,9 @@ Three things in the code above are worth noticing.
 - `self` means "this very object". `self.brand = brand` stores the brand inside this object.
 - Every method takes `self` as its first parameter. You do not pass it yourself: `phone1.showdata()` hands `phone1` in for you.
 
+> [!more] TLDR: the constructor
+> `__init__` is called by Python the moment you write `Employee("John", 50000)`, and its job is to give the new object its starting facts. `self` is the object being built, so `self.name = name` stores the name inside that object. You never pass `self` yourself, because Python does it. Every method takes `self` first so it can reach the object's attributes.
+
 ## Methods change the object
 
 A method can change the facts the object keeps. Here a businessman has `hp`, `money` and `happiness`, and each action changes them. Call the methods and watch the numbers.
@@ -38,6 +44,9 @@ A method can change the facts the object keeps. Here a businessman has `hp`, `mo
 ```widget
 objectviz
 ```
+
+> [!more] TLDR: methods
+> A method is a function inside a class. It reads and changes the object's attributes through `self`.
 
 ## The Businessman class
 
@@ -70,6 +79,9 @@ man1.showdata()       # HP: 90, Money: 110, Happiness: 80
 
 > [!compare] Think of it like a game character. A character has stats (HP, gold) and abilities (attack, rest). The stats are the **attributes**, the abilities are the **methods**, and each player's character is a separate **object** with its own numbers.
 
+> [!more] TLDR: the Businessman class
+> One class with three numbers and a method for each action. Every call changes the same object.
+
 ## Many objects, one class
 
 Because each object keeps its own data, two objects never interfere with each other. `man1` and `man2` are two separate objects built from the same class with different starting numbers. Calling `work()` on `man1` changes only `man1`, so `man2.showdata()` still shows its original values.
@@ -81,6 +93,9 @@ man1.work()
 man1.showdata()       # changed
 man2.showdata()       # untouched
 ```
+
+> [!more] TLDR: many objects
+> Each object has its own data, so a method on `man1` never changes `man2`.
 
 ## A class attribute
 
@@ -97,6 +112,9 @@ class Dog:
     def bark(self):
         return f"{self.name} says Woof!"
 ```
+
+> [!more] TLDR: class attributes
+> An attribute written in the class but outside `__init__` is shared by every object.
 
 ## Inheritance: a new class from an old one
 
@@ -120,12 +138,18 @@ print(goldie.retrieve("ball"))
 print(goldie.species)         # inherited from Dog
 ```
 
+> [!more] TLDR: inheritance
+> `class Child(Parent):` makes a child class that already has everything the parent has, and then adds or changes things. A `GoldenRetriever(Dog)` can use `Dog`'s attributes and methods with no copying. It is the way to share code between related classes: put what they have in common in the parent and what is special in each child.
+
 ## super() and overriding
 
 Two ideas make inheritance work.
 
 - `super()` means "my parent class", so `super().__init__(...)` runs the parent's setup first.
 - **Overriding** means the child writes a method with the same name as the parent's. The child's version wins. The same call, `bark()`, behaves differently depending on which object it is used on. That is called **polymorphism**.
+
+> [!more] TLDR: super and overriding
+> `super()` calls the parent's version, and a method with the same name in the child replaces the parent's.
 
 ## Encapsulation: keep some things private
 
@@ -148,6 +172,9 @@ acc.deposit(50)
 print(acc.get_balance())      # 150
 # acc.__balance               # AttributeError: it is hidden
 ```
+
+> [!more] TLDR: encapsulation
+> Two underscores at the start of a name, such as `self.__balance`, mark it as private, so outside code cannot read or change it directly. Other code has to go through a method such as `deposit()`, which can check the amount first. It protects the object from being put into a bad state, like a bank that makes you ask the teller instead of reaching into the vault.
 
 ## The four ideas in one table
 

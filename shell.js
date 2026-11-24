@@ -170,7 +170,7 @@ const SETTINGS = `
 const notes = [
   ['Basic Python','terminal-window','yellow',['# Core Python','Printing and getting input','Lists','Conditionals','Loops','Functions','Useful modules','Tuples and dicts','OOP','Tkinter GUI','# Prep for AI Development','os: files and folders','sys: arguments','NumPy: arrays','Matplotlib: plots','Pandas: tables'],'M.4 Foundations'],
   ['Circuits, Arduino & GPIO','cpu','peach',['# Circuit basics','Voltage, current and resistance','Series and parallel circuits','Circuit diagrams and measuring','# Get to know the hardware','The Arduino board','Pins: digital, PWM and I2C','Breadboard basics','# Software','Arduino IDE and the sketch','# Wire it up','The voltage divider','LED: blink and active levels','Button: pull-up and pull-down','LCD: wiring I2C','Ultrasonic sensor (HC-SR04)','Servo motor with PWM'],'M.4 Foundations'],
-  ['Physics in Robotics','robot','green',['# Physics principles','Linear motion','Circular motion','Differential drive speeds','# Robot setup','Hardware: ESP32 and motors','# Code setup','Project setup','Motor protocol: Dynamixel 2.0','# CAD','Chassis design in Onshape','# Final mission','The final mission'],'M.4 Foundations'],
+  ['Physics in Robotics','robot','green',['# Overview','Course overview','# Physics principles','Linear motion','Circular motion','Differential drive speeds','# Robot setup','Hardware: ESP32 and motors','# Code setup','Project setup','Motor protocol: Dynamixel 2.0','# CAD','Chassis design in Onshape','# Final mission','The final mission'],'M.4 Foundations'],
   ['LINE Chatbot','chat-text','teal',['# Chatbot basics','What a chatbot is','Rule-based NLP','# Dialogflow','Dialogflow intents','# LINE','LINE OA and Messaging API','# Backend','Webhook and database','# Replies and wrap-up','Rich replies: Flex Messages','End to end: check stock'],'M.4 Foundations'],
   ['Raspberry Pi Vision','circuitry','red',['# Know the board','The board and its ports','# Boot and connect','Flashing the OS','HDMI, SSH and VS Code','# Linux on the Pi','Terminal cheatsheet','Environment','Editing with vim and nano','# GPIO, a quick recap','What GPIO connects to','Python and Arduino compared','# Wrap-up','Problems we faced'],'M.5 Applied AI'],
   ['Computer Vision','eye','sky',['# Introduction','Basic definition','# OpenCV basics','Reading and displaying','Mouse events','Crop, flip and resize','Color spaces','Thresholding and edges','Contours','Bitwise ops and masking','# Detection','Object detection','Movement detection','Haar cascades','Face recognition','Trained detection (YOLO)','MediaPipe'],'M.5 Applied AI'],
@@ -213,6 +213,8 @@ app.append(main);
 app.insertAdjacentHTML('beforeend', FOOTER);
 document.body.prepend(app);
 $$('.menu a, .act a').forEach(a => a.getAttribute('href') === file && a.classList.add('on'));
+// a chapter belongs to Main, whose icon on the left bar is Home, so keep it lit while you read
+if (page === 'chapter') $('#homebtn').classList.add('on');
 // like VS Code, the Welcome tab stays open next to the page you are on
 if (page !== 'home') $('.tabs').insertAdjacentHTML('afterbegin', `<a class="tab" href="index.html">${icon('sparkle')}Welcome</a>`);
 

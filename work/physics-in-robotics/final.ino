@@ -1,4 +1,4 @@
-#include "Motor.h"
+#include "src/Motor.h"
 #include <ESP32Servo.h>
 
 // --- Configuration ---
