@@ -57,6 +57,36 @@ const WORK = {
       ],
       outs: [],
     },
+    {
+      file: 'layer_week3.py', title: 'Depth experiment', cutAt: /^\s*#\s*===== /,
+      note: 'Depth compared: 1x10, 2x100, 3x1000.',
+      does: [
+        "Same MNIST load/split as MLP_train_week2.py: 784 pixel columns scaled to 0-1, 10% held out (stratified) as X_val/Y_val so there is a real accuracy to check against.",
+        "sigmoid, not relu, is the activation for every hidden layer here; softmax stays on the output. one_hot, get_predict and get_accuracy are the same helpers as week 2.",
+        "The big change from week 2: W1/b1/W2/b2 become self.W and self.b, Python lists built from hidden_sizes, one weight matrix and bias per layer. Pass [10] and this builds week 2's exact 1-hidden-layer shape; pass [100,100] or [1000,1000,1000] and the same class builds a 2- or 3-hidden-layer network, no new code.",
+        "Loops over self.W instead of writing out Z1/A1/Z2/A2 by hand: every layer gets sigmoid except the last, which gets softmax. Z and A are lists so back_prop can walk them in reverse.",
+        "Same chain-rule shape as week 2 (dZ, then dW/db, then push dZ back with deriv_sigmoid), just run backward through however many layers this network has instead of two fixed blocks.",
+        "Adds two things week 2 didn't have: epoch timing (time.perf_counter per epoch) and early-stop tracking. epochs_to_target records the first epoch where val_acc reaches 85%, without actually stopping training, so different depths can be compared fairly on the same budget.",
+        "Three configs from the slide: 1 layer of 10 nodes, 2 layers of 100 nodes each, 3 layers of 1000 nodes each. Same learning rate, batch size and epoch budget for all three, so depth/width is the only thing that changes between runs.",
+        "Two tables: epochs needed to reach 85% validation accuracy (or '>200' if it never did), plus final accuracy and average seconds per epoch, one row per config. Then the full every-10-epochs history for each.",
+      ],
+      outs: [],
+    },
+    {
+      file: 'activation_week3.py', title: 'Activation experiment', cutAt: /^\s*#\s*===== /,
+      note: 'Activations compared: relu, sigmoid, tanh.',
+      does: [
+        "Same MNIST load/split as MLP_train_week2.py: 784 pixel columns scaled to 0-1, 10% held out (stratified) as X_val/Y_val so there is a real accuracy to check against.",
+        "Three activations plus their derivatives, relu/deriv_relu, sigmoid/deriv_sigmoid, tanh/deriv_tanh, the same three from the Try it widget on the chapter page, collected in ACTIVATIONS so a name string picks out the matching (function, derivative) pair. softmax, one_hot, get_predict, get_accuracy and init_params are the same helpers as week 2.",
+        "Same 1-hidden-layer shape as week 2's NeuralNet (W1/b1/W2/b2, not lists), but relu is no longer hard-coded: __init__ looks up ACTIVATIONS[activation_name] and stores the pair as self.act/self.deriv_act, so the rest of the class never needs an if/else for which activation is in use.",
+        "Identical to week 2's forward_prop, except A1 = self.act(Z1) calls whichever activation this instance was built with, instead of always relu.",
+        "Identical to week 2's back_prop, except dZ1 is pushed back through self.deriv_act(Z1), the derivative that matches whichever activation forward_prop used.",
+        "Same early-stop and per-epoch timing as layer_week3.py's fit: records the first epoch that reaches 85% validation accuracy and the average seconds per epoch, so the three activations can be compared on how fast they learn, not just whether they eventually get there.",
+        "Trains one model per entry in ACTIVATIONS (relu, sigmoid, tanh), same learning rate, batch size and epoch budget for all three, so activation choice is the only thing that changes between runs.",
+        "Same two-table report as layer_week3.py: epochs to 85% validation accuracy (or '>200'), final accuracy and avg seconds/epoch per activation, then the full history.",
+      ],
+      outs: [],
+    },
   ],
 };
 
