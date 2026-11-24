@@ -1681,3 +1681,8 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 .wside>.cft{display:flex;flex-wrap:wrap;gap:8px}
 .wside>.cft .btn{margin-top:0;padding:6px 12px;font-size:12px}
 .wside>.cft .btn .i{width:13px;height:13px}
+/* the file title and its description are one line each */
+.wfile .wtop>div{min-width:0}
+.wfile .wtop h1,.wfile .wtop .sum{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.wside .fabout{margin:0 0 16px;font-size:12px;line-height:1.6;color:var(--o1)}

@@ -12,7 +12,27 @@ const mdInline = s => mdEsc(s)
 
 // python colours: comments, strings (with f/r prefixes), numbers, keywords, common built-ins
 const PY = /(#.*)|([fFrRbB]{0,2}(?:"(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'))|\b(\d+(?:\.\d+)?)\b|\b(True|False|None)\b|\b(def|class|if|elif|else|for|while|in|not|and|or|return|import|from|as|pass|break|continue|try|except|finally|with|lambda|is|raise|global|yield)\b|\b([A-Za-z_]\w*)(?=\()/g;
+// C / C++ / Arduino / JavaScript colours: comments, strings, #include and #define lines, numbers, keywords and types, constants (HIGH, true, null), calls
+const CL = /(\/\*[\s\S]*?\*\/|\/\/.*)|("(?:\\.|[^"\\\n])*"|'(?:\\.|[^'\\\n])*'|`(?:\\.|[^`\\])*`)|^([ \t]*#[ \t]*\w+(?:[ \t]*(?:<[^>\n]+>|"[^"\n]+"))?)|\b(0x[0-9A-Fa-f]+|\d+(?:\.\d+)?[fFuUlL]*)\b|\b(void|int|long|short|float|double|char|bool|boolean|byte|word|unsigned|signed|const|static|volatile|extern|struct|class|enum|public|private|protected|if|else|for|while|do|switch|case|default|break|continue|return|new|delete|this|typedef|namespace|using|template|String|var|let|function|try|catch|throw|in|of|typeof|null|undefined|true|false|NULL|HIGH|LOW|OUTPUT|INPUT|INPUT_PULLUP|LED_BUILTIN)\b|\b([A-Za-z_]\w*)(?=\s*\()/gm;
+const CL_CONST = /^(null|undefined|true|false|NULL|HIGH|LOW|OUTPUT|INPUT|INPUT_PULLUP|LED_BUILTIN)$/;
+function mdCodeC(code) {
+  let out = '', last = 0, m;
+  CL.lastIndex = 0;
+  while ((m = CL.exec(code))) {
+    out += mdEsc(code.slice(last, m.index));
+    if (m[3]) {
+      const inc = m[3].match(/^([ \t]*#[ \t]*\w+)([ \t]*(?:<[^>\n]+>|"[^"\n]+"))$/);
+      out += inc ? `<span class="k">${mdEsc(inc[1])}</span><span class="s">${mdEsc(inc[2])}</span>` : `<span class="k">${mdEsc(m[3])}</span>`;
+    } else {
+      const cls = m[1] ? 'c' : m[2] ? 's' : m[4] ? 'n' : m[5] ? (CL_CONST.test(m[5]) ? 'n' : 'k') : /^[A-Z]/.test(m[6]) ? 'y' : 'b';
+      out += `<span class="${cls}">${mdEsc(m[0])}</span>`;
+    }
+    last = m.index + m[0].length;
+  }
+  return out + mdEsc(code.slice(last));
+}
 function mdCode(code, lang) {
+  if (lang === 'cpp' || lang === 'js') return mdCodeC(code);
   if (lang !== 'python') return mdEsc(code);
   let out = '', last = 0, m;
   PY.lastIndex = 0;

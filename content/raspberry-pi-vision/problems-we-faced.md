@@ -30,7 +30,7 @@ pip install rpi_lcd
 Prefix the command with `DISPLAY=:0`, and keep a screen-share or VNC window open so the picture has somewhere to appear. Or remove the `cv.imshow` and `cv.waitKey` calls and run headless.
 
 ```bash
-DISPLAY=:0 python3 w7b.py
+DISPLAY=:0 python3 lcd_yolo.py
 ```
 
 ### Camera busy

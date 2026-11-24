@@ -71,8 +71,8 @@ These are the commands your README uses to check that the Pi can see its parts:
 
 ```bash
 source venv/bin/activate    # the prompt now starts with (venv)
-python3 w6.py
-DISPLAY=:0 python3 w6.py     # same, but windows go to the Pi's screen
+python3 hand_servo.py
+DISPLAY=:0 python3 hand_servo.py     # same, but windows go to the Pi's screen
 deactivate                   # leave the venv when done
 ```
 

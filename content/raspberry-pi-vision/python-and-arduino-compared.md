@@ -243,7 +243,7 @@ void loop() {
 ```
 
 > [!more] TLDR: the two motor exercises in the course
-> In `w5a.py` two buttons drive it: forward on `GPIO19` and backward on `GPIO26`, with the internal pull-up, and the motor stops when you let go. In `w5b.py` you type commands: `F` forward, `B` backward, `S` stop, and `+` or `-` to change the speed by 10%.
+> In `motor_buttons.py` two buttons drive it: forward on `GPIO19` and backward on `GPIO26`, with the internal pull-up, and the motor stops when you let go. In `motor_cmd.py` you type commands: `F` forward, `B` backward, `S` stop, and `+` or `-` to change the speed by 10%.
 
 ## Servo: signal `GPIO18`
 

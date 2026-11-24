@@ -1,0 +1,310 @@
+var ss = SpreadsheetApp.openByUrl("YOUR_SPREADSHEET_URL");
+var sheet = ss.getSheetByName("Inventory");
+var sheet2 = ss.getSheetByName("Equip Log");
+var sheet3 = ss.getSheetByName("Room Log");
+
+function doPost(e) {
+  var data = JSON.parse(e.postData.contents);
+  var userMsg = data.originalDetectIntentRequest.payload.data.message.text;
+  var values = sheet.getRange(2, 1, sheet.getLastRow(), sheet.getLastColumn()).getValues();
+  var values2 = sheet2.getRange(2, 1, sheet2.getLastRow(), sheet2.getLastColumn()).getValues();
+  var values3 = sheet3.getRange(2, 1, sheet3.getLastRow(), sheet3.getLastColumn()).getValues();
+
+  var command = userMsg.split(',');
+  var now = new Date();
+  var timestamp = Utilities.formatDate(now, "GMT+7", "dd/MM/yyyy HH:mm:ss");
+  
+  // WARNING: WATCHOUT FOR SPACING AND CAPITAL LETTERS
+  // INPUT- CMD/ID/QTY/USER
+  // CMD: Ebook/Ereturn/check/Rbook/Rreturn/Elog/Rlog
+  // ID: B001-003 | S001-003 | M001 | C001 | R1909,1908,1906,1904,1903,1902,1901
+  // QTY: 0-Anan
+  // USER: 24329
+
+
+//------------------------------- CONDITION -------------------------------
+
+  // Condition 00 - Initiate 
+  
+  if (command[0] == "Start"){ 
+      return Result0(); // FUNCTION (2) CALLER
+
+  // Condition 01 - Book Equipment
+
+  } else if (command[0] == "Check"){ 
+  for (var i = 0; i < values.length; i++) {
+    if (values[i][0] == command[1]) {
+      i = i + 2;
+      var Data = sheet.getRange(i, 2).getValue();
+      var Pic = sheet.getRange(i,6).getValue();
+      var Current = sheet.getRange(i,5).getValue();
+      return Result2(Pic,Data,Current); // FUNCTION (2) CALLER
+      }
+    }
+
+  // Condition 02 - Book Equipment
+
+  } else if (command[0] == "Ebook"){
+  for (var i = 0; i < values.length; i++) {
+    if (values[i][0] == command[1]) {
+      i = i + 2;
+      var Data = sheet.getRange(i, 2).getValue();
+      var Left = sheet.getRange(i,5).getValue();
+      var Current = parseInt(Left) - parseInt(command[2]);
+      sheet.getRange(i,5).setValue(Current).toString();
+      sheet2.appendRow([command[3],command[1],command[2],timestamp,"Book"]);
+      return Result1(Data,Current); // FUNCTION (1) CALLER
+      }
+    }
+
+  // Condition 03 - Return Equipment
+
+  } else if (command[0] == "Ereturn"){
+  for (var i = 0; i < values.length; i++) {
+    if (values[i][0] == command[1]) {
+      i = i + 2;
+      var ID = command[1]
+      var Data = sheet.getRange(i, 2).getValue();
+      var Left = sheet.getRange(i,5).getValue();
+      var Current = parseInt(Left) + parseInt(command[2]);
+      sheet.getRange(i,5).setValue(Current).toString();
+      sheet2.appendRow([command[3],command[1],command[2],timestamp,"Return"]);
+      return Result1(Data,Current); // FUNCTION (1) CALLER
+      }
+    }
+
+  // Condition 04 - Room Booking 
+
+  } else if (command[0] == "Rbook"){
+  for (var i = 0; i < values.length; i++) {
+    if (values[i][0] == command[1]) {
+      i = i + 2;
+      var Data = sheet.getRange(i, 2).getValue();
+      var Current = sheet.getRange(i,5).getValue();
+      if (Current == "Unoccupied"){
+        sheet3.appendRow([command[2],command[1],timestamp,"Enter"]);
+        sheet.getRange(i,5).setValue("Occupied").toString();
+        var Current = "Occupied"
+      }
+      return Result1(Data,Current); // FUNCTION (1) CALLER
+      }
+    }
+
+  // Condition 05 - Room Set to deafult
+
+  } else if (command[0] == "Rreturn"){
+  for (var i = 0; i < values.length; i++) {
+    if (values[i][0] == command[1]) {
+      i = i + 2;
+      var Data = sheet.getRange(i, 2).getValue();
+      var Current = sheet.getRange(i,5).getValue();
+      if (Current == "Occupied"){
+        sheet3.appendRow([command[2],command[1],timestamp,"Leave"]);
+        sheet.getRange(i,5).setValue("Unoccupied").toString();
+        var Current = "Unoccupied"
+      }
+      return Result1(Data,Current); // FUNCTION (1) CALLER
+      }
+    }
+  } else if (command[0] == "Elog") { 
+    var userToFind = command[1];
+    var summary = "Logs for " + userToFind + ":\n";
+    var found = false;
+
+    // Iterate through all rows in sheet2 (values2)
+    for (var i = 0; i < values2.length; i++) {
+      // Check if the name in Column A (index 0) matches the command
+      if (values2[i][0] == userToFind) {
+        var equipID = values2[i][1];
+        var qty = values2[i][2];
+        var time = values2[i][3];
+        var status = values2[i][4];
+
+        summary += "- " + time + ": " + status + " " + qty + "x " + equipID + "\n";
+        found = true;
+      }
+    }
+
+    if (!found) {
+      summary = "No logs found for user: " + userToFind;
+    }
+
+    return Result3(summary); 
+
+  } else if (command[0] == "Rlog") { 
+    var userToFind = command[1];
+    var summary = "Logs for " + userToFind + ":\n";
+    var found = false;
+
+    // Iterate through all rows in sheet2 (values2)
+    for (var i = 0; i < values3.length; i++) {
+      // Check if the name in Column A (index 0) matches the command
+      if (values3[i][0] == userToFind) {
+        var equipID = values3[i][1];
+        var qty = values3[i][2];
+        var time = values3[i][3];
+        var status = values3[i][4];
+
+        summary += "- " + time + ": " + status + " " + qty + "x " + equipID + "\n";
+        found = true;
+      }
+    }
+
+    if (!found) {
+      summary = "No logs found for user: " + userToFind;
+    }
+
+    return Result3(summary); 
+  }
+}  
+
+//------------------------------- Intro UI -------------------------------
+
+function Result0(){
+  var result = {
+  "fulfillmentMessages": [
+      {
+          "platform": "line",
+          "type": 4,
+          "payload": {
+              "line": {
+                "type": "text",
+                "text": "WARNING: WATCHOUT FOR SPACING AND CAPITAL LETTERS\n\nCOMMAND SYNTAX:\nCMD,ID,QTY,USER\n\nCMD: Ebook/Ereturn/check/Rbook/Rreturn/Elog/Rlog\n\nID: B001-003 | S001-003 | M001 | C001 | R1909,1908,1906,1904,1903,1902,1901\n\nQTY: 0-Anan | USER: 24329"
+
+          }
+        }
+      }
+    ]
+  }
+  var replyJSON = ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+  return replyJSON;
+}
+
+
+//------------------------------- Intro UI -------------------------------
+var summary
+function Result3(summary){
+  var result = {
+  "fulfillmentMessages": [
+      {
+          "platform": "line",
+          "type": 4,
+          "payload": {
+              "line": {
+                "type": "text",
+                "text": summary
+
+          }
+        }
+      }
+    ]
+  }
+  var replyJSON = ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+  return replyJSON;
+}
+
+//------------------------------- MAIN UI -------------------------------
+
+var Pic,Data,Current,Price
+function Result2(Pic,Data,Current){
+  var result = {
+  "fulfillmentMessages": [
+      {
+          "platform": "line",
+          "type": 4,
+          "payload": {
+              "line": {
+                "type": "flex",
+                "altText":"flex message",
+                "contents": {
+                  "type": "bubble",
+                  "hero": {
+                    "type": "image",
+                    "url": Pic,
+                    "size": "full",
+                    "aspectRatio": "20:13",
+                    "aspectMode": "cover",
+                    "action": {
+                      "type": "uri",
+                      "label": "Line",
+                      "uri": "https://linecorp.com/"
+                    }
+                  },
+                  "body": {
+                    "type": "box",
+                    "layout": "vertical",
+                    "contents": [
+                      {
+                        "type": "text",
+                        "text": Data,
+                        "weight": "bold",
+                        "size": "xl",
+                        "contents": []
+                      },
+                      {
+                        "type": "box",
+                        "layout": "vertical",
+                        "spacing": "sm",
+                        "margin": "lg",
+                        "contents": [
+                          {
+                            "type": "box",
+                            "layout": "baseline",
+                            "spacing": "sm",
+                            "contents": [
+                              {
+                                "type": "text",
+                                "text": "Current-Status: ",
+                                "size": "sm",
+                                "color": "#AAAAAA",
+                            
+                                "contents": []
+                              },
+                              {
+                                "type": "text",
+                                "text": String(Current),
+                                "size": "sm",
+                                "color": "#666666",
+                          
+                                "wrap": true,
+                                "contents": []
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+          }
+        }
+      }
+    ]
+  }
+  var replyJSON = ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+  return replyJSON;
+}
+
+//------------------------------- Entry noti UI -------------------------------
+
+var Data,Current
+function Result1(Data,Current){
+  var result = {
+  "fulfillmentMessages": [
+      {
+          "platform": "line",
+          "type": 4,
+          "payload": {
+              "line": {
+                "type": "text",
+                "altText":"Entry Saved",
+                "text": "CURRENT: "+Data+" STATUS: "+Current
+
+          }
+        }
+      }
+    ]
+  }
+  var replyJSON = ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+  return replyJSON;
+}

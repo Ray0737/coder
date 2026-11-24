@@ -1,7 +1,3 @@
-'''
-Week 02 | Input command
-'''
-
 # Exercise 1-2 
 a = input("Enter your sth")
 x = type(a)

@@ -18,7 +18,7 @@ Open or create a file with `nano filename`. Type as you would in any editor. The
 | `Ctrl+U` | Paste it back |
 
 ```bash
-nano w2a.py
+nano blink.py
 ```
 
 ## vim: the powerful one

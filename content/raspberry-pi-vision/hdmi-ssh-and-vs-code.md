@@ -68,7 +68,7 @@ qt.qpa.xcb: could not connect to display
 | **VNC** | `wayvnc` is installed. This Pi runs the `labwc` Wayland desktop, so `wayvnc` is the right VNC, not RealVNC's X11 server |
 
 ```bash
-DISPLAY=:0 python3 w6.py
+DISPLAY=:0 python3 hand_servo.py
 ```
 
 > [!more] TLDR: what DISPLAY=:0 does, and running headless

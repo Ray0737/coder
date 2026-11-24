@@ -1,7 +1,3 @@
-'''
-Week 01 | Introduction - String, Variable, Print command
-'''
-
 #Q1 
 a=2
 b=3

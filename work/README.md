@@ -5,8 +5,8 @@ Work is the real code for each class: the full programs, tools and scripts.
 ```
 work/
   <class-slug>/
-    W01.py
-    W02.py
+    print.py
+    input.py
 ```
 
 The class slug is the same one the chapters use (`basic-python`, `circuits-arduino-gpio` and so on).
@@ -18,7 +18,7 @@ The class slug is the same one the chapters use (`basic-python`, `circuits-ardui
 
 ```js
 'basic-python/printing-and-getting-input': [
-  { file: 'W01.py', title: 'Print', note: 'One sentence about what the file does.' },
+  { file: 'print.py', title: 'Print', note: 'One sentence about what the file does.' },
 ],
 ```
 
@@ -27,3 +27,16 @@ The key is the chapter's address (`<class-slug>/<chapter-slug>`), the same one c
 A chapter with no work yet shows dimmed in the Work sidebar.
 
 Like chapters, work files are read with `fetch`, so open the site through a local server (VS Code Live Server works).
+
+## Other languages
+
+A file is coloured as Python unless its entry says `lang: 'cpp'` (Arduino and C++) or `lang: 'js'` (Apps Script and JavaScript). Those files are cut into cells by line number instead of by marker comments:
+
+```js
+{ file: 'ldr.ino', lang: 'cpp',
+  cutLines: [18, 22, 28],                 // the line each new cell starts on (the first cell starts at line 1)
+  labels: ['Header', 'Library', 'Constants', 'setup()'],   // one name per cell
+  does: [ /* one explanation per cell */ ] }
+```
+
+Keep `does` and `labels` as long as the number of cells (`cutLines.length + 1`). The files in `work/line-chatbot/` have the real spreadsheet link replaced with `YOUR_SPREADSHEET_URL`, because the site is public.
