@@ -1093,7 +1093,7 @@ async function showWork() {
     setHead('Work', 'Coder › Work');
     wmain.className = 'welcome';
     wmain.innerHTML = `
-      <h1>Coder</h1>
+      <h1>Coder_Satitcom@eai</h1>
       <p class="lead">Code, circuits, robots and AI, one chapter at a time</p>
       <div class="cols">
         <div>
@@ -1111,27 +1111,21 @@ async function showWork() {
             <h3>Recent</h3>
             <ul class="links" id="recent"></ul>
           </section>
-        </div>
-        <div>
-          <section class="walk">
-            <h3>Walkthroughs</h3>
-            <a href="#" data-group="Basic Python">${icon('terminal-window')}<span><b>Start with Python</b>From print() up to a Tkinter app</span></a>
-            <a href="#" data-group="Circuits, Arduino &amp; GPIO">${icon('cpu')}<span><b>Circuits to robots</b>Ohm's law, Arduino, ESP32, Raspberry Pi</span></a>
-            <a href="#" data-group="AI Development">${icon('brain')}<span><b>AI Development</b>From AI vs ML up to LLMs</span></a>
-            <a href="#" data-open="main">${icon('lightbulb')}<span><b>How notes work</b>Each chapter is one file, read top to bottom</span></a>
+          <section>
+            <h3>Your data</h3>
+            <p class="note">Chapters done, your notes and the chapters you opened stay in this browser. Nothing is sent anywhere. Open a chapter from <a href="#" data-open="main">Main</a> to read or write its notes.</p>
           </section>
         </div>
-      </div>
-      <div class="cols more">
-        <section>
-          <h3>Our Major</h3>
-          <ul class="links">
-          </ul>
-        </section>
-        <section>
-          <h3>Your data</h3>
-          <p class="note">Chapters done, your notes and the chapters you opened stay in this browser. Nothing is sent anywhere. Open a chapter from <a href="#" data-open="main">Main</a> to read or write its notes.</p>
-        </section>
+        <div>
+          <section class="faq">
+              <h3>FAQ</h3>
+              <details name="faq"><summary>Do I need an account?</summary><p>No. There is no sign-up and no login. Everything you do on the site, like the chapters you finish, the notes you write and the chapters you open, is kept in your own browser. Nothing is sent to a server.</p></details>
+              <details name="faq"><summary>Where are my notes saved?</summary><p>Only on this device, in this browser. They are still there when you come back, but they do not follow you to another phone or computer. Clearing the site's data erases them, so use Copy in the note panel to keep a backup of anything important.</p></details>
+              <details name="faq"><summary>How does a chapter work?</summary><p>Each chapter is one page you read from top to bottom. The note panel sits beside the lesson on a wide screen, and slides in from the right on a narrow one. Open the extra sections inside a chapter when you want more detail, and skip them when you do not.</p></details>
+              <details name="faq"><summary>How do I add text to my note?</summary><p>Select any text in the lesson, then press Clip in the note panel and it is added to your note. The toolbar also has bold, italic, code and list buttons, and Preview shows how the note will look once formatted.</p></details>
+              <details name="faq"><summary>Where do I start?</summary><p>If you are new, start with Python and go in order. Then move to Circuits to robots, where you meet Ohm's law, Arduino, ESP32 and Raspberry Pi, and finish with AI Development, which goes from AI versus ML up to LLMs. Use Go to a chapter if you want to jump straight to a topic.</p></details>
+            </section>
+        </div>
       </div>
       <p class="startup">${icon('list-checks')}Pick a file in Main to begin</p>`;
     const recent = $('#recent');

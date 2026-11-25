@@ -70,7 +70,6 @@ const HEADER = `
       <a href="tools.html">Tools</a>
       <a href="playground.html">Playground</a>
       <a href="about.html">About</a>
-      <a href="about.html#changelog">Changelog</a>
     </nav>
     <div class="nav">
       <button class="ib" type="button" onclick="history.back()" aria-label="Back" title="Back"><svg class="i"><use href="#i-caret-left"/></svg></button>
@@ -109,7 +108,6 @@ const FOOTER = `
     <span class="sep hide"></span>
     <span class="sep hide"></span>
     <a class="hide" href="about.html" title="About Coder"><svg class="i"><use href="#i-info"/></svg>About</a>
-    <a class="hide" href="about.html#changelog"><svg class="i"><use href="#i-clock"/></svg>Changelog</a>
     <span class="sep hide"></span>
     <button class="dev" id="dev" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="dev-pop"><svg class="i"><use href="#i-user-circle"/></svg><span class="t">Developer</span></button>
     <a class="bub" href="mailto:raphee.rattanamanoonporn@gmail.com" aria-label="Email the site developer" title="Email the site developer"><svg class="i"><use href="#i-envelope-simple"/></svg></a>
@@ -177,7 +175,7 @@ const notes = [
   ['Research','lightbulb','sapphire',['Coming soon'],'M.6 Capstone'],
   ['Final Project','sparkle','flamingo',['Coming soon'],'M.6 Capstone'],
 ];
-const pages = [['Home','index.html','house'],['Tools','tools.html','wrench'],['Playground','playground.html','flask'],['Work','work.html','toolbox'],['Roadmap','roadmap.html','map-trifold'],['About Coder','about.html','info'],['Changelog','about.html#changelog','clock']];
+const pages = [['Home','index.html','house'],['Tools','tools.html','wrench'],['Playground','playground.html','flask'],['Work','work.html','toolbox'],['Roadmap','roadmap.html','map-trifold'],['About Coder','about.html','info']];
 const $ = s => document.querySelector(s), $$ = s => document.querySelectorAll(s);
 const esc = s => s.replace(/&/g,'&amp;');
 const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
