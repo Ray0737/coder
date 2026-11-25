@@ -157,13 +157,7 @@ a.tab:hover{color:var(--text);text-decoration:underline;text-underline-offset:2p
 .ver{margin:28px 0 36px}
 .ver h2{font-size:20px;font-weight:700;padding-bottom:16px;margin-bottom:20px;border-bottom:1px solid var(--s0)}
 .ver h2 span{font-size:12px;font-weight:400;color:var(--o1);margin-left:8px}
-.vgrid{display:grid;grid-template-columns:repeat(3,1fr)}
-.vgrid>div{padding:0 24px}
-.vgrid>div:first-child{padding-left:0}
-.vgrid>div+div{border-left:1px solid var(--s0)}
-.vgrid h5{font-size:13px;font-weight:700;margin-bottom:10px}
-.vgrid li{padding:5px 0}
-@media(max-width:640px){.vgrid{grid-template-columns:1fr;gap:20px}.vgrid>div{padding:0}.vgrid>div+div{border-left:0;border-top:1px solid var(--s0);padding-top:20px}}
+.ver p{font-size:13px;line-height:1.7;color:var(--sub0)}
 .deco{display:grid;grid-template-columns:repeat(3,1fr);background:var(--mantle);border:1px solid var(--s0);border-radius:10px;overflow:hidden;margin-top:24px}
 .deco>div{display:flex;flex-direction:column;padding:18px 18px 0;min-height:250px}
 .deco>div+div{border-left:1px solid var(--s0)}
