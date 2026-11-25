@@ -1239,9 +1239,9 @@ const widgets = {
     ];
     const grid = (g, b) => `<div class="agrid" style="grid-template-columns:repeat(${g[0].length},auto)">${g.flat().map(v => `<i${b ? ` class="${v ? 't' : 'f'}"` : ''}>${b ? (v ? 'True' : 'False') : v}</i>`).join('')}</div>`;
     el.innerHTML = `<p class="wgt">Try it: do maths on an array</p>
+      <div class="wgrow" id="w-ar-b">${ops.map((o, i) => `<button type="button" class="seg2${i ? '' : ' on'}" data-i="${i}">${mdEsc(o[0])}</button>`).join('')}</div>
       <figure class="code"><figcaption>python</figcaption><pre><code>${mdCode('a = np.arange(1, 13).reshape(3, 4)', 'python')}</code></pre></figure>
       <p class="wgsay">a is</p>${grid(A)}
-      <div class="wgrow" id="w-ar-b">${ops.map((o, i) => `<button type="button" class="seg2${i ? '' : ' on'}" data-i="${i}">${mdEsc(o[0])}</button>`).join('')}</div>
       <p class="wgsay" id="w-ar-c"></p><div id="w-ar-o"></div>`;
     const run = i => {
       $$('#w-ar-b button').forEach(b => b.classList.toggle('on', +b.dataset.i === i));
