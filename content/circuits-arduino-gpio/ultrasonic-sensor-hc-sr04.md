@@ -23,6 +23,10 @@ sonartiming
 
 > [!more] TLDR: time to distance
 > About 58 microseconds of echo for each centimetre. A wall 50 cm away gives an echo of about 2915 microseconds.
+>
+> - Quick mental check: divide the echo time in microseconds by 58 to get centimetres.
+> - A wall 2 m away gives about 11,700 microseconds, and 4 m gives about 23,300, which is still inside the 30 ms timeout used in the sketch.
+> - Sound is a little faster in warm air, about 0.6 m/s for each degree, so the distance can be off by one or two percent across a normal room temperature range.
 
 ## The wiring
 
@@ -43,6 +47,8 @@ The Echo pin is 5 V, which the Uno can read. A 3.3 V board such as the Raspberry
 
 > [!more] TLDR: five volts, four wires
 > Trig is an output, Echo is an input. If you swap them, the sensor never gets a pulse, and the reading is always 0.
+>
+> The sensor needs a real 5 V on VCC, so use the 5V pin and not 3V3. It draws only about 15 mA, which the board can easily give. If you always read 0, check three things in order: Trig and Echo are not swapped, VCC and GND are both connected, and the pin numbers in the code match the pins you used.
 
 ## Read it
 
@@ -75,6 +81,10 @@ void loop() {
 
 > [!more] TLDR: pulse out, pulse in, divide by two
 > `delayMicroseconds(10)` for the trigger, `pulseIn` for the echo, and `* 0.0343 / 2` for the distance.
+>
+> - The short LOW at the start makes sure the Trig pulse begins from a clean 0 V, and 10 microseconds is the shortest pulse the sensor accepts.
+> - Leave about 60 ms between measurements, so the echo of one reading is gone before the next one starts. The `delay(100)` in the sketch does this.
+> - `pulseIn` blocks the program while it waits, for up to 30 ms (about 5 m of range), so nothing else runs during that time.
 
 ## A zero is not a distance
 
@@ -92,6 +102,8 @@ The sensor also works best with a flat surface facing it, within about 2 cm to 4
 
 > [!more] TLDR: check for zero
 > Always treat a 0 from `pulseIn` as "no reading", and decide what the program does then.
+>
+> A zero can mean an unplugged wire, an object beyond about 4 m, or a surface that bounces the sound away. Good choices are to print "no echo", to keep the last good value, or to leave an output as it was. In the tank sketch a zero would look like a full tank, so a safe program must not open or close the valve on a zero reading.
 
 ## Level of a tank
 
@@ -107,3 +119,5 @@ A closer surface means a smaller distance and a fuller tank. Measure `TANK_HEIGH
 
 > [!more] TLDR: full is a short distance
 > The sensor looks down at the water, so the distance gets smaller as the tank fills. The percentage is `(height - distance) / height`.
+>
+> With a height of 200 cm, a reading of 50 cm means 150 cm of water, which is 75%. A reading of 150 cm means 50 cm of water, which is 25%. Measure the height from the face of the sensor to the empty bottom, and mount the sensor above the highest water line, because the sensor cannot read anything closer than about 2 cm.

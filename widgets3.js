@@ -147,14 +147,21 @@
       const q = s => el.querySelector(s);
       el.innerHTML = `<p class="wgt">Try it: change the voltage and the resistance</p>
         <div class="tb">${rng('ol-v', 'Voltage', 1, 12, 0.5, 5)}${rng('ol-r', 'Resistance', 10, 1000, 10, 220)}</div>
-        <svg viewBox="0 0 640 150" width="100%" id="ol-s"></svg><div class="afrow" id="ol-a"></div>`;
+        <div class="nndiag"><svg viewBox="20 0 460 180" width="100%" style="max-height:195px" id="ol-s"></svg></div><div class="afrow" id="ol-a"></div>`;
+      const node = (x, y, txt, c, w = 64) => `<rect x="${x - w / 2}" y="${y - 13}" width="${w}" height="26" rx="8" fill="var(--base)" stroke="${c}" stroke-width="1.5"/><text x="${x}" y="${y + 4}" text-anchor="middle" font-size="11" fill="var(--text)">${txt}</text>`;
+      const lab = (x, y, t, c = 'var(--o1)', s = 11) => `<text x="${x}" y="${y}" text-anchor="middle" font-size="${s}" fill="${c}">${t}</text>`;
       const draw = () => {
         const v = +q('#ol-v').value, r = +q('#ol-r').value, i = v / r, p = v * i;
         q('#ol-vv').textContent = v + ' V'; q('#ol-rv').textContent = ohm(r);
-        const bar = (y, w, c, l, t) => `${box(150, y, 340, 18, 5, 'var(--mantle)', faint)}<rect x="150" y="${y}" width="${w}" height="18" rx="5" fill="var(--${c})"/>${T(140, y + 13, l, 'var(--text)', 9, 'end')}${T(500, y + 13, t, 'var(--o1)', 8, 'start')}`;
-        q('#ol-s').innerHTML = bar(14, v / 12 * 340, 'red', 'Pressure', 'voltage: how hard the battery pushes')
-          + bar(54, Math.min(1, i / 0.1) * 340, 'blue', 'Flow', 'current: how much charge moves each second')
-          + bar(94, r / 1000 * 340, 'peach', 'Narrow pipe', 'resistance: how much the part holds it back');
+        // the wire gets thicker as more current flows; it tops out at 100 mA so the small currents still show a change
+        const k = Math.min(1, i / 0.1), sw = 1.5 + k * 7, a = 4 + k * 3;
+        const arrow = (x, y, d) => `<polygon transform="translate(${x} ${y}) scale(${a / 4})" points="${{ r: '-3,-4 -3,4 4,0', l: '3,-4 3,4 -4,0', d: '-4,-3 4,-3 0,4', u: '-4,3 4,3 0,-4' }[d]}" fill="var(--text)"/>`;
+        q('#ol-s').innerHTML = `<path d="M60 82 V50 Q60 40 70 40 H430 Q440 40 440 50 V140 Q440 150 430 150 H70 Q60 150 60 140 V108" fill="none" stroke="var(--blue)" stroke-opacity=".85" stroke-width="${sw.toFixed(1)}" stroke-linejoin="round"/>`
+          + node(60, 95, v + ' V', 'var(--red)', 52) + lab(125, 92, 'battery') + lab(125, 106, 'the push', 'var(--red)', 9)
+          + node(250, 40, ohm(r), 'var(--peach)') + lab(250, 20, 'resistor: the narrow pipe', 'var(--peach)')
+          + arrow(150, 40, 'r') + arrow(350, 40, 'r') + arrow(440, 95, 'd') + arrow(250, 150, 'l')
+          + lab(250, 172, 'flow (current) = ' + (i * 1000).toFixed(i < .01 ? 2 : 1) + ' mA', 'var(--blue)')
+          + lab(330, 95, 'thicker wire = more current', 'var(--o1)', 9);
         q('#ol-a').innerHTML = cell('Current', 'I = V / R', (i * 1000).toFixed(i < .01 ? 2 : 1) + ' mA') + cell('Power', 'P = V x I', (p * 1000).toFixed(0) + ' mW') + cell('Check', 'V / R x R', (i * r).toFixed(1) + ' V');
       };
       q('#ol-v').oninput = q('#ol-r').oninput = draw; draw();
@@ -271,16 +278,22 @@
       const q = s => el.querySelector(s);
       el.innerHTML = `<p class="wgt">Try it: wire an LED both ways, then write the pin</p>
         <div class="tb">${chips('lw-c', ['Active high: pin to LED to GND', 'Active low: 5V to LED to pin'])}${bt('lw-b', 'digitalWrite(8, HIGH)', 'act')}</div>
-        <svg viewBox="0 0 640 200" width="100%" id="lw-s"></svg><p class="wgsay" id="lw-t"></p>
-        ${legend([['green', 'current is flowing'], ['o0', 'no current'], ['red', '5 V']])}`;
+        <div class="nndiag"><svg viewBox="20 0 460 195" width="100%" style="max-height:210px" id="lw-s"></svg></div><p class="wgsay" id="lw-t"></p>
+        ${legend([['mauve', 'current is flowing'], ['s1', 'no current']])}`;
       let m = 0, hi = true;
+      const node = (x, y, txt, c = 'var(--sub0)', w = 56) => `<rect x="${x - w / 2}" y="${y - 13}" width="${w}" height="26" rx="8" fill="var(--base)" stroke="${c}" stroke-width="1.5"/><text x="${x}" y="${y + 4}" text-anchor="middle" font-size="11" fill="var(--text)">${txt}</text>`;
+      const lab = (x, y, t, a = 'middle', c = 'var(--o1)') => `<text x="${x}" y="${y}" text-anchor="${a}" font-size="11" fill="${c}">${t}</text>`;
+      const arrow = (x, y, d) => `<polygon transform="translate(${x} ${y})" points="${{ r: '-3,-4 -3,4 4,0', l: '3,-4 3,4 -4,0', d: '-4,-3 4,-3 0,4' }[d]}" fill="var(--mauve)"/>`;
       const draw = () => {
-        const on = m === 0 ? hi : !hi, w = on ? 'green' : 'o0';
+        const on = m === 0 ? hi : !hi, pin = hi ? 'HIGH = 5 V' : 'LOW = 0 V';
         q('#lw-b').textContent = `digitalWrite(8, ${hi ? 'HIGH' : 'LOW'})`;
-        const led = (x, y) => `<polygon points="${x - 12},${y - 12} ${x - 12},${y + 12} ${x + 12},${y}" fill="var(--yellow)" fill-opacity="${on ? 1 : .15}" stroke="var(--yellow)"/><line x1="${x + 12}" y1="${y - 12}" x2="${x + 12}" y2="${y + 12}" stroke="var(--yellow)" stroke-width="2.4"/>${on ? `<circle cx="${x}" cy="${y}" r="26" fill="var(--yellow)" fill-opacity=".18"/>` : ''}${T(x, y + 30, 'LED', 'var(--o1)', 8)}${T(x - 22, y - 8, '+', 'var(--o1)', 8)}${T(x + 22, y - 8, '-', 'var(--o1)', 8)}`;
-        let s = `${box(30, 20, 120, 160, 10)}${T(90, 40, 'Arduino Uno', 'var(--text)', 10)}${D(150, 70, 'lavender')}${T(142, 74, 'pin 8', 'var(--text)', 8, 'end')}${D(150, 110, 'red')}${T(142, 114, '5V', 'var(--text)', 8, 'end')}${D(150, 150, 'o0')}${T(142, 154, 'GND', 'var(--text)', 8, 'end')}`;
-        if (m === 0) s += `${W('M150 70 H220', w)}${res(240, 70, '220Ω')}${W('M260 70 H388', w)}${led(400, 70)}${W('M412 70 H470 V150 H150', w)}${T(470, 175, 'current goes from pin 8 to GND', 'var(--o1)', 8, 'end')}`;
-        else s += `${W('M150 110 H220', 'red')}${res(240, 110, '220Ω')}${W('M260 110 H388', on ? 'red' : 'o0')}${led(400, 110)}${W('M412 110 H470 V70 H150', w)}${T(470, 175, 'current goes from 5V into pin 8', 'var(--o1)', 8, 'end')}`;
+        // one path from the source on the left, over the resistor and LED, round to the end node at the bottom
+        let s = `<path d="M60 82 V48 Q60 38 70 38 H430 Q440 38 440 48 V142 Q440 152 430 152 H278" fill="none" stroke="${on ? 'var(--mauve)' : 'var(--s1)'}" stroke-width="${on ? 2 : 1.5}" stroke-linejoin="round"/>`;
+        s += node(60, 95, m === 0 ? 'pin 8' : '5 V', 'var(--mauve)') + lab(60, 124, m === 0 ? pin : 'always 5 V');
+        s += node(250, 152, m === 0 ? 'GND' : 'pin 8', 'var(--sub0)') + lab(250, 182, m === 0 ? 'always 0 V' : pin);
+        s += node(190, 38, '220Ω') + lab(190, 20, 'resistor');
+        s += (on ? '<circle cx="330" cy="38" r="24" fill="var(--yellow)" fill-opacity=".18"/>' : '') + node(330, 38, 'LED', on ? 'var(--yellow)' : 'var(--sub0)', 48) + lab(330, 20, '+ LED −') + lab(330, 66, on ? 'ON' : 'off', 'middle', on ? 'var(--yellow)' : 'var(--o1)');
+        if (on) s += arrow(125, 38, 'r') + arrow(262, 38, 'r') + arrow(440, 95, 'd') + arrow(350, 152, 'l');
         q('#lw-s').innerHTML = s;
         q('#lw-t').textContent = m === 0 ? (hi ? 'HIGH puts 5 V on the pin. Current flows through the resistor and the LED to GND, so the LED is ON.' : 'LOW puts 0 V on the pin. There is no push, so no current flows and the LED is OFF.') : (hi ? 'HIGH puts 5 V on the pin, the same as the 5V side of the LED. Nothing pushes current through, so the LED is OFF.' : 'LOW puts 0 V on the pin, so current runs from 5V through the LED into the pin. The LED is ON. This is active low.');
       };
@@ -303,15 +316,27 @@
         q('#bw-b').textContent = down ? 'Release the button' : 'Press the button';
         const flow = down;                                                  // current runs round the loop only while the button is pressed
         const val = m === 0 ? (down ? 0 : 1) : (down ? 1 : 0);
-        const loop = 'M60 82 V48 Q60 38 70 38 H430 Q440 38 440 48 V142 Q440 152 430 152 H70 Q60 152 60 142 V108';
-        const btn = x => node(x, 38, down ? 'pressed' : 'open', down ? 'var(--mauve)' : 'var(--sub0)');
-        let s = wire(loop, flow) + wire('M250 38 V82', false) + `<circle cx="250" cy="38" r="3.5" fill="var(--${flow ? 'mauve' : 'sub0'})"/>`;
-        s += node(60, 95, '5 V', 'var(--mauve)', 52);
-        // pull-up: resistor, tap to the pin, button.  pull-down: button, tap to the pin, resistor
-        s += m === 0 ? node(170, 38, '~20 k\u03a9') + btn(330) : btn(170) + node(330, 38, '10 k\u03a9');
-        s += m === 0 ? lab(170, 20, 'resistor') + lab(170, 66, 'inside the chip') + lab(330, 20, 'button') + lab(330, 66, 'you add this') : lab(170, 20, 'button') + lab(170, 66, 'you add this') + lab(330, 20, 'resistor') + lab(330, 66, 'you add this');
-        s += node(250, 95, m === 0 ? 'pin 2' : 'pin 3', val ? 'var(--mauve)' : 'var(--sub0)', 56) + lab(250, 124, 'reads ' + (val ? 'HIGH' : 'LOW'), 'middle', val ? 'var(--mauve)' : 'var(--o1)') + lab(250, 138, val ? '(about 5 V)' : '(about 0 V)', 'middle', 'var(--o1)', 9);
-        if (flow) s += arrow(110, 38, 'r') + arrow(390, 38, 'r') + arrow(440, 95, 'd') + arrow(260, 152, 'l');
+        // the button has four legs; the wire goes in one corner and out the opposite corner, which always connect when pressed
+        const leg = (x, y, used) => `<circle cx="${x}" cy="${y}" r="3.5" fill="${used ? (flow ? 'var(--mauve)' : 'var(--sub0)') : 'var(--s1)'}"/>`;
+        let s = `<rect x="180" y="45" width="60" height="70" rx="8" fill="var(--base)" stroke="${down ? 'var(--mauve)' : 'var(--sub0)'}" stroke-width="1.5"/>`
+          + `<line x1="180" y1="60" x2="240" y2="100" stroke="${down ? 'var(--mauve)' : 'var(--s1)'}" stroke-width="1.5"${down ? '' : ' stroke-dasharray="3 3"'}/>`
+          + leg(180, 60, 1) + leg(240, 100, 1) + leg(240, 60, 0) + leg(180, 100, 0)
+          + lab(210, 36, 'button') + lab(210, 134, down ? 'pressed' : 'open', 'middle', down ? 'var(--mauve)' : 'var(--o1)') + lab(210, 150, 'opposite corners', 'middle', 'var(--o1)', 9);
+        s += wire('M98 60 H180', flow) + wire('M240 100 H292', flow);
+        const pinLab = (x, y) => lab(x, y, 'reads ' + (val ? 'HIGH' : 'LOW'), 'middle', val ? 'var(--mauve)' : 'var(--o1)') + lab(x, y + 14, val ? '(about 5 V)' : '(about 0 V)', 'middle', 'var(--o1)', 9);
+        if (m === 0) {
+          // pull-up: the pin holds itself at 5 V through a resistor inside the chip, so the pin is the start of the chain
+          s += node(70, 60, 'pin 2', val ? 'var(--mauve)' : 'var(--sub0)') + lab(70, 36, 'INPUT_PULLUP') + pinLab(70, 92)
+            + node(320, 100, 'GND') + lab(320, 130, '0 V', 'middle', 'var(--o1)', 9);
+          if (flow) s += arrow(140, 60, 'r') + arrow(266, 100, 'r');
+        } else {
+          // pull-down: real 5V into the button, out to the pin, and a 10k from the pin to GND keeps it LOW when open
+          s += node(70, 60, '5V', 'var(--red)', 52) + lab(70, 36, 'Arduino 5V')
+            + node(320, 100, 'pin 3', val ? 'var(--mauve)' : 'var(--sub0)') + pinLab(320, 132)
+            + wire('M348 100 H392', flow) + node(420, 100, '10 k\u03a9') + lab(420, 80, 'you add this')
+            + wire('M420 113 V137', flow) + node(420, 150, 'GND');
+          if (flow) s += arrow(140, 60, 'r') + arrow(266, 100, 'r') + arrow(370, 100, 'r') + arrow(420, 127, 'd');
+        }
         q('#bw-s').innerHTML = s;
         q('#bw-a').innerHTML = cell('Wiring', m === 0 ? 'INPUT_PULLUP' : 'INPUT + 10k resistor', m === 0 ? 'pull-up' : 'pull-down') + cell('Idle reads', 'button not pressed', m === 0 ? 'HIGH' : 'LOW') + cell('Pressed reads', 'button pressed', m === 0 ? 'LOW' : 'HIGH') + cell('Right now', down ? 'pressed' : 'released', `<span style="white-space:nowrap;font-size:14px">digitalRead&nbsp;=&nbsp;${val ? 'HIGH' : 'LOW'}</span>`);
       };
@@ -323,19 +348,29 @@
     divider(el) {
       const q = s => el.querySelector(s);
       el.innerHTML = `<p class="wgt">Try it: a voltage divider into A0</p>
-        <div class="tb">${chips('dv-c', ['Two resistors', 'Fixed resistor + LDR'])}<span id="dv-ctl"></span></div>
-        <svg viewBox="0 0 640 220" width="100%" id="dv-s"></svg><div class="afrow" id="dv-a"></div>`;
+        <div class="tb">${chips('dv-c', ['Two resistors', 'Fixed resistor + LDR'])}<span id="dv-ctl" class="ctl"></span></div>
+        <div class="nndiag"><svg viewBox="20 0 460 215" width="100%" style="max-height:230px" id="dv-s"></svg></div><div class="afrow" id="dv-a"></div>`;
       let m = 0;
+      const node = (x, y, txt, c = 'var(--sub0)', w = 64) => `<rect x="${x - w / 2}" y="${y - 13}" width="${w}" height="26" rx="8" fill="var(--base)" stroke="${c}" stroke-width="1.5"/><text x="${x}" y="${y + 4}" text-anchor="middle" font-size="11" fill="var(--text)">${txt}</text>`;
+      const lab = (x, y, t, a = 'middle', c = 'var(--o1)') => `<text x="${x}" y="${y}" text-anchor="${a}" font-size="11" fill="${c}">${t}</text>`;
+      const wire = (d, c = 'var(--s1)') => `<path d="${d}" fill="none" stroke="${c}" stroke-width="1.5" stroke-linejoin="round"/>`;
+      const dot = (x, y, c = 'var(--peach)') => `<circle cx="${x}" cy="${y}" r="3.5" fill="${c}"/>`;
+      const cx = 280, ax = 110, bx = 420;                                     // resistor column, A0 box, voltage bar
       const ctl = () => { q('#dv-ctl').innerHTML = m === 0 ? rng('dv-1', 'R1 (top)', 1000, 20000, 500, 10000) + rng('dv-2', 'R2 (bottom)', 1000, 20000, 500, 10000) : rng('dv-l', 'Light', 0, 100, 1, 40); [...el.querySelectorAll('#dv-ctl input')].forEach(x => x.oninput = draw); draw(); };
       const draw = () => {
         let r1, r2, n2, l2;
         if (m === 0) { r1 = +q('#dv-1').value; r2 = +q('#dv-2').value; q('#dv-1v').textContent = ohm(r1); q('#dv-2v').textContent = ohm(r2); n2 = ohm(r2); l2 = 'R2'; }
         else { const L = +q('#dv-l').value; r1 = 4700; r2 = 100000 * Math.pow(0.97, L); q('#dv-lv').textContent = L < 20 ? 'dark' : L > 80 ? 'bright' : 'room light'; n2 = ohm(r2); l2 = 'LDR'; }
         const vo = 5 * r2 / (r1 + r2), adc = Math.round(vo / 5 * 1023);
-        q('#dv-s').innerHTML = `${D(250, 20, 'red')}${T(262, 24, '5 V', 'var(--red)', 9, 'start')}${W('M250 20 V40', 'red')}${res(250, 60, ohm(r1))}${T(300, 64, 'R1', 'var(--o1)', 8, 'start')}${W('M250 68 V110', 'peach')}${D(250, 110, 'peach', 4.5)}
-          ${W('M250 110 H120', 'peach')}${box(30, 90, 90, 40, 6)}${T(75, 108, 'A0', 'var(--text)', 10)}${T(75, 121, 'analogRead', 'var(--o1)', 7)}
-          ${W('M250 110 V142', 'peach')}${res(250, 150, n2)}${T(300, 154, l2, 'var(--o1)', 8, 'start')}${W('M250 158 V190', 'o0')}${D(250, 190, 'o0')}${T(262, 194, 'GND', 'var(--o1)', 9, 'start')}
-          <rect x="400" y="30" width="30" height="160" rx="6" fill="var(--mantle)" stroke="${faint}"/><rect x="400" y="${190 - vo / 5 * 160}" width="30" height="${vo / 5 * 160}" rx="6" fill="var(--peach)"/>${T(415, 22, '5 V', 'var(--o1)', 8)}${T(415, 206, '0 V', 'var(--o1)', 8)}${T(440, 194 - vo / 5 * 160, vo.toFixed(2) + ' V', 'var(--text)', 11, 'start')}`;
+        const h = vo / 5 * 150, ty = Math.min(176, Math.max(44, 184 - h));   // value label tracks the fill, kept clear of the 5 V / 0 V labels
+        const s = wire(`M${cx} 41 V62 M${cx} 88 V132 M${cx} 158 V177`)
+          + node(cx, 28, '5 V', 'var(--mauve)', 52) + node(cx, 75, ohm(r1)) + lab(cx + 42, 79, 'R1', 'start')
+          + node(cx, 145, n2) + lab(cx + 42, 149, l2, 'start') + node(cx, 190, 'GND', 'var(--sub0)', 52)
+          + wire(`M${cx} 110 H${ax + 30}`, 'var(--peach)') + node(ax, 110, 'A0', 'var(--peach)', 60) + lab(ax, 140, 'analogRead')
+          + dot(cx, 110) + dot(ax + 30, 110) + lab(cx - 12, 102, 'Vout', 'end', 'var(--peach)')
+          + `<rect x="${bx}" y="30" width="22" height="150" rx="6" fill="var(--mantle)" stroke="${faint}"/><rect x="${bx}" y="${180 - h}" width="22" height="${h}" rx="6" fill="var(--peach)"/>`
+          + lab(bx + 11, 20, '5 V') + lab(bx + 11, 198, '0 V') + lab(bx - 10, ty, vo.toFixed(2) + ' V', 'end', 'var(--text)');
+        q('#dv-s').innerHTML = s;
         q('#dv-a').innerHTML = cell('Vout', '5 V x R2 / (R1 + R2)', vo.toFixed(2) + ' V') + cell('analogRead(A0)', 'Vout / 5 V x 1023', adc) + cell('Ratio', 'R2 share of the total', Math.round(r2 / (r1 + r2) * 100) + '%');
       };
       pick(q, '#dv-c', i => { m = i; ctl(); }); ctl();
@@ -370,30 +405,21 @@
         ${legend([['red', '5V to VCC'], ['mauve', 'pin 9 to Trig (we send a 10 microsecond pulse)'], ['blue', 'pin 10 from Echo (we time the pulse that comes back)'], ['o0', 'GND to GND']])}`;
     },
 
-    // HC-SR04 timing, one animated diagram: the sound travels to the wall and back while a playhead sweeps the Trig and Echo traces
+    // HC-SR04 timing: a playhead sweeps the Trig and Echo traces
     sonartiming(el) {
       const q = s => el.querySelector(s);
       el.innerHTML = `<p class="wgt">Try it: how far is the wall?</p>
         <div class="tb">${rng('sn-d', 'Distance', 5, 200, 1, 50)}${bt('sn-play', 'Play', 'act')}</div>
-        <div class="nndiag"><svg viewBox="0 0 580 256" width="100%" id="sn-s"></svg></div><div class="afrow" id="sn-a"></div>
+        <div class="nndiag"><svg viewBox="0 98 580 158" width="100%" id="sn-s"></svg></div><div class="afrow" id="sn-a"></div>
         <p class="wgcap">The Trig pulse is really 10 µs, too narrow to see at this scale, so it is drawn wider. Press Play to watch one measurement.</p>`;
       const lab = (x, y, t, a = 'middle', c = 'var(--o1)', s = 10) => `<text x="${x}" y="${y}" text-anchor="${a}" font-size="${s}" fill="${c}">${t}</text>`;
-      const arrow = (x1, x2, y, c) => `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="var(--${c})" stroke-width="1.5"/><polygon transform="translate(${x2} ${y})" points="${x2 > x1 ? '-5,-3.5 -5,3.5 1,0' : '5,-3.5 5,3.5 -1,0'}" fill="var(--${c})"/>`;
       const X0 = 80, W_ = 480, MAX = 12000, T1 = [124, 150], T2 = [184, 210], xs = us => X0 + us / MAX * W_;
       const st = { p: 1 }, cid = 'sn-clip' + Math.random().toString(36).slice(2, 7); let timer = null;
       const draw = () => {
         const d = +q('#sn-d').value, t = d * 2 / 0.0343, tau = st.p * MAX;                // tau: the time the playhead has reached, in microseconds
-        const xw = 160 + (d - 5) / 195 * 380, x1 = 118, x2 = xw - 6;                       // where the wall is drawn, and the ends of the sound path
         const e0 = xs(200), e1 = e0 + t / MAX * W_, xp = xs(tau);
         q('#sn-dv').textContent = d + ' cm';
-        // the sound burst: sits at the sensor, then goes out, then comes back
-        const f = Math.min(1, Math.max(0, (tau - 200) / t)), out = f < 0.5, bx = out ? x1 + f * 2 * (x2 - x1) : x2 - (f - 0.5) * 2 * (x2 - x1), by = out ? 32 : 48;
-        const flying = tau >= 0 && tau <= 200 + t && st.p < 1;
-        let g = `<rect x="70" y="20" width="44" height="40" rx="8" fill="var(--base)" stroke="var(--sub0)" stroke-width="1.5"/>${lab(92, 44, 'sensor', 'middle', 'var(--text)', 10)}
-          <rect x="${xw.toFixed(1)}" y="12" width="5" height="56" rx="2" fill="var(--o0)"/>${lab(xw + 2, 8, 'wall', 'middle', 'var(--o1)', 10)}
-          ${arrow(x1, x2, 32, 'peach')}${arrow(x2, x1, 48, 'blue')}${lab((x1 + x2) / 2, 26, 'sound goes out', 'middle', 'var(--peach)', 9)}${lab((x1 + x2) / 2, 62, 'and comes back', 'middle', 'var(--blue)', 9)}
-          <path d="M${x1} 78 V84 H${x2.toFixed(1)} V78" fill="none" stroke="var(--s1)"/>${lab(((x1 + x2) / 2).toFixed(1), 98, 'distance = ' + d + ' cm', 'middle', 'var(--text)', 10)}
-          ${flying ? `<circle cx="${bx.toFixed(1)}" cy="${by}" r="9" fill="var(--${out ? 'peach' : 'blue'})" fill-opacity=".25"/><circle cx="${bx.toFixed(1)}" cy="${by}" r="4.5" fill="var(--${out ? 'peach' : 'blue'})"/>` : ''}`;
+        let g = '';
         // the grid, drawn once per frame so it stays under the traces
         for (let ms = 0; ms <= 12; ms += 2) g += `<line x1="${xs(ms * 1000)}" y1="114" x2="${xs(ms * 1000)}" y2="218" stroke="var(--s0)"/>${lab(xs(ms * 1000), 234, ms, 'middle', 'var(--o0)', 9)}`;
         [T1, T2].forEach(r => { g += `<line x1="${X0}" y1="${r[0]}" x2="${X0 + W_}" y2="${r[0]}" stroke="var(--s0)" stroke-dasharray="3 3"/><line x1="${X0}" y1="${r[1]}" x2="${X0 + W_}" y2="${r[1]}" stroke="var(--s1)"/>${lab(X0 - 8, r[0] + 3, 'HIGH', 'end', 'var(--o0)', 8)}${lab(X0 - 8, r[1] + 3, 'LOW', 'end', 'var(--o0)', 8)}`; });

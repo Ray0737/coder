@@ -32,6 +32,10 @@ divider
 
 > [!more] TLDR: the bottom resistor sets the share
 > The output is the bottom resistor's share of the total. A big bottom resistor gives a high voltage, and a small one gives a low voltage.
+>
+> - R2 equal to R1 gives 2.5 V. R2 three times R1 gives 3.75 V, and R2 a third of R1 gives 1.25 V.
+> - Only the ratio sets the voltage, so 1 kΩ with 1 kΩ and 100 kΩ with 100 kΩ both give 2.5 V.
+> - Bigger values waste less current from the supply, but the Arduino's analog input prefers a divider whose resistance is below about 10 kΩ, so the middle range of 1 kΩ to 10 kΩ is a good start.
 
 ## The light sensor (LDR)
 
@@ -46,6 +50,8 @@ So with the LDR on the **bottom** of the divider, **more light means a lower vol
 
 > [!more] TLDR: the order decides the direction
 > LDR to GND and a fixed resistor to 5V: dark gives high voltage. Swap them and dark gives low voltage. Write down which you built.
+>
+> With 4.7 kΩ on top and an LDR of 100 kΩ in the dark, A0 sees about 4.8 V. With the LDR at 2 kΩ in bright light, it sees about 1.5 V. If you would rather have "more light, bigger number", swap the parts or use `1023 - analogRead(A0)` in code. For the widest swing, pick a fixed resistor close to the LDR's value at the light level you care about.
 
 ## Wiring it
 
@@ -62,6 +68,8 @@ The middle point, where the resistor and the LDR meet, is the only one that goes
 
 > [!more] TLDR: the middle goes to the pin
 > 5V to the resistor, the resistor to the LDR, the LDR to GND, and a wire from where the two meet to A0.
+>
+> The A0 wire must go to the shared column (column 14 above), not to one of the two outer ends. A common mistake is putting it on the 5V or GND side, which makes `analogRead` stick at 1023 or 0 whatever the light does. If the resistor and the LDR are in different columns, they are not joined, and the reading wanders at random.
 
 ## Reading it and finding the resistance
 
@@ -99,3 +107,9 @@ The course's `ldr.ino` converts the reading to **lux** (units of light) on the L
 
 > [!more] TLDR: test the direction first
 > Look at the raw number in the Serial Monitor before trusting any converted number. If it moves the wrong way, the wiring and the formula disagree.
+>
+> 1. Cover the LDR with your hand: with the wiring above, `raw` should go up.
+> 2. Shine a torch on it: `raw` should go down.
+> 3. If `raw` is stuck at 0 or 1023, the wiring is wrong, so fix it before you touch the formula.
+>
+> Only when the raw number behaves should you trust the resistance or lux value built from it.

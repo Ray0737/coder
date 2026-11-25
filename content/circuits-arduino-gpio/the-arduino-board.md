@@ -18,6 +18,10 @@ The heart of the Uno is a chip called a **microcontroller**, the ATmega328P. It 
 
 > [!more] TLDR: small and exact
 > 32 KB for the program and 2 KB for variables is very small, so Arduino code is short and avoids big arrays and long strings.
+>
+> - An `int` takes 2 bytes, so an array of 1000 of them would already fill the 2 KB of SRAM.
+> - Quoted text in `Serial.println("...")` is also copied into SRAM, so many long messages can use it up. Strange crashes in a long sketch are often a full SRAM.
+> - 16 MHz means a simple instruction takes about 62 nanoseconds, which is plenty fast for buttons, LEDs and sensors.
 
 ## The parts of the board
 
@@ -40,6 +44,8 @@ arduinoboard
 
 > [!more] TLDR: five groups to remember
 > USB for power and upload, the chip, digital pins on top, analog pins and power pins at the bottom.
+>
+> Two extra things to remember: the reset button restarts your program but does not erase it, and pins 0 and 1 are shared with the USB connection, so keep them free while you upload and use the Serial Monitor. The analog pins A0 to A5 can also work as ordinary digital pins when you need more of them.
 
 ## Powering the board
 
@@ -49,6 +55,10 @@ The **5V** pin is an output when the board is powered: it is the place to take 5
 
 > [!more] TLDR: power in, 5V out
 > USB, the jack or VIN feed the board. The 5V pin then feeds your parts, up to a few hundred milliamps.
+>
+> - USB can give about 500 mA in total, and the board itself uses some of it, so the parts you add get less than that.
+> - VIN wants about 7 to 12 V. Never put more than 5 V into the 5V pin, because that skips the regulator that protects the chip.
+> - The 3V3 pin gives 3.3 V for 3.3 V parts, but only a small current, about 50 mA.
 
 ## Arduino and Raspberry Pi
 
@@ -67,6 +77,8 @@ The two work well together: the Arduino does the exact timing and the Pi does th
 
 > [!more] TLDR: 5 V and 3.3 V
 > The Uno's pins use 5 V and the Pi's use 3.3 V. Joining them directly can harm the Pi, so check the voltages first.
+>
+> A Pi pin is not 5 V tolerant, so a 5 V signal from the Uno going into the Pi needs a voltage divider or a level shifter on that wire. The other way is usually fine, because the Uno reads about 3 V and above as HIGH, but it is close to the limit. Always join the two GND pins as well, so both boards share the same 0 V.
 
 ## Other boards
 
@@ -74,3 +86,5 @@ This course uses the **Uno**, so the pin numbers in every chapter are the Uno's.
 
 > [!more] TLDR: check the pin map of your board
 > If you use another board, look up which pins have PWM and I2C before you copy a wiring.
+>
+> On the Uno, PWM is on pins 3, 5, 6, 9, 10 and 11, and I2C is on A4 (SDA) and A5 (SCL). A Nano matches these, but an ESP32 uses different GPIO numbers and runs at 3.3 V, so a 5 V sensor may not be safe on it. Check the voltage and the pin map, then copy the wiring.

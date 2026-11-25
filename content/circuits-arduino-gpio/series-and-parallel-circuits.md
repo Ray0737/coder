@@ -17,6 +17,8 @@ seriesparallel
 
 > [!more] TLDR: series adds resistance
 > More parts in a line means more resistance and less current. If one part breaks, the road is cut and everything stops, like old Christmas lights.
+>
+> Example: a 220 ohm and a 470 ohm resistor in series make 690 ohm, so on 5 V the current is 5 / 690, about 7.2 mA, and it is the same 7.2 mA in both. The voltage splits in proportion to the resistance, so the 470 ohm part takes the larger share. The total is always bigger than the biggest single resistor. This splitting is exactly what a voltage divider uses later.
 
 ## In parallel: more roads
 
@@ -52,6 +54,8 @@ So the rule is: **give every LED its own resistor**, each wired from a pin throu
 
 > [!more] TLDR: one resistor per LED
 > Parallel branches with a resistor each are easy to understand and are the way the course wires four LEDs on pins 6 to 9.
+>
+> Each branch is independent: its own current (about 14 mA for a 220 ohm resistor on 5 V), its own brightness, and removing one LED does not change the others. Four LEDs at 14 mA each draw about 56 mA in total, which is fine for the chip's 200 mA limit but is why each LED gets its own pin and not one shared pin, since a single pin should stay near 20 mA.
 
 ## Where you meet them in Arduino projects
 
@@ -59,3 +63,5 @@ Everything on the breadboard's power rails is in parallel, because each part is 
 
 > [!more] TLDR: rails are parallel, a chain is series
 > If the same wire feeds many parts, they are in parallel. If a part sits one after another on the same wire, they are in series.
+>
+> A quick test: ask "if I remove this part, does the other still get current?" If yes, they are in parallel. If the other stops too, they are in series. On the breadboard, two parts that share both of their end rows are parallel, and parts that share only one row are in a chain. Real circuits mix both, such as an LED with its resistor (series) copied four times side by side (parallel).

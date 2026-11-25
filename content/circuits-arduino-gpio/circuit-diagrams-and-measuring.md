@@ -22,6 +22,11 @@ Current is drawn flowing from the **+** side, around the loop, to the **-** side
 
 > [!more] TLDR: connections, not looks
 > Read a schematic by following the wires: from a pin, through the parts, to GND. A dot is a join and a bare crossing is not.
+>
+> - Start at the supply or the output pin, and end at GND, and name each part you pass.
+> - The LED triangle points the way the current flows, from anode (+) to cathode (-), and the bar is the cathode.
+> - A resistor and a button have no direction, but an LED does, so a backwards LED is a common reading mistake.
+> - The same part may be drawn at different places on the page, and the wires may bend, but the connections stay the same.
 
 ## Read one
 
@@ -36,6 +41,8 @@ This is a loop: it starts at the supply and returns to the ground. Current flows
 
 > [!more] TLDR: a circuit is a closed loop
 > Current needs a way back. When a circuit does nothing, look for a broken loop first, and then for a short.
+>
+> A broken loop means no current: a wire is out, a leg is in the wrong column, or the GND jumper is missing. A short is the opposite, where current takes a path with almost no resistance, and the part gets hot or the board resets. Walk the loop with a finger from the pin to GND, and check each join, and the break is usually found in a minute. A switch is just a part of the loop that opens and closes it.
 
 ## The multimeter
 
@@ -49,6 +56,11 @@ multimeter
 
 > [!more] TLDR: the three rules
 > Voltage is measured across the part, current is measured through the line and resistance is measured with the power off and the part out of the circuit.
+>
+> - Voltage: probes touch both sides of the part, and the circuit stays as it is. Dial on DC volts.
+> - Current: the meter is part of the loop, so break the line and put the meter in the gap. Dial on amps, and red probe in the amps socket.
+> - Resistance: power off, and lift one leg of the part, or other parts in parallel add to the reading.
+> - After a current test, move the dial and the red probe back to volts, or the next test can short the supply and blow the fuse.
 
 ## Useful checks
 
@@ -63,3 +75,5 @@ A few tests find most mistakes before the code is even run.
 
 > [!more] TLDR: measure before you guess
 > A meter turns "it does not work" into a number. Check the supply first, then the pin, then the part.
+>
+> A supply that reads 0 V or about 3 V points to a loose jumper or a weak USB port, and not to the part. A pin that stays at 0 V while the sketch says HIGH means the wrong pin number or a sketch that was not uploaded. A part with the right voltage across it and no light is probably faulty or turned round. Working from the supply towards the part finds the first place where the number goes wrong.

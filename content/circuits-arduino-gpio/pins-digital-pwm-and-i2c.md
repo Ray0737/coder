@@ -15,6 +15,15 @@ arduinopins
 
 > [!more] TLDR: choose the pin by the job
 > Digital for on or off, `~` for fading, A0 to A5 for measuring and A4 and A5 for a screen or an I2C sensor.
+>
+> | Job | Pins | Functions |
+> |---|---|---|
+> | on or off, read a button | 2 to 13 | `digitalWrite`, `digitalRead` |
+> | fade or set a speed | 3, 5, 6, 9, 10, 11 (`~`) | `analogWrite` |
+> | measure a voltage | A0 to A5 | `analogRead` |
+> | screen or I2C sensor | A4 (SDA), A5 (SCL) | `Wire`, device library |
+>
+> Pins can play more than one role, so a `~` pin is also an ordinary digital pin. Pick the pin for the most specialised job first, then fill in the rest.
 
 ## Digital pins: HIGH or LOW
 
@@ -33,6 +42,8 @@ An output pin can give about **20 mA** safely (the absolute limit is 40 mA) and 
 
 > [!more] TLDR: pinMode first
 > Set `pinMode` in `setup()` for every pin you use. A pin you forget stays an input, and the LED you write to will barely glow.
+>
+> A pin starts as an input, which has very high resistance and gives almost no current. Writing HIGH to an input only turns on a weak internal resistor, so the LED shows a faint glow and you may think the wiring is wrong. Use `OUTPUT` for anything you drive, `INPUT` for a signal from a sensor with its own resistor, and `INPUT_PULLUP` for a button to GND. Keep each LED's current near 10 to 15 mA, well below the 20 mA limit.
 
 ## PWM: faking an in-between voltage
 
@@ -53,6 +64,8 @@ Only the pins marked **~** (3, 5, 6, 9, 10 and 11) can do this. On any other pin
 
 > [!more] TLDR: the number is the share of time on
 > 128 out of 255 is half the time HIGH, so the average is about 2.5 V. The pin is never really at 2.5 V.
+>
+> The share of time on is called the **duty cycle**, and it is `value / 255`: 64 is 25%, 128 is 50%, 192 is 75%. The average voltage is the duty cycle times 5 V. This works for an LED or a motor because they respond slowly compared with 490 pulses a second. It does not work for a meter or a part that needs a true steady voltage, such as an analog sensor input, unless you add a filter.
 
 ## Analog pins: measuring a voltage
 
@@ -84,6 +97,8 @@ This is the way to read a light sensor, a temperature sensor or a knob (a potent
 
 > [!more] TLDR: two wires, an address each
 > If A4 and A5 are used for I2C, you cannot use them for `analogRead` at the same time.
+>
+> Every device on the bus has its own address, such as `0x27` for a typical LCD, so you can put an LCD and a sensor on the same SDA and SCL wires. Two devices with the same address will clash, and you would need to change one with its address jumpers. Keep the wires short (under about 30 cm) and share the ground, since a long wire or a missing GND is the usual cause of an I2C device that works once and then fails.
 
 ## Pins to leave alone
 
@@ -91,3 +106,5 @@ Pins **0 and 1** are the serial port, used by the USB cable and by `Serial.print
 
 > [!more] TLDR: begin at pin 2
 > The pins used in this course are 2 to 13 and A0 to A5, which avoids 0 and 1.
+>
+> Pins 0 (RX) and 1 (TX) carry the same data as the USB cable, so a wire on them competes with the computer. If an upload fails with a sync error and you have something on pin 0 or 1, unplug it, upload, and then plug it back in. Pin 13 is also joined to the board's built-in L LED, so an LED or sensor on it may behave oddly, and that is the reason many first sketches blink pin 13 with no parts at all.

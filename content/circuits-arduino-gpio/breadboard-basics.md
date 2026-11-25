@@ -26,6 +26,11 @@ The gap in the middle is the width of a chip, so that a chip can sit across it a
 
 > [!more] TLDR: five in a column, a long strip for power
 > Parts in the same column half are joined, so put them there on purpose. A part in the same column on both legs is shorted out.
+>
+> - Rows `a` to `e` of one column are one connection, and `f` to `j` of the same column are another.
+> - To join two parts, put one leg of each in the same column half. To keep them apart, use different columns.
+> - A resistor with both legs in one column does nothing, because current takes the wire inside the board and skips it.
+> - Rails run the long way along the board, so one 5V jumper feeds every part on that rail.
 
 ## Powering the rails
 
@@ -40,6 +45,8 @@ Colours are only a habit, but a habit that saves time: **red for 5V, black for G
 
 > [!more] TLDR: red plus, black minus
 > The rails become your 5V and GND. Every part then needs only one short wire to reach power.
+>
+> Only ever join the + rail to 5V and the - rail to GND, and never the two rails to each other, which is a short circuit. Keep jumpers short and flat against the board so you can still see each part. Many boards print a red line for + and a blue line for -, and the colours are a guide only, so trust the wire you plugged in. Mixing up the two rails is a very common first mistake, and an LED wired to it simply stays off.
 
 ## Placing the parts
 
@@ -54,6 +61,8 @@ An LED has a polarity, so the wrong way round it does not light. It will not bre
 
 > [!more] TLDR: LED long leg to plus
 > Everything else is easy to place. The LED and the button are the two parts that need thinking about direction.
+>
+> The LED's long leg is the anode (+) and goes towards the supply side, and the flat edge on the plastic marks the cathode (-). A bent leg can lose the length cue, so use the flat edge when you are not sure. The button needs to straddle the gap, and if it reads pressed all the time, turn it a quarter turn because two legs are already joined inside. A resistor can go either way, so do not waste time turning it.
 
 ## A first circuit
 
@@ -69,6 +78,8 @@ The path is: **pin 8, the jumper, the resistor, the LED (long leg to short leg),
 
 > [!more] TLDR: write the path down
 > Before you power up, say the path out loud from the pin to GND. If you cannot, one part is in the wrong column.
+>
+> For the first circuit it is: pin 8, jumper, resistor, LED long leg, LED short leg, jumper, GND. Touch each part with a finger as you say it, and check that every step lands in a column shared with the next part. This takes about ten seconds and catches nearly every wiring mistake before it can hurt anything. Do the same for every later circuit, even when the diagram looks simple.
 
 ## Common mistakes
 
@@ -81,3 +92,5 @@ The path is: **pin 8, the jumper, the resistor, the LED (long leg to short leg),
 
 > [!more] TLDR: unplug before you change anything
 > Change the wiring only with the USB cable out, and plug it in last.
+>
+> A wire pushed in while the board is powered can touch 5V and GND for a moment, and that can reset the board or damage a pin. Powering up is the final step, after you have checked the path. If a part gets hot or you smell something, unplug the cable first and think afterwards. A pin on the Uno gives at most about 20 mA safely, so a short on a signal pin can hurt the chip.

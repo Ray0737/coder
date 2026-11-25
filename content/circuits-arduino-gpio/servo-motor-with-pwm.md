@@ -17,6 +17,10 @@ servowire
 
 > [!more] TLDR: pulse width is the angle
 > About 0.5 ms is 0 degrees, 1.5 ms is the middle and 2.4 ms is 180 degrees on the Arduino Servo library. The exact ends differ a little from servo to servo.
+>
+> - The pulse repeats every 20 ms, and the servo only holds its angle while the pulses keep arriving.
+> - If a servo buzzes at 0 or 180, its real range is a little shorter than the library assumes. Stay inside about 10 to 170 degrees, or use `writeMicroseconds` to find the true ends.
+> - The whole 0 to 180 degree range fits inside a pulse change of only about 2 ms, so `writeMicroseconds` gives finer steps than `write`.
 
 ## What you need
 
@@ -29,7 +33,9 @@ servowire
 The wires are **brown or black** (GND), **red** (5 V) and **orange or yellow** (signal).
 
 > [!more] TLDR: red, brown, orange
-> If you are not sure, the red one is always power, and the darkest one is always ground.
+> If you are not sure, the red one is always power, and the darkest one is always ground. The signal is the one left over, and it is usually orange, yellow or white.
+>
+> On the common 3-pin plug the order is brown, red, orange, so the plug only fits one way round. A plug pushed on backwards puts 5 V on the signal pin and can damage the servo, so check the colours against the pins before you power up.
 
 ## The wiring
 
@@ -42,6 +48,8 @@ The signal wire carries almost no current, so it can go straight to the pin. The
 
 > [!more] TLDR: the signal is easy, the power is not
 > A servo can take a few hundred milliamps when it moves, and much more if it is blocked.
+>
+> The signal wire carries well under 1 mA, so the pin has no trouble with it. The red wire is the one that matters: a small SG90 uses 100 to 250 mA moving and over 500 mA stalled, and a USB port gives about 500 mA for the whole board. Rule of thumb: when a servo misbehaves, suspect the power first, not the pin.
 
 ## Power: a servo is a motor
 
@@ -59,6 +67,10 @@ With a separate supply, join its **GND to the Arduino GND**, so that the signal 
 
 > [!more] TLDR: a common ground, and never a joined 5V
 > Two supplies need one shared GND. If the Arduino resets when the servo starts, the power is the problem and the code is not.
+>
+> - Without the shared GND the signal has no reference level, so the servo jitters or ignores you.
+> - Joining the two 5V lines makes two supplies push against each other, which can damage either one.
+> - A quick test: unplug the servo and run the sketch. If the resets stop, the servo is pulling too much current from the board.
 
 ## Move it
 
@@ -94,6 +106,8 @@ for (int a = 0; a <= 180; a++) {
 
 > [!more] TLDR: attach, then write
 > `attach(pin)` once in `setup()`, then `write(angle)` whenever you want it to move. Give it time to get there with a `delay`.
+>
+> A servo does not jump to the angle. A small SG90 turns about 60 degrees in 0.1 to 0.2 seconds, so a move across the whole 180 degrees takes roughly half a second, and a `delay(1000)` between far moves is safe. Do not call `attach` inside `loop()`, and remember that writing the same angle again is harmless.
 
 ## A valve for a tank
 
@@ -109,6 +123,8 @@ The gap between 30% and 80% is called **hysteresis**. Without it, a level hoveri
 
 > [!more] TLDR: two thresholds, not one
 > A valve that opens at 30% and closes at 80% settles. A valve that switches at one value flutters.
+>
+> At a level of 55% neither rule fires, so the valve keeps whatever position it had. Make the gap wider than the jitter of the sensor reading, which can be a few centimetres on a rippling surface. A home thermostat works the same way: it heats below one temperature and stops at a higher one.
 
 ## If it does not work
 
@@ -121,3 +137,8 @@ The gap between 30% and 80% is called **hysteresis**. Without it, a level hoveri
 
 > [!more] TLDR: power first
 > Most servo problems are power problems. Fix them before you change the code.
+>
+> 1. Check the red, brown and orange wires are on the right pins.
+> 2. Check that every supply shares one GND.
+> 3. Give the servo its own 5 V supply and see if the trouble goes away.
+> 4. Only then look at the code, and test it first with the plain sweep sketch and nothing else attached.

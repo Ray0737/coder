@@ -5,6 +5,7 @@
 const mdEsc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const mdInline = s => mdEsc(s)
   .replace(/`([^`]+)`/g, '<code>$1</code>')
+  .replace(/\{(#[0-9a-fA-F]{3,6})\}/g, '<i class="rdot" style="background:$1"></i>')
   .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
   .replace(/(^|[^*])\*([^*\s][^*]*)\*/g, '$1<i>$2</i>')
   .replace(/!\[([^\]]*)\]\(([^)\s]+)\)/g, '<img alt="$1" src="$2">')

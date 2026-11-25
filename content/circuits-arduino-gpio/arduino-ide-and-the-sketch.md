@@ -16,6 +16,11 @@ The **Arduino IDE** is the free program where you write sketches, check them and
 
 > [!more] TLDR: board, port, upload
 > Two menu choices (the board and the port) decide whether the upload works. Most "upload failed" errors are one of them.
+>
+> - Board: **Arduino Uno**. A wrong board makes the compiler build for a different chip.
+> - Port: it only appears while the board is plugged in, so unplug and replug to see which entry is yours.
+> - If the port stays missing, swap the cable first. A charge-only cable is the most common cause, and it looks exactly like a dead board.
+> - Upload takes a few seconds, and the small TX and RX lights on the board blink while it works.
 
 ## The first sketch: Blink
 
@@ -38,6 +43,8 @@ Click the **Upload** button (the arrow). The board's LED flashes, once a second.
 
 > [!more] TLDR: setup once, loop forever
 > `setup()` is for settings and runs one time. `loop()` is the work, and when it reaches the end it starts again from the top.
+>
+> In Blink, the first `delay(1000)` holds the LED on for one second and the second holds it off for one second, so one full flash takes 2 seconds. Put `pinMode` in `setup()` and not in `loop()`, because setting a mode again and again does nothing useful. Reset or re-plugging the power starts `setup()` over from the beginning.
 
 ## The parts of a sketch
 
@@ -60,6 +67,8 @@ const int LED_PIN = 8;        // a constant: it never changes
 
 > [!more] TLDR: name your pins
 > `const int LED_PIN = 8;` at the top, and the sketch reads like a sentence.
+>
+> If you move the LED to pin 9 later, you change one line instead of hunting for every `8`. Use capital letters with underscores for constants so they stand out from variables. A common mistake is to write `const int LED_PIN = 8` without the semicolon, which gives the `expected ';'` error on the next line. `#define` has no semicolon, and adding one by habit breaks the code.
 
 ## Verify, upload and the Serial Monitor
 
@@ -82,6 +91,8 @@ The speed in the Serial Monitor (bottom right) must match the number in `Serial.
 
 > [!more] TLDR: print to see
 > When a sketch does not do what you expect, print the values it is using. It finds most problems faster than reading the code again.
+>
+> Open `Serial.begin(9600)` in `setup()` once, then use `Serial.println(x)` anywhere. Set the Serial Monitor to 9600 baud too, because a mismatch shows random symbols. Keep a `delay` of 100 to 500 ms in the loop while you print, or the text scrolls too fast to read. Remove the prints when you are done, since each one slows the loop a little.
 
 ## Libraries
 
@@ -93,6 +104,8 @@ A **library** is code that someone else wrote, so that you do not have to. The L
 
 > [!more] TLDR: install once, include in every sketch
 > The Library Manager downloads the code once, and the `#include` line in each sketch brings it in.
+>
+> Installing is per computer, but including is per sketch, so a new sketch needs its own `#include` line. Check the author name before you click Install, because several libraries have nearly the same name and some do not work with the same LCD backpack. A `No such file or directory` error right after `#include` always means the library is missing or the name is spelled differently.
 
 ## Common errors
 
@@ -106,3 +119,5 @@ A **library** is code that someone else wrote, so that you do not have to. The L
 
 > [!more] TLDR: read the first error
 > The IDE shows many errors, but the first one is usually the real one. Fix it, verify again, and the others often vanish.
+>
+> One missing `;` or `}` can make the compiler report ten errors further down, because it loses track of where each block ends. The line number is where the compiler noticed the problem, so look at that line and the one above it. If the sketch compiles but behaves wrongly, there is no error message at all, and that is the time to use `Serial.println`.

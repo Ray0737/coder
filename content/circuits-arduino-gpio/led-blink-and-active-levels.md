@@ -17,6 +17,8 @@ summary: Wire an LED on a breadboard, blink it, fade it, and learn why some outp
 
 > [!more] TLDR: one resistor per LED
 > The resistor sits in series with the LED, and its job is to limit the current to about 14 mA.
+>
+> An LED has almost no resistance of its own, so without the resistor it would pull far more current than the pin can give, and the LED or the pin could burn out. The number comes from (5 V - 2 V across the LED) / 220 ohm, which is about 14 mA. A bigger resistor, such as 1 kohm, gives a dimmer but safer LED, and it is a fine choice if you are unsure. The resistor can sit on either side of the LED, because the current is the same all along a series path.
 
 ## Wire one LED, active high
 
@@ -47,6 +49,8 @@ void loop() {
 
 > [!more] TLDR: HIGH is on, LOW is off
 > The pin is the supply. At HIGH it pushes current through the LED to GND.
+>
+> At HIGH the pin sits at 5 V and GND at 0 V, so there is a difference to drive current. At LOW both ends are at 0 V, so nothing flows and the LED is off. Remember that `pinMode(pin, OUTPUT)` must come first, and that the `delay(500)` calls set the speed: 500 ms on and 500 ms off makes one blink per second.
 
 ## Active low: the opposite wiring
 
@@ -69,6 +73,8 @@ digitalWrite(8, HIGH);   // the LED is off
 
 > [!more] TLDR: where the pin sits decides the level
 > Between the pin and GND it is active high. Between 5V and the pin it is active low.
+>
+> What matters is where the LED's other end goes. If it goes to GND, the pin must be higher than GND to make a difference, so HIGH turns it on. If it goes to 5V, the pin must be lower than 5V, so LOW turns it on. The LED and resistor are the same in both, and only the other end changes. When a part behaves backwards, check this first.
 
 ## Why does active low exist?
 
@@ -91,6 +97,8 @@ digitalWrite(8, ON_ACTIVE_LOW);
 
 > [!more] TLDR: read the datasheet
 > "Active high" or "active low" is written for the input of every module. Check it before you wire it, and then write the code to match.
+>
+> On a relay board it is often printed next to the jumper or the input pins, such as "LOW level trigger". Many relay boards are active low, so `digitalWrite(pin, LOW)` is what turns the relay on. Note also that a pin starts as an input at power-up, so an active-low part may switch on briefly when the board resets. A named constant such as `ON_ACTIVE_LOW` keeps the sketch readable when you come back to it later.
 
 ## Fading with PWM
 
@@ -113,6 +121,8 @@ The `fade.ino` sketch does this on three LEDs, on pins 9, 10 and 11, one after a
 
 > [!more] TLDR: fade needs a ~ pin
 > A pin without the `~` only gives full on or full off. Use 3, 5, 6, 9, 10 or 11.
+>
+> `analogWrite(pin, v)` takes 0 to 255, where 0 is off and 255 is full brightness. The `delay(5)` in the loop sets the fade speed: 256 steps of 5 ms is about 1.3 seconds from dark to bright. Our eyes do not see brightness in a straight line, so the lower half of the range looks much more different than the upper half, and a fade can seem to finish early.
 
 ## If it does not work
 
@@ -125,3 +135,5 @@ The `fade.ino` sketch does this on three LEDs, on pins 9, 10 and 11, one after a
 
 > [!more] TLDR: swap the LED first
 > Turn the LED round and test again before anything else. It fails more often than any other part.
+>
+> An LED only works one way round (long leg to the more positive side), and a backwards LED does not break, it just stays dark. After that, check in this order: the resistor and LED are in the same row group as the jumper, the pin number in `pinMode` and `digitalWrite` matches your wire, and the GND jumper is really connected to the - rail. If the board's own L LED blinks, the code and upload are fine and the fault is in your wiring.

@@ -15,6 +15,10 @@ summary: Connect a 16x2 character screen with four wires, find its address and p
 
 > [!more] TLDR: four wires, one library
 > VCC, GND, SDA and SCL, and the library that knows how to talk to the screen.
+>
+> - VCC and GND are power. The backpack takes 5 V, so use the Uno's **5V** pin and not 3.3V, or the backlight is weak.
+> - SDA and SCL are the two data wires, and they are what the backpack's chip uses to receive text.
+> - The library hides all the signalling, so you only call `lcd.print`. Without it, the same screen would need you to toggle the pins by hand.
 
 ## The wiring
 
@@ -35,6 +39,8 @@ Blocks, or nothing, is normal until the code runs. If the backlight is on but th
 
 > [!more] TLDR: SDA to A4, SCL to A5
 > Swapping the two data wires is the most common mistake. The screen shows nothing and nothing warns you.
+>
+> The Uno's I2C pins are fixed in the chip, so SDA must go to A4 and SCL to A5 (on newer Uno boards they are also marked next to AREF). A wire on any other pin will not work, however good the connection. If the screen stays blank, swap the two wires first: it costs ten seconds, and it is the cause far more often than a broken screen.
 
 ## Find the address
 
@@ -62,6 +68,8 @@ If it finds nothing, the wiring is wrong: check SDA and SCL, and the 5V and GND.
 
 > [!more] TLDR: scan, do not guess
 > The scanner answers "is anything on the two wires, and where?", which is the first question to ask when a screen is blank.
+>
+> It tries every address from 1 to 126 and prints the ones that answer, so a result of `0x27` means you can put `0x27` in `LiquidCrystal_I2C lcd(0x27, 16, 2)`. Two common results are `0x27` and `0x3F`. If it prints nothing at all, the problem is the wiring or the power, and changing the address in your sketch will not help.
 
 ## Write on the screen
 
@@ -90,6 +98,8 @@ void loop() {
 
 > [!more] TLDR: cursor, then print
 > Place the cursor, then print. To change a number on screen, print spaces after it to hide the old digits.
+>
+> The screen keeps what you wrote until you overwrite it, so a shorter number leaves the tail of the old one behind: going from `100` to `9` shows `900` unless you print spaces. Prefer `setCursor` plus spaces to `lcd.clear()` inside `loop()`, because `clear()` is slow and makes the text flicker. Text past column 15 is simply not shown, so keep each line to 16 characters.
 
 ## Printing numbers
 
@@ -105,6 +115,8 @@ The tank-valve sketch (`valve.ino`) and the lux meter (`ldr.ino`) both use the s
 
 > [!more] TLDR: the screen is the Serial Monitor you can carry
 > When the Uno is away from the computer, the LCD is how a project reports what it is doing.
+>
+> Use it for the same things you would send to `Serial.println`: a sensor value, a state such as "valve open", or an error. Show a number with a fixed number of decimals (`lcd.print(x, 1)`) so it does not jump in width, and update it only when it changes or every few hundred milliseconds, since a screen refreshed non-stop is hard to read.
 
 ## If it does not work
 
@@ -118,3 +130,9 @@ The tank-valve sketch (`valve.ino`) and the lux meter (`ldr.ino`) both use the s
 
 > [!more] TLDR: contrast, address, wires
 > Three things are wrong in nearly every blank LCD, and they are in that order of likelihood.
+>
+> 1. **Contrast.** Backlight on but no letters: turn the blue screw slowly, a quarter turn at a time, through its whole range.
+> 2. **Address.** Run the scanner and copy the address it prints into your sketch.
+> 3. **Wires.** Check SDA to A4 and SCL to A5, and push each jumper in firmly. A wire that looks seated but is loose is common on a breadboard.
+>
+> Change one thing at a time, and test after each, so you know which one fixed it.
