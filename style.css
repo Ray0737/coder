@@ -437,7 +437,7 @@ a.tab:hover{color:var(--text);text-decoration:underline;text-underline-offset:2p
 
 /* chapter page */
 .lesson{max-width:760px;margin:0 auto}
-.lesson h1{font-size:26px;font-weight:400;line-height:1.25}
+.lesson h1{font-size:26px;font-weight:700;line-height:1.25}
 .lesson .sum{color:var(--o1);font-size:14px;margin-top:4px}
 .lesson h2{font-size:16px;font-weight:700;margin:32px 0 8px}
 .lesson h3{font-size:13px;font-weight:700;margin:22px 0 6px}
