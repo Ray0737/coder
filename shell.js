@@ -110,9 +110,7 @@ const FOOTER = `
     <a class="hide" href="about.html" title="About Coder"><svg class="i"><use href="#i-info"/></svg>About</a>
     <span class="sep hide"></span>
     <button class="dev" id="dev" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="dev-pop"><svg class="i"><use href="#i-user-circle"/></svg><span class="t">Developer</span></button>
-    <a class="bub" href="mailto:raphee.rattanamanoonporn@gmail.com" aria-label="Email the site developer" title="Email the site developer"><svg class="i"><use href="#i-envelope-simple"/></svg></a>
-    <a class="bub" href="https://github.com/Ray0737" target="_blank" rel="noopener" aria-label="Site developer on GitHub" title="Site developer on GitHub"><svg class="i"><use href="#i-github-logo"/></svg></a>
-    <span>ยฉ 2026 Coder</span>
+    <span>© 2026 Coder</span>
   </footer>
 
   <div class="pop" id="dev-pop" role="dialog" aria-label="Developer" hidden>
@@ -130,11 +128,11 @@ const SETTINGS = `
 
 <h2 class="ph">Theme</h2>
 <div class="setlist"><div class="set"><span class="si"><svg class="i"><use href="#i-eye"/></svg></span><div class="st"><b>Colour theme</b><p>The four Catppuccin flavours. Mocha is the one in use.</p></div>
-<div class="seg" aria-disabled="true"><button class="on" disabled>Mocha</button><button disabled>Macchiato</button><button disabled>Frappรฉ</button><button disabled>Latte</button></div></div></div>
+<div class="seg" aria-disabled="true"><button class="on" disabled>Mocha</button><button disabled>Macchiato</button><button disabled>Frappé</button><button disabled>Latte</button></div></div></div>
 <div class="flavours" aria-hidden="true">
 <div class="flv on" style="--b:#1e1e2e;--t:#cdd6f4"><svg class="i ck"><use href="#i-check-circle"/></svg><span class="aa">Aa</span><span class="dots"><i style="background:#cba6f7"></i><i style="background:#89b4fa"></i><i style="background:#a6e3a1"></i></span><span class="nm">Mocha<span>In use</span></span></div>
 <div class="flv" style="--b:#24273a;--t:#cad3f5"><span class="aa">Aa</span><span class="dots"><i style="background:#c6a0f6"></i><i style="background:#8aadf4"></i><i style="background:#a6da95"></i></span><span class="nm">Macchiato<span>Soon</span></span></div>
-<div class="flv" style="--b:#303446;--t:#c6d0f5"><span class="aa">Aa</span><span class="dots"><i style="background:#ca9ee6"></i><i style="background:#8caaee"></i><i style="background:#a6d189"></i></span><span class="nm">Frappรฉ<span>Soon</span></span></div>
+<div class="flv" style="--b:#303446;--t:#c6d0f5"><span class="aa">Aa</span><span class="dots"><i style="background:#ca9ee6"></i><i style="background:#8caaee"></i><i style="background:#a6d189"></i></span><span class="nm">Frappé<span>Soon</span></span></div>
 <div class="flv" style="--b:#eff1f5;--t:#4c4f69"><span class="aa">Aa</span><span class="dots"><i style="background:#8839ef"></i><i style="background:#1e66f5"></i><i style="background:#40a02b"></i></span><span class="nm">Latte<span>Soon</span></span></div>
 </div>
 
@@ -216,14 +214,14 @@ sview.className = 'view'; sview.id = 'sview'; sview.hidden = true; sview.innerHT
 main.append(sview);
 const stab = document.createElement('span');
 stab.className = 'tab on'; stab.id = 'stab';
-stab.innerHTML = icon('gear-six') + '<span>Settings</span><button class="x" type="button" aria-label="Close Settings">ร—</button>';
+stab.innerHTML = icon('gear-six') + '<span>Settings</span><button class="x" type="button" aria-label="Close Settings">×</button>';
 const gear = $('#gear'), crumbEl = $('.crumb');
 let crumb0 = '';
 function openSettings(){
   if (!sview.hidden) return;
   crumb0 = crumbEl.textContent;
   $('.tabs').append(stab); sview.hidden = false; main.classList.add('sopen'); gear.classList.add('on');
-  crumbEl.textContent = 'Coder โ€บ Settings'; sview.scrollTop = 0;
+  crumbEl.textContent = 'Coder › Settings'; sview.scrollTop = 0;
 }
 function closeSettings(){
   if (sview.hidden) return;
@@ -245,7 +243,7 @@ if (panes.length) {
     panes.forEach(p => p.hidden = p.id !== cur);
     if ($('#p-page')) showPanel('page');
     $$('.outline a').forEach(a => a.classList.toggle('on', a.getAttribute('href') === '#' + cur));
-    crumb.textContent = base + ' โ€บ ' + $('#' + cur).dataset.tab;
+    crumb.textContent = base + ' › ' + $('#' + cur).dataset.tab;
     $('.view').scrollTop = 0;
   };
   const openTab = id => { closeSettings(); if (!panes.some(p => p.id === id)) id = panes[0].id; if (!opened.includes(id)) opened.push(id); show1(id); };
