@@ -24,7 +24,7 @@ b,strong{font-weight:700}
 .i{width:14px;height:14px;fill:currentColor;flex:none}
 
 /* frame: title bar on top, activity bar | sidebar | editor, status bar below */
-.app{display:grid;grid-template:32px minmax(0,1fr) 28px / 40px auto minmax(0,1fr);gap:0 4px;padding-right:4px;height:100vh}
+.app{display:grid;grid-template:32px minmax(0,1fr) 28px / 40px auto minmax(0,1fr);gap:0 4px;padding-right:4px;height:100vh;height:100dvh}
 
 /* title bar */
 .top{grid-column:1/-1;display:flex;align-items:center;gap:2px;margin-right:-4px;padding-right:6px}
@@ -328,6 +328,8 @@ a.tab:hover{color:var(--text);text-decoration:underline;text-underline-offset:2p
   .row .groups>div+div{border-left:0;border-top:1px solid var(--s0)}
   .status .hide,.menu,.nav,.dev .t{display:none}
   .cmd{flex:1;margin-left:0}
+  .ed{zoom:.75} /* shrinks all main-panel text and drawings; tune this one number */
+  #ntoggle,#notepane{display:none!important} /* notes are not available on phones */
 }
 
 /* settings in the main panel: view-only for now */
