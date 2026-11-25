@@ -92,9 +92,6 @@ const ACT_REST = `
     <a href="tools.html" title="Tools" aria-label="Tools"><svg class="i"><use href="#i-wrench"/></svg></a>
     <a href="playground.html" title="Playground" aria-label="Playground"><svg class="i"><use href="#i-flask"/></svg></a>
     <span class="gap"></span>
-    <a href="major.html" title="About the major" aria-label="About the major"><svg class="i"><use href="#i-graduation-cap"/></svg></a>
-    <a href="projects.html" title="Projects" aria-label="Projects"><svg class="i"><use href="#i-cube"/></svg></a>
-    <a href="materials.html" title="Materials" aria-label="Materials"><svg class="i"><use href="#i-books"/></svg></a>
     <span class="div" role="separator"></span>
     <button id="gear" title="Settings" aria-label="Settings"><svg class="i"><use href="#i-gear-six"/></svg></button>
     <a href="about.html" title="About Coder" aria-label="About Coder"><svg class="i"><use href="#i-info"/></svg></a>
@@ -110,9 +107,6 @@ const FOOTER = `
     <span class="gap"></span>
     <span class="hide" title="Language"><svg class="i"><use href="#i-translate"/></svg>EN</span>
     <span class="sep hide"></span>
-    <a class="hide" href="major.html" title="About the major"><svg class="i"><use href="#i-graduation-cap"/></svg>Major</a>
-    <a class="hide" href="projects.html"><svg class="i"><use href="#i-cube"/></svg>Projects</a>
-    <a class="hide" href="materials.html"><svg class="i"><use href="#i-books"/></svg>Materials</a>
     <span class="sep hide"></span>
     <a class="hide" href="about.html" title="About Coder"><svg class="i"><use href="#i-info"/></svg>About</a>
     <a class="hide" href="about.html#changelog"><svg class="i"><use href="#i-clock"/></svg>Changelog</a>
@@ -183,7 +177,7 @@ const notes = [
   ['Research','lightbulb','sapphire',['Coming soon'],'M.6 Capstone'],
   ['Final Project','sparkle','flamingo',['Coming soon'],'M.6 Capstone'],
 ];
-const pages = [['Home','index.html','house'],['Tools','tools.html','wrench'],['Playground','playground.html','flask'],['Work','work.html','toolbox'],['Roadmap','roadmap.html','map-trifold'],['About Coder','about.html','info'],['About the major','major.html','graduation-cap'],['Projects','projects.html','cube'],['Materials','materials.html','books'],['Changelog','about.html#changelog','clock']];
+const pages = [['Home','index.html','house'],['Tools','tools.html','wrench'],['Playground','playground.html','flask'],['Work','work.html','toolbox'],['Roadmap','roadmap.html','map-trifold'],['About Coder','about.html','info'],['Changelog','about.html#changelog','clock']];
 const $ = s => document.querySelector(s), $$ = s => document.querySelectorAll(s);
 const esc = s => s.replace(/&/g,'&amp;');
 const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');

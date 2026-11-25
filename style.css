@@ -167,8 +167,6 @@ a.tab:hover{color:var(--text);text-decoration:underline;text-underline-offset:2p
 .deco a.out:hover{color:#b4cffc;text-decoration:underline;text-underline-offset:2px}
 .deco .out .i{width:10px;height:10px}
 .deco>a .out{margin-top:auto}
-.deco.four{grid-template-columns:repeat(4,1fr)}
-.deco.four>div+div{border-left:1px solid var(--s0)}
 .demo{margin-top:auto;padding-top:16px}
 .demo.swatches{display:grid;grid-template-columns:repeat(4,22px);gap:8px}
 .demo.swatches i{width:22px;height:22px;border-radius:50%}
@@ -178,7 +176,6 @@ a.tab:hover{color:var(--text);text-decoration:underline;text-underline-offset:2p
 .deco .keys{margin-top:14px}
 .deco .keys .k{width:112px}
 .deco .keys li{padding:3px 0}
-.deco.four .out{margin:14px 0 18px}
 .deco .log li{padding:4px 0}
 .deco .log .plain{align-items:flex-start}
 .deco .log .i{margin-top:3px}
@@ -186,7 +183,8 @@ a.tab:hover{color:var(--text);text-decoration:underline;text-underline-offset:2p
 /* gallery-style cards: a dotted drawing on top, text left-aligned underneath */
 .deco:not(.list)>:is(div,a){align-items:stretch;justify-content:flex-start;text-align:left;padding:20px}
 .deco:not(.list) .art{order:-1;display:block;width:100%;height:auto;max-height:none;margin:0 0 14px;overflow:hidden}
-.deco:not(.list) .demo{order:-1;margin:0 0 18px;padding:0;min-height:96px;display:flex;align-items:center;gap:10px}
+.deco:not(.list) .demo{order:-1;margin:0 0 18px;padding:0;min-height:96px;display:flex;align-items:center;gap:10px;justify-content:center}
+.deco.tech:not(.list)>div{align-items:center;text-align:center;padding-top:40px;padding-bottom:40px;min-height:0}
 .deco:not(.list) .demo.swatches{display:grid;grid-template-columns:repeat(4,26px);gap:10px}
 .deco:not(.list) .demo.swatches i{width:26px;height:26px}
 .deco:not(.list) .demo.icons{display:grid;grid-template-columns:repeat(3,28px);gap:16px}
@@ -195,8 +193,6 @@ a.tab:hover{color:var(--text);text-decoration:underline;text-underline-offset:2p
 .deco:not(.list)>a h4{margin-top:0}
 .deco:not(.list) .out{margin:12px 0 0}
 .deco:not(.list) .keys{margin-top:14px}
-.deco.four:not(.list)>:is(div,a){align-items:center;text-align:center;justify-content:flex-start;padding-top:64px}
-.deco.four .demo{justify-content:center;min-height:120px}
 /* these tabs size to their content instead of stretching to the bottom */
 #overview .deco,#keys .deco,#data .deco,#built .deco,#direction .deco{flex:none}
 #overview .deco>div,#keys .deco>div,#data .deco>div,#built .deco>div,#direction .deco>div{min-height:0;padding-bottom:26px}
@@ -294,7 +290,7 @@ a.tab:hover{color:var(--text);text-decoration:underline;text-underline-offset:2p
   .view{padding:24px 16px}
   .cols{grid-template-columns:1fr;gap:24px}
   .walk.grid{grid-template-columns:1fr}
-  .deco,.deco.four,.deco.gal{grid-template-columns:1fr}
+  .deco,.deco.gal{grid-template-columns:1fr}
   .deco>div+div,.deco>a+a{border-left:0;border-top:1px solid var(--s0)}
   .row,.row .groups{grid-template-columns:1fr}
   .row .meta{border-right:0;border-bottom:1px solid var(--s0)}

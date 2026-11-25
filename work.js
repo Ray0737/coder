@@ -1126,9 +1126,6 @@ async function showWork() {
         <section>
           <h3>Our Major</h3>
           <ul class="links">
-            <li><a href="major.html">${icon('graduation-cap')}About the major</a><span class="dim">What it is and its classes</span></li>
-            <li><a href="projects.html">${icon('cube')}Projects</a><span class="dim">What we built in class</span></li>
-            <li><a href="materials.html">${icon('books')}Materials</a><span class="dim">Class files and code</span></li>
           </ul>
         </section>
         <section>
