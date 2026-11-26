@@ -210,8 +210,17 @@ a.tab:hover{color:var(--text);text-decoration:underline;text-underline-offset:2p
 .deco:not(.list) .out{margin:12px 0 0}
 .deco:not(.list) .keys{margin-top:14px}
 /* these tabs size to their content instead of stretching to the bottom */
-#overview .deco,#data .deco,#built .deco{flex:none}
-#overview .deco>div,#data .deco>div,#built .deco>div{min-height:0;padding-bottom:26px}
+#overview .deco,#major .deco,#data .deco,#built .deco{flex:none}
+#overview .deco>div,#major .deco>div,#data .deco>div,#built .deco>div{min-height:0;padding-bottom:26px}
+.fill #major>*{flex:none}
+#major .wh{margin-top:32px}
+.sequote{margin-top:40px;padding:32px 36px;background:var(--yellow);color:#000;font-size:20px;line-height:1.7}
+#major .deco.grid>div{border:0;box-shadow:1px 0 0 var(--s0),0 1px 0 var(--s0)}
+#major .deco.q{grid-template-columns:repeat(3,1fr)}
+#major .deco.q:not(.list)>div{padding:16px 14px}
+@media(max-width:900px){#major .deco.q{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:640px){#major .deco.q{grid-template-columns:1fr}}
+#major .cmp+.cmp{margin-top:0}
 .deco.gal{grid-template-columns:repeat(3,1fr);grid-auto-rows:1fr;flex:1}
 .deco.gal>a{border:0;min-height:0;padding:22px;box-shadow:1px 0 0 var(--s0),0 1px 0 var(--s0);color:var(--sub0)}
 .deco.gal>a{transition:background .2s,color .2s}
