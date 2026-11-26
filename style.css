@@ -1730,3 +1730,16 @@ input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;bac
 .wfile .wtop h1,.wfile .wtop .sum{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 .wside .fabout{margin:0 0 16px;font-size:12px;line-height:1.6;color:var(--o1)}
+
+/* Src Code tab: every file at once, in columns */
+.srccols{columns:240px;column-gap:28px;margin-top:16px}
+.srccols section{break-inside:avoid;margin-bottom:22px}
+.srccols h4{font-size:12.5px;font-weight:700;padding-bottom:6px;margin-bottom:6px;border-bottom:1px solid var(--s0);overflow-wrap:anywhere}
+.srccols .links a{overflow-wrap:anywhere}
+.srchead{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:8px 16px;margin-top:28px}
+.srchead .wh{margin-top:0}
+.srchead>div:first-child{flex:1;min-width:220px}
+.clone{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--o0)}
+.clone code{font-size:11px;padding:0;background:none;user-select:all;overflow-wrap:anywhere}
+.clone button{padding:0;font-size:11px;color:var(--blue);cursor:pointer}
+.clone button:hover{text-decoration:underline;text-underline-offset:2px}

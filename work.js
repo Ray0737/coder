@@ -1088,6 +1088,9 @@ function cutCells(code, cutAt, cutLines) {
 async function showWork() {
   const id = decodeURIComponent(location.hash.slice(1));
   $$('#tree a.on').forEach(a => a.classList.remove('on'));
+  const isSrc = id === 'src' || id.startsWith('src/');
+  $('#wtab').classList.toggle('on', !isSrc); $('#srctab').classList.toggle('on', isSrc);
+  if (isSrc) { $('#wtab span').textContent = 'Work'; return showSrc(); }
   const f = wItems.find(x => wId(x) === id);
   if (!f) {
     setHead('Work', 'Coder › Work');
@@ -1100,6 +1103,7 @@ async function showWork() {
           <section>
             <h3>Start</h3>
             <ul class="links">
+              <li><a href="#src">${icon('code')}Src Code: all classwork files</a></li>
               <li><a href="#" data-open="main">${icon('folder-open')}Browse notes</a></li>
               <li><a href="#" data-cmd>${icon('magnifying-glass')}Go to a chapter</a></li>
               <li><a href="#" data-group="Basic Python">${icon('terminal-window')}Open Python</a></li>

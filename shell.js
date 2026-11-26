@@ -117,6 +117,9 @@ const FOOTER = `
     <div class="who"><svg class="i"><use href="#i-user-circle"/></svg><div><b>Mr. Raphee Rattanamanoonporn</b><span>Site developer</span></div></div>
     <a href="https://github.com/Ray0737" target="_blank" rel="noopener"><svg class="i"><use href="#i-github-logo"/></svg>GitHub<span class="dim">Ray0737</span><svg class="i go"><use href="#i-arrow-up-right"/></svg></a>
     <a href="mailto:raphee.rattanamanoonporn@gmail.com"><svg class="i"><use href="#i-envelope-simple"/></svg>Email<span class="dim">raphee.rattanamanoonporn@gmail.com</span><svg class="i go"><use href="#i-arrow-up-right"/></svg></a>
+    <a href="mailto:024329@spsm.ac.th"><svg class="i"><use href="#i-envelope-simple"/></svg>School email<span class="dim">024329@spsm.ac.th</span><svg class="i go"><use href="#i-arrow-up-right"/></svg></a>
+    <a href="https://www.linkedin.com/in/raphee-rattanamanoonporn" target="_blank" rel="noopener"><svg class="i"><use href="#i-globe"/></svg>LinkedIn<span class="dim">raphee-rattanamanoonporn</span><svg class="i go"><use href="#i-arrow-up-right"/></svg></a>
+    <a href="https://medium.com/@raphee.rattanamanoonporn" target="_blank" rel="noopener"><svg class="i"><use href="#i-book-open"/></svg>Medium<span class="dim">@raphee.rattanamanoonporn</span><svg class="i go"><use href="#i-arrow-up-right"/></svg></a>
     <a href="https://github.com/eai-spsm" target="_blank" rel="noopener"><svg class="i"><use href="#i-buildings"/></svg>Major GitHub<span class="dim">eai-spsm</span><svg class="i go"><use href="#i-arrow-up-right"/></svg></a>
   </div>
 `;
@@ -173,7 +176,7 @@ const notes = [
   ['Research','lightbulb','sapphire',['Coming soon'],'M.6 Capstone'],
   ['Final Project','sparkle','flamingo',['Coming soon'],'M.6 Capstone'],
 ];
-const pages = [['Home','index.html','house'],['Tools','tools.html','wrench'],['Playground','playground.html','flask'],['Work','work.html','toolbox'],['Roadmap','roadmap.html','map-trifold'],['About Coder','about.html','info']];
+const pages = [['Home','index.html','house'],['Tools','tools.html','wrench'],['Playground','playground.html','flask'],['Work','work.html','toolbox'],['Src Code','work.html#src','code'],['Roadmap','roadmap.html','map-trifold'],['About Coder','about.html','info']];
 const $ = s => document.querySelector(s), $$ = s => document.querySelectorAll(s);
 const esc = s => s.replace(/&/g,'&amp;');
 const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
