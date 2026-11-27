@@ -243,7 +243,7 @@ function paintGrid(cvs, values, n, points, discretize, rect) {
       const x = ox + (p.x + XD) / (2 * XD) * w, y = oy + (XD - p.y) / (2 * XD) * w;
       ctx.beginPath(); ctx.arc(x, y, w / 100 * 1.5, 0, 7);
       ctx.fillStyle = color(p.label); ctx.fill();
-      ctx.lineWidth = test ? 1.2 : 0.8; ctx.strokeStyle = test ? '#cdd6f4' : '#11111b'; ctx.stroke();
+      ctx.lineWidth = test ? 1.2 : 0.8; ctx.strokeStyle = test ? cssv('text') : cssv('crust'); ctx.stroke();
     }
   }
 }
@@ -257,7 +257,7 @@ function paintMain() {
   ctx.clearRect(0, 0, W, H);
   const outId = net[net.length - 1][0].id, id = hoverNode || outId, reg = S.problem === 'regression';
   paintGrid(cv, grid[id], DENS, [[trainData, false], ...(S.showTest ? [[testData, true]] : [])], S.discretize, [L, T, s]);
-  ctx.lineWidth = 1; ctx.font = `15px ${FONT}`; ctx.fillStyle = '#7f849c';
+  ctx.lineWidth = 1; ctx.font = `15px ${FONT}`; ctx.fillStyle = cssv('o1');
   for (let v = -6; v <= 6; v += 2) {
     const p = (v + XD) / (2 * XD) * s;
     ctx.strokeStyle = v === 0 ? '#cdd6f466' : '#cdd6f41a';
@@ -265,22 +265,22 @@ function paintMain() {
     ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.fillText(v, L + p, T + s + 6);
     ctx.textAlign = 'right'; ctx.textBaseline = 'middle'; ctx.fillText(v, L - 7, T + s - p);
   }
-  ctx.fillStyle = '#a6adc8'; ctx.font = `16px ${FONT}`;
+  ctx.fillStyle = cssv('sub0'); ctx.font = `16px ${FONT}`;
   ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.fillText('X1', L + s / 2, H - 2);
   ctx.save(); ctx.translate(12, T + s / 2); ctx.rotate(-Math.PI / 2); ctx.textBaseline = 'top'; ctx.fillText('X2', 0, -2); ctx.restore();
   // title
-  ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#cdd6f4'; ctx.font = `17px ${FONT}`;
+  ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillStyle = cssv('text'); ctx.font = `17px ${FONT}`;
   const title = id === outId ? 'Network output' : F[id] ? 'Feature ' + F[id].label : 'Neuron ' + id;
   ctx.fillText(title, L, 20);
   // legend (right, top)
   ctx.font = `15px ${FONT}`; ctx.textAlign = 'right';
   let x = W - Rr;
   const chip = (col, text, ring) => {
-    ctx.fillStyle = '#a6adc8'; ctx.fillText(text, x, 20); x -= ctx.measureText(text).width + 12;
-    ctx.beginPath(); ctx.arc(x, 20, 6, 0, 7); ctx.fillStyle = col; ctx.fill(); ctx.lineWidth = ring ? 2 : 1; ctx.strokeStyle = ring ? '#cdd6f4' : '#11111b'; ctx.stroke(); x -= 20;
+    ctx.fillStyle = cssv('sub0'); ctx.fillText(text, x, 20); x -= ctx.measureText(text).width + 12;
+    ctx.beginPath(); ctx.arc(x, 20, 6, 0, 7); ctx.fillStyle = col; ctx.fill(); ctx.lineWidth = ring ? 2 : 1; ctx.strokeStyle = ring ? cssv('text') : cssv('crust'); ctx.stroke(); x -= 20;
   };
-  if (S.showTest) chip('#45475a', 'Test', true);
-  if (reg) { chip('#fab387', '−1'); chip('#89b4fa', '+1') } else { chip('#fab387', 'Class −1'); chip('#89b4fa', 'Class +1') }
+  if (S.showTest) chip(cssv('s1'), 'Test', true);
+  if (reg) { chip(cssv('peach'), '−1'); chip(cssv('blue'), '+1') } else { chip(cssv('peach'), 'Class −1'); chip(cssv('blue'), 'Class +1') }
 }
 
 // grid[id][c][r]: output of every node (and every input feature) at each grid cell
@@ -433,23 +433,23 @@ function drawChart() {
   const L = 84, R = 78, T = 16, B = 62, pw = w - L - R, ph = h - T - B;
   ctx.clearRect(0, 0, w, h);
   const max = Math.max(0.05, ...hist.train, ...hist.test), n = hist.train.length, last = Math.max(1, n - 1);
-  ctx.font = `20px ${FONT}`; ctx.fillStyle = '#7f849c'; ctx.strokeStyle = '#313244'; ctx.lineWidth = 2;
+  ctx.font = `20px ${FONT}`; ctx.fillStyle = cssv('o1'); ctx.strokeStyle = cssv('s0'); ctx.lineWidth = 2;
   // horizontal grid + loss ticks
   ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
   for (let i = 0; i <= 4; i++) { const y = T + ph * i / 4; ctx.beginPath(); ctx.moveTo(L, y); ctx.lineTo(L + pw, y); ctx.stroke(); ctx.fillText((max * (1 - i / 4)).toFixed(2), L - 10, y) }
   // vertical grid + epoch ticks
   ctx.textAlign = 'center'; ctx.textBaseline = 'top';
   for (let i = 0; i <= 4; i++) { const x = L + pw * i / 4; ctx.beginPath(); ctx.moveTo(x, T); ctx.lineTo(x, T + ph); ctx.stroke(); ctx.fillText(Math.round(last * i / 4), x, T + ph + 8) }
-  ctx.fillStyle = '#a6adc8'; ctx.fillText('Epoch', L + pw / 2, h - 28);
+  ctx.fillStyle = cssv('sub0'); ctx.fillText('Epoch', L + pw / 2, h - 28);
   ctx.save(); ctx.translate(10, T + ph / 2); ctx.rotate(-Math.PI / 2); ctx.textBaseline = 'top'; ctx.fillText('Loss', 0, -4); ctx.restore();
-  for (const [arr, col, name] of [[hist.test, '#fab387', 'test'], [hist.train, '#89b4fa', 'train']]) {
+  for (const [arr, col, name] of [[hist.test, cssv('peach'), 'test'], [hist.train, cssv('blue'), 'train']]) {
     if (arr.length < 1) continue;
     const X = i => L + i / last * pw, Y = v => T + ph - v / max * ph;
     ctx.beginPath(); ctx.lineWidth = 3.2; ctx.lineJoin = 'round'; ctx.strokeStyle = col;
     arr.forEach((v, i) => i ? ctx.lineTo(X(i), Y(v)) : ctx.moveTo(X(i), Y(v)));
     ctx.stroke();
     const v = arr[arr.length - 1], x = X(arr.length - 1), y = Y(v);
-    ctx.beginPath(); ctx.arc(x, y, 6, 0, 7); ctx.fillStyle = col; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = '#181825'; ctx.stroke();
+    ctx.beginPath(); ctx.arc(x, y, 6, 0, 7); ctx.fillStyle = col; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = cssv('mantle'); ctx.stroke();
     ctx.fillStyle = col; ctx.textAlign = 'left'; ctx.textBaseline = name === 'test' ? 'bottom' : 'top'; ctx.font = `19px ${FONT}`;
     ctx.fillText(v.toFixed(3), Math.min(x + 10, w - R + 6), y + (name === 'test' ? -2 : 2));
   }

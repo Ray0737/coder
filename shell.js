@@ -1,4 +1,13 @@
 // Shared shell for every page: icons, title bar, activity bar, sidebar, footer, search, tooltips, developer card.
+// theme: Mocha unless the visitor picked another in Settings. Set before anything draws.
+const THEMES = { mocha: '#11111b', ivory: '#FAFAF7', mono: '#0a0a0a' };
+let theme = 'mocha';
+try { theme = localStorage.getItem('coder:theme') || 'mocha'; } catch {}
+if (!THEMES[theme]) theme = 'mocha';
+document.documentElement.dataset.theme = theme;
+document.querySelector('meta[name="theme-color"]')?.setAttribute('content', THEMES[theme]);
+// the current value of a theme colour, for canvas drawing where var() does not work
+const cssv = n => getComputedStyle(document.documentElement).getPropertyValue('--' + n).trim();
 const SPRITE = `
 <symbol id="i-folder-open" viewBox="0 0 256 256"><path d="M245,110.64A16,16,0,0,0,232,104H216V88a16,16,0,0,0-16-16H130.67L102.94,51.2a16.14,16.14,0,0,0-9.6-3.2H40A16,16,0,0,0,24,64V208h0a8,8,0,0,0,8,8H211.1a8,8,0,0,0,7.59-5.47l28.49-85.47A16.05,16.05,0,0,0,245,110.64ZM93.34,64,123.2,86.4A8,8,0,0,0,128,88h72v16H69.77a16,16,0,0,0-15.18,10.94L40,158.7V64Zm112,136H43.1l26.67-80H232Z"/></symbol>
 <symbol id="i-magnifying-glass" viewBox="0 0 256 256"><path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"/></symbol>
@@ -127,16 +136,14 @@ const SETTINGS = `
 <div class="welcome wide narrow">
 <h1>Settings</h1>
 <p class="lead">Theme, language, sizing and a few other options</p>
-<p class="note wide">These are view-only for now. Changing them will work in a later version.</p>
+<p class="note wide">The theme can be changed. The other options are view-only for now.</p>
 
 <h2 class="ph">Theme</h2>
-<div class="setlist"><div class="set"><span class="si"><svg class="i"><use href="#i-eye"/></svg></span><div class="st"><b>Colour theme</b><p>The four Catppuccin flavours. Mocha is the one in use.</p></div>
-<div class="seg" aria-disabled="true"><button class="on" disabled>Mocha</button><button disabled>Macchiato</button><button disabled>Frappé</button><button disabled>Latte</button></div></div></div>
-<div class="flavours" aria-hidden="true">
-<div class="flv on" style="--b:#1e1e2e;--t:#cdd6f4"><svg class="i ck"><use href="#i-check-circle"/></svg><span class="aa">Aa</span><span class="dots"><i style="background:#cba6f7"></i><i style="background:#89b4fa"></i><i style="background:#a6e3a1"></i></span><span class="nm">Mocha<span>In use</span></span></div>
-<div class="flv" style="--b:#24273a;--t:#cad3f5"><span class="aa">Aa</span><span class="dots"><i style="background:#c6a0f6"></i><i style="background:#8aadf4"></i><i style="background:#a6da95"></i></span><span class="nm">Macchiato<span>Soon</span></span></div>
-<div class="flv" style="--b:#303446;--t:#c6d0f5"><span class="aa">Aa</span><span class="dots"><i style="background:#ca9ee6"></i><i style="background:#8caaee"></i><i style="background:#a6d189"></i></span><span class="nm">Frappé<span>Soon</span></span></div>
-<div class="flv" style="--b:#eff1f5;--t:#4c4f69"><span class="aa">Aa</span><span class="dots"><i style="background:#8839ef"></i><i style="background:#1e66f5"></i><i style="background:#40a02b"></i></span><span class="nm">Latte<span>Soon</span></span></div>
+<div class="setlist"><div class="set"><span class="si"><svg class="i"><use href="#i-eye"/></svg></span><div class="st"><b>Colour theme</b><p>Pick a look. The page reloads to apply it, and the choice stays in this browser.</p></div></div></div>
+<div class="flavours">
+<button type="button" class="flv" data-pick="mocha"><svg viewBox="0 0 300 180" aria-hidden="true"><rect x="0" y="0" width="300" height="180" rx="10" fill="#11111b"/><circle cx="14" cy="11" r="3.5" fill="#f38ba8"/><circle cx="25" cy="11" r="3.5" fill="#f9e2af"/><circle cx="36" cy="11" r="3.5" fill="#a6e3a1"/><rect x="96" y="6" width="108" height="10" rx="3" fill="#181825"/><text x="139" y="14" font-size="5" fill="#7f849c">Coder</text><rect x="9" y="30" width="8" height="8" rx="2" fill="#7f849c"/><rect x="9" y="46" width="8" height="8" rx="2" fill="#cba6f7"/><rect x="9" y="62" width="8" height="8" rx="2" fill="#7f849c"/><rect x="9" y="78" width="8" height="8" rx="2" fill="#7f849c"/><rect x="26" y="22" width="78" height="142" rx="5" fill="#181825"/><text x="34" y="36" font-size="5" fill="#cdd6f4">Main</text><text x="34" y="50" font-size="4.5" fill="#7f849c">M.4 Foundations</text><rect x="34" y="55" width="6" height="6" rx="2" fill="#f9e2af"/><text x="44" y="61" font-size="5" fill="#cdd6f4">Basic Python</text><rect x="34" y="67" width="6" height="6" rx="2" fill="#fab387"/><text x="44" y="73" font-size="4.5" fill="#cdd6f4">Physics in Robotics</text><text x="34" y="88" font-size="4.5" fill="#7f849c">M.5 Applied AI</text><rect x="34" y="93" width="6" height="6" rx="2" fill="#cba6f7"/><text x="44" y="99" font-size="5" fill="#cdd6f4">AI Development</text><text x="44" y="112" font-size="5" fill="#7f849c">Data handling</text><rect x="32" y="117" width="66" height="12" rx="3" fill="#313244"/><text x="44" y="125" font-size="5" fill="#cdd6f4">MLP</text><text x="44" y="139" font-size="5" fill="#7f849c">CNN</text><text x="44" y="152" font-size="5" fill="#7f849c">Transformer</text><rect x="108" y="22" width="184" height="142" rx="5" fill="#1e1e2e"/><text x="118" y="34" font-size="5" fill="#7f849c">Welcome</text><rect x="154" y="26" width="34" height="12" rx="3" fill="#313244"/><text x="162" y="34" font-size="5" fill="#cdd6f4">MLP</text><text x="118" y="49" font-size="4.5" fill="#7f849c">Coder › AI Development › MLP</text><text x="10" y="174" font-size="4.5" fill="#7f849c">main</text><text x="34" y="174" font-size="4.5" fill="#7f849c">81 notes</text><text x="254" y="174" font-size="4.5" fill="#7f849c">© Coder</text></svg><span class="nm">Mocha<span></span></span></button>
+<button type="button" class="flv" data-pick="ivory"><svg viewBox="0 0 300 180" aria-hidden="true"><rect x="0" y="0" width="300" height="180" rx="10" fill="#FAFAF7"/><circle cx="14" cy="11" r="3.5" fill="#f38ba8"/><circle cx="25" cy="11" r="3.5" fill="#f9e2af"/><circle cx="36" cy="11" r="3.5" fill="#a6e3a1"/><rect x="96" y="6" width="108" height="10" rx="3" fill="#F0F0EB"/><text x="139" y="14" font-size="5" fill="#666663">Coder</text><rect x="9" y="30" width="8" height="8" rx="2" fill="#666663"/><rect x="9" y="46" width="8" height="8" rx="2" fill="#CC785C"/><rect x="9" y="62" width="8" height="8" rx="2" fill="#666663"/><rect x="9" y="78" width="8" height="8" rx="2" fill="#666663"/><rect x="26" y="22" width="78" height="142" rx="5" fill="#F0F0EB"/><text x="34" y="36" font-size="5" fill="#191919">Main</text><text x="34" y="50" font-size="4.5" fill="#666663">M.4 Foundations</text><rect x="34" y="55" width="6" height="6" rx="2" fill="#D4A27F"/><text x="44" y="61" font-size="5" fill="#191919">Basic Python</text><rect x="34" y="67" width="6" height="6" rx="2" fill="#9E4F35"/><text x="44" y="73" font-size="4.5" fill="#191919">Physics in Robotics</text><text x="34" y="88" font-size="4.5" fill="#666663">M.5 Applied AI</text><rect x="34" y="93" width="6" height="6" rx="2" fill="#CC785C"/><text x="44" y="99" font-size="5" fill="#191919">AI Development</text><text x="44" y="112" font-size="5" fill="#666663">Data handling</text><rect x="32" y="117" width="66" height="12" rx="3" fill="#D3D2CB"/><text x="44" y="125" font-size="5" fill="#191919">MLP</text><text x="44" y="139" font-size="5" fill="#666663">CNN</text><text x="44" y="152" font-size="5" fill="#666663">Transformer</text><rect x="108" y="22" width="184" height="142" rx="5" fill="#E5E4DF"/><text x="118" y="34" font-size="5" fill="#666663">Welcome</text><rect x="154" y="26" width="34" height="12" rx="3" fill="#D3D2CB"/><text x="162" y="34" font-size="5" fill="#191919">MLP</text><text x="118" y="49" font-size="4.5" fill="#666663">Coder › AI Development › MLP</text><text x="10" y="174" font-size="4.5" fill="#666663">main</text><text x="34" y="174" font-size="4.5" fill="#666663">81 notes</text><text x="254" y="174" font-size="4.5" fill="#666663">© Coder</text></svg><span class="nm">Ivory<span></span></span></button>
+<button type="button" class="flv" data-pick="mono"><svg viewBox="0 0 300 180" aria-hidden="true"><rect x="0" y="0" width="300" height="180" rx="10" fill="#0a0a0a"/><circle cx="14" cy="11" r="3.5" fill="#7a7a7a"/><circle cx="25" cy="11" r="3.5" fill="#7a7a7a"/><circle cx="36" cy="11" r="3.5" fill="#7a7a7a"/><rect x="96" y="6" width="108" height="10" rx="3" fill="#121212"/><text x="139" y="14" font-size="5" fill="#7a7a7a">Coder</text><rect x="9" y="30" width="8" height="8" rx="2" fill="#7a7a7a"/><rect x="9" y="46" width="8" height="8" rx="2" fill="#ffffff"/><rect x="9" y="62" width="8" height="8" rx="2" fill="#7a7a7a"/><rect x="9" y="78" width="8" height="8" rx="2" fill="#7a7a7a"/><rect x="26" y="22" width="78" height="142" rx="5" fill="#121212"/><text x="34" y="36" font-size="5" fill="#e6e6e6">Main</text><text x="34" y="50" font-size="4.5" fill="#7a7a7a">M.4 Foundations</text><rect x="34" y="55" width="6" height="6" rx="2" fill="#bbbbbb"/><text x="44" y="61" font-size="5" fill="#e6e6e6">Basic Python</text><rect x="34" y="67" width="6" height="6" rx="2" fill="#888888"/><text x="44" y="73" font-size="4.5" fill="#e6e6e6">Physics in Robotics</text><text x="34" y="88" font-size="4.5" fill="#7a7a7a">M.5 Applied AI</text><rect x="34" y="93" width="6" height="6" rx="2" fill="#ffffff"/><text x="44" y="99" font-size="5" fill="#e6e6e6">AI Development</text><text x="44" y="112" font-size="5" fill="#7a7a7a">Data handling</text><rect x="32" y="117" width="66" height="12" rx="3" fill="#2a2a2a"/><text x="44" y="125" font-size="5" fill="#e6e6e6">MLP</text><text x="44" y="139" font-size="5" fill="#7a7a7a">CNN</text><text x="44" y="152" font-size="5" fill="#7a7a7a">Transformer</text><rect x="108" y="22" width="184" height="142" rx="5" fill="#181818"/><text x="118" y="34" font-size="5" fill="#7a7a7a">Welcome</text><rect x="154" y="26" width="34" height="12" rx="3" fill="#2a2a2a"/><text x="162" y="34" font-size="5" fill="#e6e6e6">MLP</text><text x="118" y="49" font-size="4.5" fill="#7a7a7a">Coder › AI Development › MLP</text><text x="10" y="174" font-size="4.5" fill="#7a7a7a">main</text><text x="34" y="174" font-size="4.5" fill="#7a7a7a">81 notes</text><text x="254" y="174" font-size="4.5" fill="#7a7a7a">© Coder</text></svg><span class="nm">Mono<span></span></span></button>
 </div>
 
 <h2 class="ph sec">Language</h2>
@@ -234,6 +241,9 @@ function closeSettings(){
 gear.onclick = () => sview.hidden ? openSettings() : closeSettings();
 stab.querySelector('.x').onclick = closeSettings;
 $('.tabs').addEventListener('click', e => { if (e.target.closest('.tab') && !e.target.closest('#stab')) closeSettings(); });
+// following any link (sidebar file, menu, search result) leaves Settings, even when it only changes the hash on this page
+document.addEventListener('click', e => { const a = e.target.closest('a[href]'); if (a && a.getAttribute('href') !== '#' && !a.closest('#sview')) closeSettings(); }, true);
+addEventListener('hashchange', closeSettings);
 
 // a page can split into <div class="pane" id data-tab data-icon>; each pane opens as its own closable tab, one shown at a time
 const panes = [...$$('.pane')];
@@ -369,3 +379,14 @@ addEventListener('focusout', hideTip);
 addEventListener('pointerdown', hideTip);
 
 if (innerWidth <= 640) side.hidden = true;
+// theme tiles in Settings: mark the one in use, save a new pick and reload so canvas drawings pick it up too
+$$('.flv[data-pick]').forEach(t => {
+  const id = t.dataset.pick, on = id === theme;
+  t.classList.toggle('on', on);
+  t.querySelector('.nm span').textContent = !id ? 'Soon' : on ? 'In use' : '';
+  if (!id) return;
+  t.onclick = () => { try { localStorage.setItem('coder:theme', id); sessionStorage.setItem('coder:insettings', '1'); } catch {} location.reload(); };
+});
+try {
+  if (sessionStorage.getItem('coder:insettings')) { sessionStorage.removeItem('coder:insettings'); openSettings(); }
+} catch {}

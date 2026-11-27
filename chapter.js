@@ -354,13 +354,13 @@ const widgets = {
     };
     // pixel numbers along the top (x) and left (y) edges of a picture w x h, and a green dot on its (0, 0)
     const axes = (g, w, h) => {
-      g.font = '10px sans-serif'; g.fillStyle = '#a6adc8'; g.strokeStyle = '#585b70'; g.lineWidth = 1;
+      g.font = '10px sans-serif'; g.fillStyle = cssv('sub0'); g.strokeStyle = cssv('s1'); g.lineWidth = 1;
       const xs = [0, w / 2, w].map(Math.round), ys = [0, h / 2, h].map(Math.round);
       xs.forEach((x, i) => { g.textAlign = i === 0 ? 'left' : i === 2 ? 'right' : 'center'; g.fillText(x, OX + x, OY - 8); g.beginPath(); g.moveTo(OX + x + .5, OY - 5); g.lineTo(OX + x + .5, OY); g.stroke(); });
       g.textAlign = 'right';
       ys.forEach(y => { g.fillText(y, OX - 8, OY + y + 3); g.beginPath(); g.moveTo(OX - 5, OY + y + .5); g.lineTo(OX, OY + y + .5); g.stroke(); });
-      g.fillStyle = '#a6e3a1'; g.beginPath(); g.arc(OX, OY, 3.5, 0, 7); g.fill();
-      g.fillStyle = '#89b4fa'; g.textAlign = 'left'; g.fillText('x', OX + w + 6, OY - 8); g.fillStyle = '#f38ba8'; g.textAlign = 'right'; g.fillText('y', OX - 8, OY + h + 16);
+      g.fillStyle = cssv('green'); g.beginPath(); g.arc(OX, OY, 3.5, 0, 7); g.fill();
+      g.fillStyle = cssv('blue'); g.textAlign = 'left'; g.fillText('x', OX + w + 6, OY - 8); g.fillStyle = cssv('red'); g.textAlign = 'right'; g.fillText('y', OX - 8, OY + h + 16);
     };
     el.innerHTML = `<p class="wgt">Try it: pick an operation</p>
       <div class="wgrow" id="w-cf-tabs">${['Crop', 'Flip 0', 'Flip 1', 'Flip -1', 'Resize'].map((n, i) => `<button type="button" class="seg2${i ? '' : ' on'}" data-k="${n}">${n}</button>`).join('')}</div>
@@ -375,14 +375,14 @@ const widgets = {
       $$('#w-cf-tabs button').forEach(bt => bt.classList.toggle('on', bt.dataset.k === k));
       $('#w-cf-sl').hidden = k !== 'Crop';
       const tmp = document.createElement('canvas'); tmp.width = W; tmp.height = H; scene(tmp.getContext('2d'));
-      a.setTransform(1, 0, 0, 1, 0, 0); a.fillStyle = '#11111b'; a.fillRect(0, 0, CW, CH); a.drawImage(tmp, OX, OY); axes(a, W, H);
+      a.setTransform(1, 0, 0, 1, 0, 0); a.fillStyle = cssv('crust'); a.fillRect(0, 0, CW, CH); a.drawImage(tmp, OX, OY); axes(a, W, H);
       if (k === 'Crop') {
-        a.strokeStyle = '#e64553'; a.lineWidth = 2; a.strokeRect(OX + x1, OY + y1, x2 - x1, y2 - y1);
+        a.strokeStyle = cssv('red'); a.lineWidth = 2; a.strokeRect(OX + x1, OY + y1, x2 - x1, y2 - y1);
         a.font = '700 10px sans-serif'; a.fillStyle = 'rgba(17,17,27,.85)'; a.fillRect(OX + x1, OY + y1 - 12 < OY ? OY + y1 : OY + y1 - 12, 52, 12); a.fillRect(OX + x2 - 52, OY + y2 + 12 > OY + H ? OY + y2 - 12 : OY + y2, 52, 12);
-        a.fillStyle = '#f38ba8'; a.textAlign = 'left'; a.fillText(`(${x1}, ${y1})`, OX + x1 + 3, (OY + y1 - 12 < OY ? OY + y1 : OY + y1 - 12) + 10);
+        a.fillStyle = cssv('red'); a.textAlign = 'left'; a.fillText(`(${x1}, ${y1})`, OX + x1 + 3, (OY + y1 - 12 < OY ? OY + y1 : OY + y1 - 12) + 10);
         a.textAlign = 'right'; a.fillText(`(${x2}, ${y2})`, OX + x2 - 3, (OY + y2 + 12 > OY + H ? OY + y2 - 12 : OY + y2) + 10);
       }
-      b.setTransform(1, 0, 0, 1, 0, 0); b.fillStyle = '#11111b'; b.fillRect(0, 0, CW, CH);
+      b.setTransform(1, 0, 0, 1, 0, 0); b.fillStyle = cssv('crust'); b.fillRect(0, 0, CW, CH);
       let code, cap, rw = W, rh = H;
       if (k === 'Crop') { rw = x2 - x1; rh = y2 - y1; b.drawImage(tmp, x1, y1, rw, rh, OX, OY, rw, rh); code = `cropped = img[${y1}:${y2}, ${x1}:${x2}]   # [y1:y2, x1:x2] -> ${rh} tall, ${rw} wide`; cap = `Cropped (${rw} × ${rh}): its own (0, 0) is the old (${x1}, ${y1})`; }
       else if (k === 'Resize') { rw = W / 2; rh = H / 2; b.drawImage(tmp, OX, OY, rw, rh); code = `cv.resize(img, (${rw}, ${rh}), interpolation=cv.INTER_AREA)   # dsize is (width, height)`; cap = `Resized (${rw} × ${rh})`; }
@@ -434,16 +434,16 @@ const widgets = {
       <div class="evlog" id="w-mc-log"></div>`;
     const cv = $('#w-mc'), g = cv.getContext('2d'), dots = [], log = [];
     const draw = () => {
-      g.fillStyle = '#181825'; g.fillRect(0, 0, W, H); g.strokeStyle = '#313244'; g.lineWidth = 1;
+      g.fillStyle = cssv('mantle'); g.fillRect(0, 0, W, H); g.strokeStyle = cssv('s0'); g.lineWidth = 1;
       for (let x = 0; x <= W; x += 40) { g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); }
       for (let y = 0; y <= H; y += 40) { g.beginPath(); g.moveTo(0, y); g.lineTo(W, y); g.stroke(); }
-      g.fillStyle = '#585b70'; g.font = '10px sans-serif'; g.fillText('(0, 0) top-left', 6, 12);
+      g.fillStyle = cssv('s1'); g.font = '10px sans-serif'; g.fillText('(0, 0) top-left', 6, 12);
       dots.forEach(d => { g.fillStyle = d.c; g.beginPath(); g.arc(d.x, d.y, 6, 0, 7); g.fill(); });
     };
     const pos = e => { const r = cv.getBoundingClientRect(); return [Math.round((e.clientX - r.left) * W / r.width), Math.round((e.clientY - r.top) * H / r.height)]; };
     const add = t => { log.unshift(t); log.length = Math.min(log.length, 5); $('#w-mc-log').innerHTML = log.map(l => `<div>${l}</div>`).join(''); };
     cv.onmousemove = e => { const [x, y] = pos(e); $('#w-mc-now').textContent = `cv.EVENT_MOUSEMOVE   x, y = ${x}, ${y}`; };
-    cv.onmousedown = e => { const [x, y] = pos(e), right = e.button === 2; dots.push({ x, y, c: right ? '#f38ba8' : '#a6e3a1' }); draw(); add(`${right ? 'EVENT_RBUTTONDOWN' : 'EVENT_LBUTTONDOWN'} at (${x}, ${y})  -> circle drawn`); };
+    cv.onmousedown = e => { const [x, y] = pos(e), right = e.button === 2; dots.push({ x, y, c: right ? cssv('red') : cssv('green') }); draw(); add(`${right ? 'EVENT_RBUTTONDOWN' : 'EVENT_LBUTTONDOWN'} at (${x}, ${y})  -> circle drawn`); };
     cv.oncontextmenu = e => e.preventDefault();
     cv.onmouseup = e => { const [x, y] = pos(e); add(`${e.button === 2 ? 'EVENT_RBUTTONUP' : 'EVENT_LBUTTONUP'} at (${x}, ${y})`); };
     el._reset = () => { dots.length = 0; log.length = 0; draw(); add('waiting for the mouse...'); };
@@ -533,7 +533,7 @@ const widgets = {
       <div class="dropviz"><figure><figcaption>Binary image (white shapes)</figcaption><canvas id="w-ct-a" width="${W * S}" height="${H * S}"></canvas></figure><figure><figcaption>Contours drawn</figcaption><canvas id="w-ct-b" width="${W * S}" height="${H * S}"></canvas></figure></div>
       <p class="wgsay"><code id="w-ct-code"></code></p><p class="wgsay" id="w-ct-say"></p>`;
     let k = 'EXTERNAL';
-    const pal = ['#f38ba8', '#a6e3a1', '#89b4fa', '#f9e2af', '#cba6f7', '#94e2d5'];
+    const pal = [cssv('red'), cssv('green'), cssv('blue'), cssv('yellow'), cssv('mauve'), cssv('teal')];
     const run = () => {
       $$('#w-ct-tabs button').forEach(b => b.classList.toggle('on', b.dataset.k === k));
       const A = $('#w-ct-a').getContext('2d'), B = $('#w-ct-b').getContext('2d'); A.fillStyle = '#000'; A.fillRect(0, 0, W * S, H * S); B.fillStyle = '#000'; B.fillRect(0, 0, W * S, H * S);
@@ -602,7 +602,7 @@ const widgets = {
       t.rects(u, w, h).forEach(([rx, ry, rw, rh, light]) => {
         for (let y = 0; y < rh; y++) for (let x = 0; x < rw; x++) { const v = px(x0 + rx + x, y0 + ry + y); if (light) { sl += v; nl++; } else { sd += v; nd++; } }
         g.fillStyle = light ? 'rgba(166,227,161,.35)' : 'rgba(243,139,168,.35)'; g.fillRect((x0 + rx) * S, (y0 + ry) * S, rw * S, rh * S);
-        g.strokeStyle = light ? '#a6e3a1' : '#f38ba8'; g.lineWidth = 2; g.strokeRect((x0 + rx) * S + 1, (y0 + ry) * S + 1, rw * S - 2, rh * S - 2);
+        g.strokeStyle = light ? cssv('green') : cssv('red'); g.lineWidth = 2; g.strokeRect((x0 + rx) * S + 1, (y0 + ry) * S + 1, rw * S - 2, rh * S - 2);
       });
       const al = sl / nl, ad = sd / nd, d = al - ad, pass = d > 40;
       $('#w-hf-say').innerHTML = `Light (green) average <b>${al.toFixed(0)}</b>, dark (red) average <b>${ad.toFixed(0)}</b>. Feature value = light &minus; dark = <b>${d.toFixed(0)}</b>. ${pass ? 'A big positive gap: this test says "could be a face" and the window moves on to the next test.' : d < -40 ? 'A big gap, but the wrong way round: dark where a face should be light, so this test says no.' : 'The two areas look about the same here, so this test learns nothing.'} The start position puts the dark half over the eyes. Move it onto the forehead or the cheeks and the gap shrinks.`;
@@ -623,18 +623,18 @@ const widgets = {
       const sf = +$('#w-hc-s').value / 100, n = +$('#w-hc-n').value; $('#w-hc-sv').textContent = sf.toFixed(2); $('#w-hc-v').textContent = n;
       const tries = Math.max(3, Math.min(22, Math.round(18 - (sf - 1.1) * 30))), scales = []; for (let s = 24; s < 180; s *= sf) scales.push(Math.round(s));
       const groups = [{ name: 'real face', hits: reals.slice(0, tries) }, { name: 'stray A', hits: sa.slice(0, Math.max(1, Math.round(tries * .23))) }, { name: 'stray B', hits: sb.slice(0, Math.max(1, Math.round(tries * .08))) }];
-      const g = $('#w-hc').getContext('2d'); g.fillStyle = '#181825'; g.fillRect(0, 0, W, H);
+      const g = $('#w-hc').getContext('2d'); g.fillStyle = cssv('mantle'); g.fillRect(0, 0, W, H);
       g.fillStyle = '#f2cdcd'; g.beginPath(); g.ellipse(150, 105, 34, 42, 0, 0, 7); g.fill();
       g.fillStyle = '#11111b'; [[137, 95], [163, 95]].forEach(([x, y]) => { g.beginPath(); g.arc(x, y, 4, 0, 7); g.fill(); }); g.fillRect(140, 120, 20, 3);
       g.fillStyle = '#45475a'; g.beginPath(); g.arc(58, 52, 14, 0, 7); g.fill(); g.fillRect(238, 150, 14, 14);
       let kept = 0; g.font = '11px sans-serif';
       groups.forEach(gr => { const keep = gr.hits.length >= n; g.lineWidth = 1; g.strokeStyle = keep ? 'rgba(166,227,161,.3)' : 'rgba(243,139,168,.4)'; gr.hits.forEach(([cx, cy, s]) => g.strokeRect(cx - s / 2, cy - s / 2, s, s));
         const a = gr.hits.reduce((p, h) => [p[0] + h[0], p[1] + h[1], p[2] + h[2]], [0, 0, 0]).map(v => v / gr.hits.length);
-        if (keep) { kept++; g.lineWidth = 2.5; g.strokeStyle = '#a6e3a1'; g.strokeRect(a[0] - a[2] / 2, a[1] - a[2] / 2, a[2], a[2]); }
-        g.fillStyle = keep ? '#a6e3a1' : '#f38ba8'; g.fillText(`${gr.hits.length} hits`, Math.max(2, a[0] - a[2] / 2), Math.max(11, a[1] - a[2] / 2 - 4)); });
+        if (keep) { kept++; g.lineWidth = 2.5; g.strokeStyle = cssv('green'); g.strokeRect(a[0] - a[2] / 2, a[1] - a[2] / 2, a[2], a[2]); }
+        g.fillStyle = keep ? cssv('green') : cssv('red'); g.fillText(`${gr.hits.length} hits`, Math.max(2, a[0] - a[2] / 2), Math.max(11, a[1] - a[2] / 2 - 4)); });
       const maxv = Math.max(22, n + 1), bw = 46, by = v => 130 - v / maxv * 112;
       $('#w-hc-bars').innerHTML = `<line x1="24" y1="130" x2="236" y2="130" stroke="var(--s1)"/>` + groups.map((gr, i) => { const v = gr.hits.length, keep = v >= n, x = 34 + i * 68; return `<rect x="${x}" y="${by(v)}" width="${bw}" height="${130 - by(v)}" rx="3" fill="var(--${keep ? 'green' : 'red'})" opacity=".85"/><text x="${x + bw / 2}" y="${by(v) - 4}" text-anchor="middle" font-size="11" fill="var(--text)">${v}</text><text x="${x + bw / 2}" y="146" text-anchor="middle" font-size="10" fill="var(--o1)">${gr.name}</text>`; }).join('')
-        + `<line x1="24" y1="${by(n)}" x2="236" y2="${by(n)}" stroke="#f9e2af" stroke-width="2" stroke-dasharray="5 4"/><text x="236" y="${by(n) - 4}" text-anchor="end" font-size="10" fill="#f9e2af">minNeighbors = ${n}</text>`;
+        + `<line x1="24" y1="${by(n)}" x2="236" y2="${by(n)}" stroke="var(--yellow)" stroke-width="2" stroke-dasharray="5 4"/><text x="236" y="${by(n) - 4}" text-anchor="end" font-size="10" fill="var(--yellow)">minNeighbors = ${n}</text>`;
       const real = groups[0].hits.length >= n;
       $('#w-hc-say').innerHTML = `At scaleFactor ${sf.toFixed(2)} the window is tried at <b>${scales.length}</b> sizes (${scales.slice(0, 5).join(', ')}${scales.length > 5 ? ', ...' : ''} px). A smaller factor tries more sizes, so every spot collects more overlapping hits, but it runs slower. Bars at or above the dashed line survive: <b>${kept}</b> detection${kept === 1 ? '' : 's'} left. ${n <= 3 ? 'Too low: stray spots get through as false faces.' : real ? 'Just right: the real face has many hits, the strays do not.' : 'Too high: even the real face falls below the line.'}`;
       $('#w-hc-code').textContent = `faces = face_cascade.detectMultiScale(gray, ${sf.toFixed(2)}, ${n})`;
@@ -655,10 +655,10 @@ const widgets = {
       $('#w-hl-v').textContent = tx.toFixed(2);
       const X = p => p[0] * W, Y = p => p[1] * H;
       $('#w-hl-a').innerHTML = links.map(([a, b]) => `<line x1="${X(pts[a])}" y1="${Y(pts[a])}" x2="${X(pts[b])}" y2="${Y(pts[b])}" stroke="var(--o0)" stroke-width="2"/>`).join('')
-        + pts.map((p, i) => `<circle cx="${X(p)}" cy="${Y(p)}" r="${i === 8 ? 7 : 3.5}" fill="${i === 8 ? '#f38ba8' : '#cba6f7'}"/>`).join('')
-        + `<text x="${X(pts[8]) + 10}" y="${Y(pts[8]) + 4}" font-size="11" fill="#f38ba8">8</text><text x="${X(pts[0]) + 8}" y="${Y(pts[0]) + 4}" font-size="11" fill="#a6adc8">0 wrist</text>`;
+        + pts.map((p, i) => `<circle cx="${X(p)}" cy="${Y(p)}" r="${i === 8 ? 7 : 3.5}" fill="${i === 8 ? cssv('red') : cssv('mauve')}"/>`).join('')
+        + `<text x="${X(pts[8]) + 10}" y="${Y(pts[8]) + 4}" font-size="11" fill="var(--red)">8</text><text x="${X(pts[0]) + 8}" y="${Y(pts[0]) + 4}" font-size="11" fill="var(--sub0)">0 wrist</text>`;
       const a = ang * Math.PI / 180, cx = 110, cy = 120;
-      $('#w-hl-b').innerHTML = `<path d="M30 120 A80 80 0 0 1 190 120" fill="none" stroke="var(--s1)" stroke-width="6"/><line x1="${cx}" y1="${cy}" x2="${cx - 70 * Math.cos(a)}" y2="${cy - 70 * Math.sin(a)}" stroke="#a6e3a1" stroke-width="5" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="8" fill="#a6e3a1"/><text x="20" y="140" font-size="10" fill="#a6adc8">0&deg;</text><text x="176" y="140" font-size="10" fill="#a6adc8">180&deg;</text><text x="${cx}" y="22" text-anchor="middle" font-size="14" fill="#cdd6f4">${ang}&deg;</text>`;
+      $('#w-hl-b').innerHTML = `<path d="M30 120 A80 80 0 0 1 190 120" fill="none" stroke="var(--s1)" stroke-width="6"/><line x1="${cx}" y1="${cy}" x2="${cx - 70 * Math.cos(a)}" y2="${cy - 70 * Math.sin(a)}" stroke="var(--green)" stroke-width="5" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="8" fill="var(--green)"/><text x="20" y="140" font-size="10" fill="var(--sub0)">0&deg;</text><text x="176" y="140" font-size="10" fill="var(--sub0)">180&deg;</text><text x="${cx}" y="22" text-anchor="middle" font-size="14" fill="var(--text)">${ang}&deg;</text>`;
       $('#w-hl-say').innerHTML = `The model gives x as a fraction of the frame width. On a 640-pixel frame that is pixel <b>${Math.round(tx * 640)}</b>, which maps to a servo angle of <b>${ang}&deg;</b>: <code>angle = int(tip.x * 180)</code>.`;
     };
     $('#w-hl-x').oninput = run; run();
@@ -698,11 +698,11 @@ const widgets = {
       const pw = T[2] * s, ph = T[3] * s, P = [Math.max(0, Math.min(W - pw, T[0] + dx)), Math.max(0, Math.min(H - ph, T[1] + dy)), pw, ph];   // the predicted box always stays inside the picture
       const ix = Math.max(0, Math.min(T[0] + T[2], P[0] + P[2]) - Math.max(T[0], P[0])), iy = Math.max(0, Math.min(T[1] + T[3], P[1] + P[3]) - Math.max(T[1], P[1]));
       const inter = ix * iy, uni = T[2] * T[3] + P[2] * P[3] - inter, iou = inter / uni;
-      const g = $('#w-iu').getContext('2d'); g.fillStyle = '#181825'; g.fillRect(0, 0, W, H);
+      const g = $('#w-iu').getContext('2d'); g.fillStyle = cssv('mantle'); g.fillRect(0, 0, W, H);
       g.fillStyle = 'rgba(243,139,168,.25)'; g.fillRect(T[0], T[1], T[2], T[3]); g.fillStyle = 'rgba(137,180,250,.25)'; g.fillRect(P[0], P[1], P[2], P[3]);
       g.fillStyle = 'rgba(166,227,161,.6)'; g.fillRect(Math.max(T[0], P[0]), Math.max(T[1], P[1]), ix, iy);
-      g.lineWidth = 2; g.strokeStyle = '#f38ba8'; g.strokeRect(T[0], T[1], T[2], T[3]); g.strokeStyle = '#89b4fa'; g.strokeRect(P[0], P[1], P[2], P[3]);
-      g.font = '11px sans-serif'; g.fillStyle = '#f38ba8'; g.fillText('real box', 8, 14); g.fillStyle = '#89b4fa'; g.fillText('predicted box', 8, 28); g.fillStyle = '#a6e3a1'; g.fillText('overlap', 8, 42);
+      g.lineWidth = 2; g.strokeStyle = cssv('red'); g.strokeRect(T[0], T[1], T[2], T[3]); g.strokeStyle = cssv('blue'); g.strokeRect(P[0], P[1], P[2], P[3]);
+      g.font = '11px sans-serif'; g.fillStyle = cssv('red'); g.fillText('real box', 8, 14); g.fillStyle = cssv('blue'); g.fillText('predicted box', 8, 28); g.fillStyle = cssv('green'); g.fillText('overlap', 8, 42);
       $('#w-iu-say').innerHTML = `IoU = overlap / union = <b>${iou.toFixed(2)}</b>. ${iou > .7 ? 'A good match.' : iou > .4 ? 'Partly right, but loose.' : 'A poor match: the box is mostly on the wrong spot.'} 1.0 would be a perfect box, 0 means no overlap at all.`;
     };
     el.addEventListener('input', run); run();
@@ -715,7 +715,7 @@ const widgets = {
       <div class="dropviz"><figure><figcaption>Previous frame</figcaption><canvas id="w-md-a" width="${W}" height="${H}"></canvas></figure><figure><figcaption>Current frame + box</figcaption><canvas id="w-md-b" width="${W}" height="${H}"></canvas></figure><figure><figcaption>absdiff, thresholded</figcaption><canvas id="w-md-c" width="${W}" height="${H}"></canvas></figure></div>
       <p class="wgsay" id="w-md-say"></p>`;
     const frame = (bx, seed) => { let s = seed; const r = () => (s = (s * 16807) % 2147483647) / 2147483647; const f = new Float32Array(W * H); for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) f[y * W + x] = 80 + (r() - 0.5) * 24 + ((x - bx) ** 2 + (y - 55) ** 2 < 16 * 16 ? 120 : 0); return f; };
-    const show = (id, f, box) => { const g = $(id).getContext('2d'), d = g.createImageData(W, H); f.forEach((v, i) => { d.data[i * 4] = d.data[i * 4 + 1] = d.data[i * 4 + 2] = v; d.data[i * 4 + 3] = 255; }); g.putImageData(d, 0, 0); if (box) { g.strokeStyle = '#a6e3a1'; g.lineWidth = 2; g.strokeRect(...box); } };
+    const show = (id, f, box) => { const g = $(id).getContext('2d'), d = g.createImageData(W, H); f.forEach((v, i) => { d.data[i * 4] = d.data[i * 4 + 1] = d.data[i * 4 + 2] = v; d.data[i * 4 + 3] = 255; }); g.putImageData(d, 0, 0); if (box) { g.strokeStyle = cssv('green'); g.lineWidth = 2; g.strokeRect(...box); } };
     const run = () => {
       const x = +$('#w-md-x').value, dd = +$('#w-md-d').value, t = +$('#w-md-t').value, prev = frame(x - dd, 5), cur = frame(x, 9);
       const diff = new Float32Array(W * H), cells = {};
@@ -768,12 +768,12 @@ const widgets = {
     const cvs = { cv: $('#w-cs-cv'), math: $('#w-cs-math') };
     const draw = mode => {
       const g = cvs[mode].getContext('2d');
-      g.fillStyle = '#181825'; g.fillRect(0, 0, W, H);
+      g.fillStyle = cssv('mantle'); g.fillRect(0, 0, W, H);
       const cx = x => L + x * C, cy = row => T + row * C; // row = display row from the top
-      g.strokeStyle = '#313244'; g.lineWidth = 1;
+      g.strokeStyle = cssv('s0'); g.lineWidth = 1;
       for (let i = 0; i <= GW; i++) { g.beginPath(); g.moveTo(cx(i), T); g.lineTo(cx(i), T + GH * C); g.stroke(); }
       for (let j = 0; j <= GH; j++) { g.beginPath(); g.moveTo(L, cy(j)); g.lineTo(L + GW * C, cy(j)); g.stroke(); }
-      g.font = '10px sans-serif'; g.fillStyle = '#a6adc8'; g.textAlign = 'center';
+      g.font = '10px sans-serif'; g.fillStyle = cssv('sub0'); g.textAlign = 'center';
       const xl = mode === 'cv' ? T - 6 : T + GH * C + 14;
       for (let x = 0; x < GW; x += 5) g.fillText(x, cx(x) + C / 2, xl);
       g.fillText(GW - 1, cx(GW - 1) + C / 2, xl);
@@ -782,19 +782,19 @@ const widgets = {
       for (let r = 0; r < GH; r += 5) g.fillText(yl(r), L - 6, cy(r) + C / 2 + 3);
       g.fillText(yl(GH - 1), L - 6, cy(GH - 1) + C / 2 + 3);
       // axes
-      g.strokeStyle = '#89b4fa'; g.fillStyle = '#89b4fa'; g.lineWidth = 2; g.textAlign = 'left';
+      g.strokeStyle = cssv('blue'); g.fillStyle = cssv('blue'); g.lineWidth = 2; g.textAlign = 'left';
       const oy = mode === 'cv' ? T : T + GH * C;
       g.beginPath(); g.moveTo(L, oy); g.lineTo(L + GW * C + 14, oy); g.stroke(); g.textAlign = 'right'; g.fillText('x (columns) →', W - 6, mode === 'cv' ? oy - 20 : oy + 28); g.textAlign = 'left';
-      g.strokeStyle = '#f38ba8'; g.fillStyle = '#f38ba8';
+      g.strokeStyle = cssv('red'); g.fillStyle = cssv('red');
       g.beginPath(); g.moveTo(L, T + (mode === 'cv' ? 0 : -14)); g.lineTo(L, T + GH * C + (mode === 'cv' ? 14 : 0)); g.stroke();
       g.save(); g.translate(12, T + GH * C / 2); g.rotate(-Math.PI / 2); g.textAlign = 'center'; g.fillText(mode === 'cv' ? 'y (rows), grows DOWN' : 'y, grows UP', 0, 0); g.restore();
-      g.fillStyle = '#a6e3a1'; g.textAlign = 'left'; g.beginPath(); g.arc(L, oy, 4, 0, 7); g.fill();
+      g.fillStyle = cssv('green'); g.textAlign = 'left'; g.beginPath(); g.arc(L, oy, 4, 0, 7); g.fill();
       g.fillText(mode === 'cv' ? '(0, 0) top-left' : '(0, 0) bottom-left', L + 8, oy + (mode === 'cv' ? 12 : -8));
-      g.textAlign = 'right'; g.fillStyle = '#a6adc8';
+      g.textAlign = 'right'; g.fillStyle = cssv('sub0');
       if (mode === 'cv') { g.fillText(`(${GW - 1}, ${GH - 1}) bottom-right`, L + GW * C, T + GH * C + 16); g.textAlign = 'left'; g.fillText(`(0, ${GH - 1}) bottom-left`, L, T + GH * C + 16); }
       // points
       const mark = (pt, col, fillA) => { if (!pt) return; const r = mode === 'cv' ? pt[1] : GH - 1 - pt[1]; g.fillStyle = fillA; g.fillRect(cx(pt[0]), cy(r), C, C); g.strokeStyle = col; g.lineWidth = 2; g.strokeRect(cx(pt[0]) + 1, cy(r) + 1, C - 2, C - 2); };
-      mark(hov, '#cdd6f4', 'rgba(205,214,244,.18)'); mark(pin, '#a6e3a1', 'rgba(166,227,161,.35)');
+      mark(hov, cssv('text'), 'rgba(205,214,244,.18)'); mark(pin, cssv('green'), 'rgba(166,227,161,.35)');
     };
     const redraw = () => {
       draw('cv'); draw('math');
@@ -823,8 +823,8 @@ const widgets = {
     let at = 8;
     const draw = () => {
       $('#w-lm').innerHTML = links.map(([a, b]) => `<line x1="${P[a][0] * W}" y1="${P[a][1] * H}" x2="${P[b][0] * W}" y2="${P[b][1] * H}" stroke="var(--o0)" stroke-width="2"/>`).join('')
-        + P.map((p, i) => `<circle data-i="${i}" cx="${p[0] * W}" cy="${p[1] * H}" r="${i === at ? 8 : 5}" fill="${i === at ? '#f38ba8' : [4, 8, 12, 16, 20].includes(i) ? '#a6e3a1' : '#cba6f7'}" style="cursor:pointer"/>`).join('')
-        + `<text x="${P[at][0] * W + 12}" y="${P[at][1] * H + 4}" font-size="12" fill="#f38ba8">${at}</text>`;
+        + P.map((p, i) => `<circle data-i="${i}" cx="${p[0] * W}" cy="${p[1] * H}" r="${i === at ? 8 : 5}" fill="${i === at ? cssv('red') : [4, 8, 12, 16, 20].includes(i) ? cssv('green') : cssv('mauve')}" style="cursor:pointer"/>`).join('')
+        + `<text x="${P[at][0] * W + 12}" y="${P[at][1] * H + 4}" font-size="12" fill="var(--red)">${at}</text>`;
       const f = at === 0 ? 'the wrist' : ['thumb', 'index finger', 'middle finger', 'ring finger', 'little finger'][Math.floor((at - 1) / 4)];
       const part = at === 0 ? '' : ['base joint', 'first knuckle', 'second knuckle', 'fingertip'][(at - 1) % 4];
       $('#w-lm-say').innerHTML = `Landmark <b>${at}</b>: <code>${names[at]}</code>, the ${at === 0 ? 'wrist' : part + ' of the ' + f}. Fingertips (4, 8, 12, 16, 20) are green.`;
@@ -994,10 +994,10 @@ const widgets = {
       const d = +$('#w-hb-e').value; $('#w-hb-ev').textContent = d + '%';
       $('#w-hb-1').textContent = `IN1 = ${i1 ? 'HIGH' : 'LOW'}`; $('#w-hb-2').textContent = `IN2 = ${i2 ? 'HIGH' : 'LOW'}`;
       $('#w-hb-1').classList.toggle('on', !!i1); $('#w-hb-2').classList.toggle('on', !!i2);
-      let state, col = '#a6adc8', arrow = '';
+      let state, col = cssv('sub0'), arrow = '';
       if (d === 0) state = 'Enable is 0%, so the driver is switched off. The motor is not driven and just coasts to a stop.';
-      else if (i1 && !i2) { state = `Forward at ${d}% speed.`; col = '#a6e3a1'; arrow = '\u21bb'; }
-      else if (!i1 && i2) { state = `Backward at ${d}% speed.`; col = '#89b4fa'; arrow = '\u21ba'; }
+      else if (i1 && !i2) { state = `Forward at ${d}% speed.`; col = cssv('green'); arrow = '\u21bb'; }
+      else if (!i1 && i2) { state = `Backward at ${d}% speed.`; col = cssv('blue'); arrow = '\u21ba'; }
       else if (i1 && i2) state = 'Both inputs HIGH: the driver shorts the motor terminals together, which is a fast stop (brake).';
       else state = 'Both inputs LOW with the enable on: the motor is held stopped (brake). In the course code this is the "stop" state.';
       $('#w-hb').innerHTML = `<rect x="10" y="30" width="86" height="70" rx="8" fill="var(--crust)" stroke="var(--mauve)"/><text x="53" y="52" text-anchor="middle" font-size="10" fill="var(--text)">L298N driver</text><text x="53" y="70" text-anchor="middle" font-size="9" fill="var(--o1)">IN1 ${i1} IN2 ${i2}</text><text x="53" y="86" text-anchor="middle" font-size="9" fill="var(--o1)">ENA ${d}%</text><line x1="96" y1="65" x2="170" y2="65" stroke="${col}" stroke-width="3"/><circle cx="215" cy="65" r="40" fill="var(--crust)" stroke="${col}" stroke-width="3"/><text x="215" y="76" text-anchor="middle" font-size="34" fill="${col}">${arrow || 'M'}</text><rect x="170" y="116" width="${Math.max(2, 90 * d / 100)}" height="6" rx="3" fill="${col}"/>`;

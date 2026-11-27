@@ -215,10 +215,10 @@
         g.beginPath(); g.moveTo(L, T); g.lineTo(L, T + S); g.lineTo(L + S, T + S); g.stroke();
         g.textAlign = 'center'; for (let v = -3; v <= 3; v++) { g.beginPath(); g.moveTo(px(v), T + S); g.lineTo(px(v), T + S + 4); g.stroke(); g.fillText(v, px(v), T + S + 15); }
         g.textAlign = 'right'; for (let v = -3; v <= 3; v++) { g.beginPath(); g.moveTo(L, py(v)); g.lineTo(L - 4, py(v)); g.stroke(); g.fillText(v, L - 7, py(v) + 3); }
-        for (const [x, y, c] of P) { g.beginPath(); g.arc(px(x), py(y), 4, 0, 7); g.fillStyle = c ? '#cba6f7' : '#89b4fa'; g.fill(); g.strokeStyle = 'rgba(255,255,255,.9)'; g.lineWidth = 1; g.stroke(); }
+        for (const [x, y, c] of P) { g.beginPath(); g.arc(px(x), py(y), 4, 0, 7); g.fillStyle = c ? cssv('mauve') : cssv('blue'); g.fill(); g.strokeStyle = 'rgba(255,255,255,.9)'; g.lineWidth = 1; g.stroke(); }
         // title and legend inside the plot
         g.textAlign = 'left'; g.fillStyle = 'rgba(205,214,244,.85)'; g.font = '12px sans-serif'; g.fillText(names[ci], L + 8, T + 18);
-        [['Class 1', '#cba6f7'], ['Class 0', '#89b4fa']].forEach(([s, c], k) => { g.beginPath(); g.arc(L + S - 62, T + 14 + k * 16, 4, 0, 7); g.fillStyle = c; g.fill(); g.fillStyle = 'rgba(205,214,244,.85)'; g.font = '11px sans-serif'; g.fillText(s, L + S - 54, T + 18 + k * 16); });
+        [['Class 1', cssv('mauve')], ['Class 0', cssv('blue')]].forEach(([s, c], k) => { g.beginPath(); g.arc(L + S - 62, T + 14 + k * 16, 4, 0, 7); g.fillStyle = c; g.fill(); g.fillStyle = 'rgba(205,214,244,.85)'; g.font = '11px sans-serif'; g.fillText(s, L + S - 54, T + 18 + k * 16); });
         const acc = P.filter(([x, y, c]) => (f(x, y) >= .5 ? 1 : 0) === c).length / P.length;
         q('#cb-ro').innerHTML = `Training accuracy <b>${Math.round(acc * 100)}%</b>`;
         const [d1, fm, nt] = info[names[ci]]; q('#cb-t').textContent = names[ci]; q('#cb-d1').textContent = d1; q('#cb-f').textContent = fm; q('#cb-n').textContent = nt;
@@ -599,7 +599,7 @@
         q('#fd-n').disabled = !mode; q('#fd-nv').textContent = mode ? n : 'off';
         g.clearRect(0, 0, S, S);
         for (let i = 0; i < G; i++) for (let j = 0; j < G; j++) { const p = f(-M + (i + .5) / G * 2 * M, M - (j + .5) / G * 2 * M), conf = Math.abs(p - .5) * 2; g.fillStyle = p >= .5 ? `rgba(250,179,135,${.07 + .2 * conf})` : `rgba(137,180,250,${.07 + .2 * conf})`; g.fillRect(i * cell, j * cell, cell + .5, cell + .5); }
-        for (const [x, y, c] of tr) { g.beginPath(); g.arc(px(x), py(y), 4, 0, 7); g.fillStyle = c ? '#fab387' : '#89b4fa'; g.fill(); g.strokeStyle = 'rgba(255,255,255,.9)'; g.lineWidth = 1; g.stroke(); }
+        for (const [x, y, c] of tr) { g.beginPath(); g.arc(px(x), py(y), 4, 0, 7); g.fillStyle = c ? cssv('peach') : cssv('blue'); g.fill(); g.strokeStyle = 'rgba(255,255,255,.9)'; g.lineWidth = 1; g.stroke(); }
         const acc = P => Math.round(P.filter(([x, y, c]) => (f(x, y) >= .5 ? 1 : 0) === c).length / P.length * 100);
         q('#fd-t').textContent = mode ? `Random forest of ${n} tree${n > 1 ? 's' : ''}` : 'One fully grown tree'; q('#fd-d').textContent = info[mode];
         q('#fd-r').innerHTML = `<div><span>Training points</span><small>seen while learning</small><b>${acc(tr)}%</b></div><div><span>Fresh points</span><small>never seen, the real test</small><b>${acc(te)}%</b></div>`;
